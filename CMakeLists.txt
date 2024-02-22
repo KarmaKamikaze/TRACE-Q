@@ -3,4 +3,4 @@ project(TRACE_Q)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(TRACE_Q main.cpp)
+add_executable(TRACE_Q main.cpp datastructure/trajectory.cpp)

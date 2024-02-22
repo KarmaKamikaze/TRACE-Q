@@ -1,6 +1,8 @@
 #include <iostream>
+#include "datastructure/trajectory.h"
 
 int main() {
-    std::cout << "Hello, World!" << std::endl;
+    trajectorytest();
+
     return 0;
 }
