@@ -18,6 +18,7 @@ struct Location {
 };
 
 struct Trajectory {
+    unsigned id{};
     std::vector<Location> locations{};
 };
 
@@ -31,6 +32,7 @@ struct Trajectory {
 std::vector<Trajectory> allTrajectories;
 
 void load_tdrive_dataset() {
+    unsigned trajectory_id = 0;
     for (const auto& dirEntry : recursive_directory_iterator(TDRIVE_PATH))  {
         std::ifstream file(dirEntry.path());
 
@@ -47,6 +49,7 @@ void load_tdrive_dataset() {
                         std::getline(lineStream, timestamp, DELIMITER) &&
                         std::getline(lineStream, longitude, DELIMITER) &&
                         std::getline(lineStream, latitude, DELIMITER)) {
+                    trajectory.id = trajectory_id;
                     location.timestamp = timestamp;
                     location.longitude = std::stod(longitude);
                     location.latitude = std::stod(latitude);
@@ -57,6 +60,7 @@ void load_tdrive_dataset() {
                 }
             }
             file.close();
+            trajectory_id++;
         } else {
             throw std::runtime_error("Error opening file: " + dirEntry.path().string());
         }
@@ -64,11 +68,11 @@ void load_tdrive_dataset() {
 }
 
 void print_trajectories() {
-    for (int i = 0; i < allTrajectories.size(); i++) {
-        std::cout << "id: " << i << '\n';
-        for (const auto & location : allTrajectories[i].locations) {
-            std::cout << "timestamp: " << location.timestamp << '\n';
-            std::cout << "longitude, latitude: " << location.longitude << " " << location.latitude << '\n';
+    for (const auto & trajectory : allTrajectories) {
+        std::cout << "id: " << trajectory.id << std::endl;
+        for (const auto &location: trajectory.locations) {
+            std::cout << "timestamp: " << location.timestamp << std::endl;
+            std::cout << "longitude, latitude: " << location.longitude << " " << location.latitude << std::endl;
         }
     }
 }
