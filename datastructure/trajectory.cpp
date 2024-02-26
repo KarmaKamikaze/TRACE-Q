@@ -18,7 +18,6 @@ struct Location {
 };
 
 struct Trajectory {
-    int id{};
     std::vector<Location> locations{};
 };
 
@@ -51,11 +50,10 @@ void load_tdrive_dataset() {
                     location.timestamp = timestamp;
                     location.longitude = std::stod(longitude);
                     location.latitude = std::stod(latitude);
-                    trajectory.id = std::stoi(id);
                     trajectory.locations.push_back(location);
                     allTrajectories.push_back(trajectory);
                 } else {
-                    std::cerr << "Error reading line: " << line << std::endl;
+                    std::cerr << "Error reading line: " << line << '\n';
                 }
             }
             file.close();
@@ -66,11 +64,11 @@ void load_tdrive_dataset() {
 }
 
 void print_trajectories() {
-    for (const auto & trajectory : allTrajectories) {
-        std::cout << "id: " << trajectory.id << std::endl;
-        for (const auto & location : trajectory.locations) {
-            std::cout << "timestamp: " << location.timestamp << std::endl;
-            std::cout << "longitude, latitude: " << location.longitude << " " << location.latitude << std::endl;
+    for (int i = 0; i < allTrajectories.size(); i++) {
+        std::cout << "id: " << i << '\n';
+        for (const auto & location : allTrajectories[i].locations) {
+            std::cout << "timestamp: " << location.timestamp << '\n';
+            std::cout << "longitude, latitude: " << location.longitude << " " << location.latitude << '\n';
         }
     }
 }
