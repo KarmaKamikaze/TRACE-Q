@@ -10,13 +10,12 @@
 namespace simp_algorithms {
 
     class Trajectory {
-    private:
+    public:
         struct Point {
             double x {};
             double y {};
             double t {};
         };
-    public:
         std::vector<Point> points {};
     };
 
@@ -27,10 +26,15 @@ namespace simp_algorithms {
         double resolution_scale {2}; // c
         double ISSD(Trajectory const&, Trajectory const&);
         double LSSD(Trajectory const&, Trajectory const&);
-        double SED(Trajectory const&, Trajectory const&);
+        double single_SED(Trajectory::Point const&, Trajectory::Point const&);
+
 
         std::vector<double> error_tolerance_init(Trajectory const&);
-        Trajectory approximate_simplified_trajectory(Trajectory const&);
+
+    public:
+        Trajectory simplify_subtrajectory(Trajectory const&, int, int); // Make private
+        double error_SED_sum(Trajectory const&, int, int); // Make private
+
     };
 
 } // simp_algorithms
