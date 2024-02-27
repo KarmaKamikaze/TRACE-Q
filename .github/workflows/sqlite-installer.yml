@@ -1,0 +1,33 @@
+name: SQLite Installation Workflow
+
+on:
+  push:
+    branches:
+      - trajectory-data-structure
+
+jobs:
+  setup-sqlite:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup SQLite
+        uses: actions/setup-sqlite@v1
+        with:
+          sqlite-version: 3.42.0
+          sqlite-year: 2023
+
+      - name: Create Database Folder
+        run: mkdir -p sqlitedb
+
+      - name: Check if trajectory.db exists
+        run: |
+          if [ ! -f trajectory.db ]; then
+            sqlite3 sqlitedb/trajectory.db "CREATE TABLE untouched-trajectory-data (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                                                                    trajectory INTEGER,
+                                                                                    timestamp DATETIME,
+                                                                                    longitude REAL,
+                                                                                    latitude REAL)"
+          fi
