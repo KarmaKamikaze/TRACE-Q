@@ -5,6 +5,8 @@
 #include <filesystem>
 #include <fstream>
 
+
+
 using recursive_directory_iterator = std::filesystem::recursive_directory_iterator;
 
 // Constants
@@ -47,9 +49,9 @@ void load_tdrive_dataset() {
                 std::istringstream lineStream(line);
                 std::string id, timestamp, longitude, latitude;
                 if(std::getline(lineStream, id, DELIMITER) &&
-                        std::getline(lineStream, timestamp, DELIMITER) &&
-                        std::getline(lineStream, longitude, DELIMITER) &&
-                        std::getline(lineStream, latitude, DELIMITER)) {
+                   std::getline(lineStream, timestamp, DELIMITER) &&
+                   std::getline(lineStream, longitude, DELIMITER) &&
+                   std::getline(lineStream, latitude, DELIMITER)) {
                     trajectory.id = trajectory_id;
                     location.timestamp = timestamp;
                     location.longitude = std::stod(longitude);
@@ -66,6 +68,7 @@ void load_tdrive_dataset() {
             throw std::runtime_error("Error opening file: " + dirEntry.path().string());
         }
     }
+
 }
 
 void load_geolife_dataset() {
@@ -122,10 +125,15 @@ void print_trajectories() {
     }
 }
 
+int returntwo() {
+    return 2;
+}
+
 void trajectorytest () {
-//    load_tdrive_dataset();
-    load_geolife_dataset();
+    load_tdrive_dataset();
+//    load_geolife_dataset();
     print_trajectories();
 }
+
 
 

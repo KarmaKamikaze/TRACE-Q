@@ -1,10 +1,10 @@
-//
-// Created by krist on 22/02/2024.
-//
 
 #ifndef P8_PROJECT_TRAJECTORY_H
 #define P8_PROJECT_TRAJECTORY_H
 
+void load_geolife_dataset();
+void load_tdrive_dataset();
 void trajectorytest();
+int returntwo();
 
 #endif //P8_PROJECT_TRAJECTORY_H
