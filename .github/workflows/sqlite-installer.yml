@@ -14,7 +14,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Setup SQLite
-        uses: actions/setup-sqlite@v1
+        uses: actions/KarmaKamikaze/TRACE-Q@v1
         with:
           sqlite-version: 3.42.0
           sqlite-year: 2023
