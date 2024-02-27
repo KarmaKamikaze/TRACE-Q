@@ -19,15 +19,4 @@ jobs:
           sqlite-version: 3.40.0
           sqlite-year: 2022
 
-      - name: Create Database Folder
-        run: mkdir -p sqlitedb
-
-      - name: Check if trajectory.db exists
-        run: |
-          if [ ! -f trajectory.db ]; then
-            sqlite3 sqlitedb/trajectory.db "CREATE TABLE untouched-trajectory-data (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                                                                    trajectory INTEGER,
-                                                                                    timestamp DATETIME,
-                                                                                    longitude REAL,
-                                                                                    latitude REAL)"
-          fi
+      - run: sqlite3 user.db "create table foo (a int, b text)"
