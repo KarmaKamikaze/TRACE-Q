@@ -23,17 +23,18 @@ namespace simp_algorithms {
         using Trajectory = simp_algorithms::Trajectory;
     private:
         double eps {};
-        double resolution_scale {2}; // c
+        int const resolution_scale {3}; // c
         double ISSD(Trajectory const&, Trajectory const&);
         double LSSD(Trajectory const&, Trajectory const&);
         double single_SED(Trajectory::Point const&, Trajectory::Point const&);
 
 
-        std::vector<double> error_tolerance_init(Trajectory const&);
+
 
     public:
         Trajectory simplify_subtrajectory(Trajectory const&, int, int); // Make private
         double error_SED_sum(Trajectory const&, int, int); // Make private
+        std::vector<double> error_tolerance_init(Trajectory const&); // Make private
 
     };
 
