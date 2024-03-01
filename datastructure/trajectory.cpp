@@ -1,10 +1,13 @@
 #include "trajectory.h"
 #include <iostream>
 #include <vector>
-#include <string>
 #include <filesystem>
+#include <string>
 #include <fstream>
+#include <cstdio>
+#include <cstring>
 
+#include "../sqlite/sqlite3.h"
 
 
 using recursive_directory_iterator = std::filesystem::recursive_directory_iterator;
@@ -33,6 +36,7 @@ struct Trajectory {
 //AllTrajectories allTrajectories;
 
 std::vector<Trajectory> allTrajectories;
+
 
 void load_tdrive_dataset() {
     unsigned trajectory_id = 0;
@@ -114,6 +118,37 @@ void load_geolife_dataset() {
     }
 }
 
+static int callback(void *NotUsed, int argc, char **argv, char **azColName) {
+    int i;
+    for(i = 0; i<argc; i++) {
+        printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
+    }
+    printf("\n");
+    return 0;
+}
+
+
+void insert_into_database() {
+    sqlite3 *db;
+    int rc = sqlite3_open("../sqlite/trajectory.db", &db);
+    char* zErrMsg = 0;
+    for (const auto & trajectory : allTrajectories) {
+        for (const auto &location : trajectory.locations) {
+            // Allocate memory for the SQL query
+            char sql[512]; // Adjust the size as needed
+            snprintf(sql, sizeof(sql), "INSERT INTO trajectory_information VALUES(NULL, %d, '%s', %f, %f)", trajectory.id, location.timestamp.c_str(), location.longitude, location.latitude);
+
+            // Execute the SQL query
+            rc = sqlite3_exec(db, sql, callback, 0, &zErrMsg);
+
+            if( rc != SQLITE_OK ){
+                fprintf(stderr, "SQL error: %s\n", zErrMsg);
+                sqlite3_free(zErrMsg);
+            }
+        }
+    }
+    sqlite3_close(db);
+}
 
 void print_trajectories() {
     for (const auto & trajectory : allTrajectories) {
@@ -129,10 +164,36 @@ int returntwo() {
     return 2;
 }
 
+void create_database() {
+    sqlite3 *db;
+    char *zErrMsg = 0;
+    int rc = sqlite3_open("../sqlite/trajectory.db", &db);
+
+    if( rc ) {
+        fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+        return;
+    } else {
+        fprintf(stdout, "Opened database successfully\n");
+    }
+
+    char const *sql = "CREATE TABLE trajectory_information(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, trajectory_id INTEGER NOT NULL, timestamp TEXT NOT NULL, longitude REAL NOT NULL, latitude REAL NOT NULL)";
+    rc = sqlite3_exec(db, sql, callback, 0, &zErrMsg);
+
+    if( rc != SQLITE_OK ){
+        fprintf(stderr, "SQL error: %s\n", zErrMsg);
+        sqlite3_free(zErrMsg);
+    } else {
+        fprintf(stdout, "Table created successfully\n");
+    }
+    sqlite3_close(db);
+}
+
 void trajectorytest () {
+//    create_database();
     load_tdrive_dataset();
-//    load_geolife_dataset();
-    print_trajectories();
+    insert_into_database();
+////    load_geolife_dataset();
+//    print_trajectories();
 }
 
 
