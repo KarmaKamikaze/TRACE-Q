@@ -2,7 +2,7 @@
 #include "datastructure/trajectory.h"
 
 int main() {
-    trajectorytest();
+    trajectory::trajectorytest();
 
     return 0;
 }

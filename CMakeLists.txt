@@ -5,8 +5,12 @@ set(CMAKE_CXX_STANDARD 20)
 
 include(tests/doctest.cmake)
 
+
+add_definitions(-DSQLITE_ENABLE_RTREE=1)
+
 add_executable(TRACE_Q main.cpp datastructure/trajectory.cpp sqlite/sqlite3.c)
 add_executable(trajectory_test tests/trajectory_test.cpp datastructure/trajectory.cpp)
+
 
 
 target_link_libraries(trajectory_test PRIVATE doctest::doctest_with_main)
