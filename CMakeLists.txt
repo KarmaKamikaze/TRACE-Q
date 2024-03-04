@@ -5,4 +5,6 @@ set(CMAKE_CXX_STANDARD 20)
 
 add_executable(TRACE_Q main.cpp
         Simp-Algorithms/MRPA.cpp
-        Simp-Algorithms/MRPA.h)
+        Simp-Algorithms/MRPA.h
+        datastructure/Node.cpp
+        datastructure/Node.h)

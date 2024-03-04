@@ -15,12 +15,6 @@ int main() {
 
     simp_algorithms::MRPA mrpa{};
 
-    //for (auto simp_traj = mrpa.simplify_subtrajectory(t, 0, 3); const auto& traj : simp_traj.points) {
-    //    std::cout << "x: " << traj.x << ", y: " << traj.y << ", t: " << traj.t << "\n";
-    //}
-
-    //std::cout << mrpa.error_SED_sum(t, 0, 3) << "\n";
-
     for (auto err_tol = mrpa.error_tolerance_init(t); const auto& err : err_tol) {
         std::cout << err << " ";
     }
