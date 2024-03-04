@@ -5,6 +5,9 @@
 #include <string>
 #include <fstream>
 #include <cstdio>
+#include <format>
+#include <cstring>
+#include <cstdlib>
 
 #include "../sqlite/sqlite3.h"
 
@@ -19,6 +22,7 @@ namespace trajectory {
     char const *sqlite_db_path = "../sqlite/trajectory.db";
 
     struct Location {
+        unsigned order{};
         std::string timestamp{};
         double longitude{};
         double latitude{};
@@ -30,8 +34,9 @@ namespace trajectory {
     };
 
     std::vector<Trajectory> allTrajectories;
+    sqlite3 *db;
 
-    static int callback(void *NotUsed, int argc, char **argv, char **azColName) {
+    static int callback(void *query_success_history, int argc, char **argv, char **azColName) {
         int i;
         for(i = 0; i<argc; i++) {
             printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
@@ -40,9 +45,53 @@ namespace trajectory {
         return 0;
     }
 
+    int currentTrajectory = 0;
+    int order{};
+
+    static int callback_datastructure(void *query_success_history, int argc, char **argv, char **azColName) {
+        Location location;
+        Trajectory trajectory;
+
+        char* endptr;
+        trajectory.id = std::strtoul(argv[0], &endptr, 10);
+
+        if (*endptr != '\0') {
+            std::cerr << "Error: Invalid trajectory ID\n";
+            return 1;
+        }
+
+
+        if (currentTrajectory != trajectory.id) {
+            order = 1;
+        }
+
+        currentTrajectory = trajectory.id;
+        location.order = order;
+        location.timestamp = argv[1];
+        location.longitude = std::stod(argv[2]);
+        location.latitude = std::stod(argv[3]);
+        trajectory.locations.push_back(location);
+
+        allTrajectories.push_back(trajectory);
+
+        order += 1;
+
+        return 0;
+    }
+
+    static int callback_insert(void *query_success_history, int argc, char **argv, char **azColName) {
+        char query_array[150];
+        char *zErrMsg = 0;
+        char* id = argv[0], *minLongitude = argv[1], *maxLongitude = argv[2], *minLatitude = argv[3], *maxLatitude = argv[4], *minTimestamp = argv[5], *maxTimestamp = argv[6];
+
+        char *query = std::strcpy(query_array, std::format("INSERT INTO trajectory_rtree VALUES({0}, {1}, {2}, {3}, {4}, '{5}', '{6}')", id, minLongitude, maxLongitude, minLatitude, maxLatitude, minTimestamp, maxTimestamp).c_str());
+        std::cout << query << '\n';
+        sqlite3_exec(db, query, callback, 0, &zErrMsg);
+        return 0;
+    }
 
     void run_sql(char const *query) {
-        sqlite3 *db;
+
         char *zErrMsg = 0;
         int rc = sqlite3_open(sqlite_db_path, &db);
 
@@ -65,7 +114,7 @@ namespace trajectory {
     }
 
     void load_trajectories_into_rtree() {
-        sqlite3 *db;
+
         char *zErrMsg = 0;
         int rc = sqlite3_open(sqlite_db_path, &db);
 
@@ -82,17 +131,14 @@ namespace trajectory {
                             "FROM trajectory_information\n"
                             "GROUP BY trajectory_id;";
 
-        rc = sqlite3_exec(db, query, callback, 0, &zErrMsg);
-        std::cout << rc;
+        rc = sqlite3_exec(db, query, callback_insert, 0, &zErrMsg);
 
         if( rc != SQLITE_OK ){
             fprintf(stderr, "SQL error: %s\n", zErrMsg);
             sqlite3_free(zErrMsg);
         } else {
-            fprintf(stdout, "Table created successfully\n");
+            fprintf(stdout, "Success\n");
         }
-
-        // TODO: loop over rc og indsæt det i rtree table
 
         sqlite3_close(db);
     }
@@ -115,12 +161,13 @@ namespace trajectory {
                        std::getline(lineStream, timestamp, DELIMITER) &&
                        std::getline(lineStream, longitude, DELIMITER) &&
                        std::getline(lineStream, latitude, DELIMITER)) {
-                        trajectory.id = trajectory_id;
+                        trajectory.id = std::stoi(id);
                         location.timestamp = timestamp;
                         location.longitude = std::stod(longitude);
                         location.latitude = std::stod(latitude);
                         trajectory.locations.push_back(location);
                         allTrajectories.push_back(trajectory);
+
                     } else {
                         std::cerr << "Error reading line: " << line << '\n';
                     }
@@ -159,10 +206,12 @@ namespace trajectory {
                         std::getline(lineStream, datedays, DELIMITER) &&
                         std::getline(lineStream, date, DELIMITER) &&
                         std::getline(lineStream, time, DELIMITER)) {
+                        if(location.longitude == 0.0 or location.latitude == 0.0)
+                            continue;
                         location.timestamp = date + " " + time;
                         location.longitude = std::stod(longitude);
                         location.latitude = std::stod(latitude);
-                        trajectory.id = trajectory_id;
+                        trajectory.id = std::stod(id);
                         trajectory.locations.push_back(location);
                         allTrajectories.push_back(trajectory);
                     } else {
@@ -179,13 +228,11 @@ namespace trajectory {
 
 
     void insert_into_database() {
-        sqlite3 *db;
         int rc = sqlite3_open("../sqlite/trajectory.db", &db);
         char* zErrMsg = 0;
         for (const auto & trajectory : allTrajectories) {
             for (const auto &location : trajectory.locations) {
-                // Allocate memory for the SQL query
-                char sql[512]; // Adjust the size as needed
+                char sql[150];
                 snprintf(sql, sizeof(sql), "INSERT INTO trajectory_information VALUES(NULL, %d, '%s', %f, %f)", trajectory.id, location.timestamp.c_str(), location.longitude, location.latitude);
 
                 // Execute the SQL query
@@ -204,10 +251,36 @@ namespace trajectory {
         for (const auto & trajectory : allTrajectories) {
             std::cout << "id: " << trajectory.id << std::endl;
             for (const auto &location: trajectory.locations) {
-                std::cout << "timestamp: " << location.timestamp << std::endl;
-                std::cout << "longitude, latitude: " << location.longitude << " " << location.latitude << std::endl;
+                std::cout << "order: " << location.order << '\n';
+                std::cout << "timestamp: " << location.timestamp << '\n';
+                std::cout << "longitude, latitude: " << location.longitude << " " << location.latitude << '\n';
             }
         }
+    }
+
+    void load_database_into_datastructure() {
+        char *zErrMsg = 0;
+        int rc = sqlite3_open(sqlite_db_path, &db);
+
+        if( rc ) {
+            fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+            return;
+        } else {
+            fprintf(stdout, "Opened database successfully\n");
+        }
+
+        char const *query = "SELECT trajectory_id, timestamp, longitude, latitude FROM trajectory_information";
+
+        rc = sqlite3_exec(db, query, callback_datastructure, 0, &zErrMsg);
+
+        if( rc != SQLITE_OK ){
+            fprintf(stderr, "SQL error: %s\n", zErrMsg);
+            sqlite3_free(zErrMsg);
+        } else {
+            fprintf(stdout, "Storing to datastructure: Success. Linux mode: Activated\n");
+        }
+
+        sqlite3_close(db);
     }
 
     int returntwo() {
@@ -228,14 +301,25 @@ namespace trajectory {
         run_sql(query);
     }
 
+    void reset_database() {
+        run_sql("DELETE FROM trajectory_information");
+//        run_sql("DELETE FROM trajectory_rtree");
+//        run_sql("DELETE FROM trajectory_rtree_rowid");
+//        run_sql("DELETE FROM trajectory_rtree_parent");
+//        run_sql("DELETE FROM trajectory_rtree_node");
+    }
+
     void trajectorytest () {
+//        reset_database();
 //    create_database();
 //    create_rtree_table();
 //    load_tdrive_dataset();
 //    insert_into_database();
 //    load_geolife_dataset();
-//    print_trajectories();
-        load_trajectories_into_rtree();
+        load_database_into_datastructure();
+        print_trajectories();
+//        load_trajectories_into_rtree();
+//        reset_database();
     }
 }
 
