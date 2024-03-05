@@ -16,4 +16,6 @@ struct Trajectory {
     std::vector<Location> locations{};
 };
 
+extern std::vector<Trajectory> allTrajectories;
+
 #endif //TRACE_Q_TRAJECTORY_STRUCTURE_H

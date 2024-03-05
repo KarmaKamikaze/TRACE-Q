@@ -6,12 +6,10 @@
 
 # Step 2: Create folders:
 1. P8-Project/datasets
-   2. /t-drive
-   3. /geolife
-2. P8-Project/datastructure
-3. P8-Project/sqlite
-   4. Create "trajectory.db" file
-4. P8-Project/tests
+   1. /t-drive
+   2. /geolife
+2. P8-Project/sqlite
+   1. Create "trajectory.db" file
 
 
 # Step 3: Install sqlite3:
@@ -19,9 +17,5 @@
 2. Extract files
 3. Drag files into P8-Project/sqlite/
 
-
-# Step 4: Run functions
-1. create_database()
-2. create_rtree_table()
 
 

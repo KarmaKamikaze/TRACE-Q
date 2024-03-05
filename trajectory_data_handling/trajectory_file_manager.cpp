@@ -4,6 +4,18 @@
 #include <format>
 #include <cstring>
 #include <cstdlib>
+#include <filesystem>
+#include <fstream>
+#include "../datastructure/trajectory_structure.h"
+
+#include "trajectory_file_manager.h"
+
+using recursive_directory_iterator = std::filesystem::recursive_directory_iterator;
+std::vector<Trajectory> allTrajectories;
+
+const std::filesystem::path TDRIVE_PATH = std::filesystem::current_path().parent_path() / "datasets" / "t-drive";
+const std::filesystem::path GEOLIFE_PATH = std::filesystem::current_path().parent_path() / "datasets" / "geolife";
+const char DELIMITER = ',';
 
 void load_tdrive_dataset() {
     unsigned trajectory_id = 0;
