@@ -114,11 +114,10 @@ namespace simp_algorithms {
 
     data_structures::Node<Trajectory::Point> MRPA::init_tree(Trajectory const& trajectory, double error_tol, double high_error_tol) {
 
-        std::priority_queue<Trajectory::Point, std::vector<Trajectory::Point>, decltype(compare)> working_list{compare};
+        MRPA_PTQ working_list{compare};
         working_list.push(trajectory.points.front());
-        std::priority_queue<Trajectory::Point, std::vector<Trajectory::Point>, decltype(compare)> future_work(compare);
+        MRPA_PTQ future_work(compare);
         std::vector<Trajectory::Point> unvisited{trajectory.points.begin() + 1, trajectory.points.end()};
-
 
         Node root{working_list.top()};
         bool last_element_seen = false;
@@ -143,8 +142,7 @@ namespace simp_algorithms {
     }
 
     void MRPA::maintain_priority_queue(Node& tree, Trajectory const& trajectory, double error_tol, double high_error_tol,
-                                       std::priority_queue<Trajectory::Point, std::vector<Trajectory::Point>, decltype(compare)>& working_list,
-                                       std::priority_queue<Trajectory::Point, std::vector<Trajectory::Point>, decltype(compare)>& future_work,
+                                       MRPA_PTQ& working_list, MRPA_PTQ& future_work,
                                        std::vector<Trajectory::Point>& unvisited) {
         Trajectory::Point index1 = working_list.top();
         working_list.pop();

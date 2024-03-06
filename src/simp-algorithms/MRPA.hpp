@@ -47,6 +47,7 @@ namespace simp_algorithms {
         static constexpr auto compare = [](Trajectory::Point const &left, Trajectory::Point const &right) {
             return left.order > right.order;
         };
+        using MRPA_PTQ = std::priority_queue<Trajectory::Point, std::vector<Trajectory::Point>, decltype(compare)>;
 
         void maintain_priority_queue(Node& tree, Trajectory const& trajectory, double error_tol, double high_error_tol,
                                      std::priority_queue<Trajectory::Point, std::vector<Trajectory::Point>, decltype(compare)>& working_list,
