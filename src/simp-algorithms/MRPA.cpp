@@ -1,13 +1,11 @@
-//
-// Created by karma on 2/22/24.
-//
-
 #include <cmath>
 #include <stdexcept>
 #include <algorithm>
 #include <ranges>
 #include <deque>
-#include "MRPA.h"
+#include <queue>
+#include <iostream>
+#include "MRPA.hpp"
 
 namespace simp_algorithms {
     std::vector<double> MRPA::error_tolerance_init(Trajectory const& traj) {
@@ -38,7 +36,7 @@ namespace simp_algorithms {
         return result;
     }
 
-    Trajectory MRPA::simplify_subtrajectory(Trajectory const& trajectory, int i, int j) {
+    Trajectory MRPA::simplify_subtrajectory(Trajectory const& trajectory, int i, int j) const {
         Trajectory res {};
 
         for (int k = i + 1; k < j; ++k) {
@@ -57,7 +55,7 @@ namespace simp_algorithms {
         return res;
     }
 
-    double MRPA::single_SED(Trajectory::Point const& original_point, Trajectory::Point const& approx_point)
+    double MRPA::single_SED(Trajectory::Point const& original_point, Trajectory::Point const& approx_point) const
     {
         return sqrt(pow(original_point.x - approx_point.x, 2) + pow(original_point.y - approx_point.y, 2));
     }
@@ -81,6 +79,8 @@ namespace simp_algorithms {
 
     Trajectory MRPA::simplify(Trajectory const& trajectory, double const& query_error, double simplification_error) {
 
+        auto approximations = mrpa(trajectory);
+        return approximations.front();
     }
 
     std::vector<Trajectory> MRPA::mrpa(Trajectory const& trajectory) {
@@ -96,7 +96,7 @@ namespace simp_algorithms {
             auto approximation = approximate(result.back(), tree, error_tolerances[i]);
             result.emplace_back(approximation);
         }
-        
+
         return result;
     }
 
@@ -113,36 +113,53 @@ namespace simp_algorithms {
     }
 
     data_structures::Node<Trajectory::Point> MRPA::init_tree(Trajectory const& trajectory, double error_tol, double high_error_tol) {
-        std::deque<Trajectory::Point> working_list{trajectory.points[0]};
-        std::deque<Trajectory::Point> future_work{};
-        std::vector<Trajectory::Point> unvisited{trajectory.points.begin() + 1, trajectory.points.end()};
-        Node root{working_list.front()};
 
-        while (std::ranges::find(working_list, trajectory.points.back()) == working_list.end()) {
-            while(!working_list.empty()) {
+        std::priority_queue<Trajectory::Point, std::vector<Trajectory::Point>, decltype(compare)> working_list{compare};
+        working_list.push(trajectory.points.front());
+        std::priority_queue<Trajectory::Point, std::vector<Trajectory::Point>, decltype(compare)> future_work(compare);
+        std::vector<Trajectory::Point> unvisited{trajectory.points.begin() + 1, trajectory.points.end()};
+
+
+        Node root{working_list.top()};
+        bool last_element_seen = false;
+
+        while (!last_element_seen) {
+            while (!working_list.empty()) {
                 maintain_priority_queue(root, trajectory, error_tol, high_error_tol, working_list, future_work, unvisited);
             }
 
-            working_list = std::move(future_work);
-            future_work.clear();
+            while (!future_work.empty()) {
+                auto fw_point = future_work.top();
+                future_work.pop();
+                if (fw_point == trajectory.points.back()) {
+                    last_element_seen = true;
+                    break;
+                }
+                working_list.push(fw_point);
+            }
         }
 
         return root;
     }
 
     void MRPA::maintain_priority_queue(Node& tree, Trajectory const& trajectory, double error_tol, double high_error_tol,
-                                       std::deque<Trajectory::Point>& working_list,
-                                       std::deque<Trajectory::Point>& future_work,
+                                       std::priority_queue<Trajectory::Point, std::vector<Trajectory::Point>, decltype(compare)>& working_list,
+                                       std::priority_queue<Trajectory::Point, std::vector<Trajectory::Point>, decltype(compare)>& future_work,
                                        std::vector<Trajectory::Point>& unvisited) {
-        Trajectory::Point index1 = working_list.front();
-        working_list.pop_front();
+        Trajectory::Point index1 = working_list.top();
+        working_list.pop();
 
-        for (const auto& index2: unvisited) {
+        for (int i = 0; i < unvisited.size(); ++i) {
+            const auto index2 = unvisited[i];
             auto error = MRPA::error_SED_sum(trajectory, index1.order, index2.order);
             if (error <= error_tol) {
-                unvisited.erase(unvisited.cbegin() + index2.order - 1); // minus one because order starts at 1
-                future_work.push_front(index2);
+                unvisited.erase(unvisited.cbegin() + i);
+                i--; // decrement i because of erase
+                future_work.push(index2);
                 auto& parent = tree.find(index1);
+                if (parent.data.order == -1) {
+                    throw std::runtime_error("dummy node was returned");
+                }
                 auto child = Node(index2);
                 parent.children.emplace_back(child);
                 child.parent = std::make_shared<Node>(parent);
@@ -152,6 +169,10 @@ namespace simp_algorithms {
             }
         }
         // Returns through side effects in parameters
+    }
+
+    Trajectory MRPA::approximate(const Trajectory& trajectory, const Node& tree, double error_tol) {
+        return trajectory;
     }
 
 
