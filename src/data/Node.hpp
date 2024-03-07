@@ -39,7 +39,7 @@ namespace data_structures {
                 os << "{";
             }
             for (const auto& x : node.children) {
-                os << x;
+                os << x << " ";
             }
             if (!node.children.empty()) {
                 os << "}";

@@ -37,18 +37,16 @@ namespace simp_algorithms {
         using Node = data_structures::Node<Trajectory::Point>;
     private:
         double eps {};
-        int const resolution_scale {3}; // c
-        Trajectory simplify_subtrajectory(Trajectory const&, int, int) const;
-        double single_SED(Trajectory::Point const&, Trajectory::Point const&) const;
+        int const resolution_scale {2}; // c
+        [[nodiscard]] Trajectory approximated_temporally_synchronized_position(Trajectory const &trajectory, int i, int j) const;
+        [[nodiscard]] double single_SED(Trajectory::Point const&, Trajectory::Point const&) const;
         double error_SED_sum(Trajectory const&, int, int);
         Node apply_error_tolerance_scale_to_tree(Trajectory const& trajectory, int index,
                                                  const std::vector<double>& error_tolerances);
-
         static constexpr auto compare = [](Trajectory::Point const &left, Trajectory::Point const &right) {
-            return left.order > right.order;
+            return left.order < right.order;
         };
         using MRPA_PTQ = std::priority_queue<Trajectory::Point, std::vector<Trajectory::Point>, decltype(compare)>;
-
         void maintain_priority_queue(Node& tree, Trajectory const& trajectory, double error_tol, double high_error_tol,
                                      std::priority_queue<Trajectory::Point, std::vector<Trajectory::Point>, decltype(compare)>& working_list,
                                      std::priority_queue<Trajectory::Point, std::vector<Trajectory::Point>, decltype(compare)>& future_work,

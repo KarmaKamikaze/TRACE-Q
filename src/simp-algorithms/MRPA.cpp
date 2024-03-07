@@ -2,31 +2,30 @@
 #include <stdexcept>
 #include <algorithm>
 #include <ranges>
-#include <deque>
 #include <queue>
 #include <iostream>
 #include "MRPA.hpp"
 
 namespace simp_algorithms {
-    std::vector<double> MRPA::error_tolerance_init(Trajectory const& traj) {
+    std::vector<double> MRPA::error_tolerance_init(Trajectory const& trajectory) {
         std::vector<double> result{};
 
-        auto number_of_tolerances = std::floor(std::log(traj.points.size()) / std::log(resolution_scale));
+        auto number_of_tolerances = std::floor(std::log(trajectory.points.size()) / std::log(resolution_scale));
 
         for (auto k = 1; k <= number_of_tolerances; k++) {
             // Here we add 1 to the resolution and floor it in order to handle cases where the resolution calculation is exactly an int.
-            auto resolution = std::floor(static_cast<double>(traj.points.size()) / std::pow(resolution_scale, k) + 1);
+            auto resolution = std::floor(static_cast<double>(trajectory.points.size()) / std::pow(resolution_scale, k) + 1);
             double error_tolerance{};
 
             for (auto j = 1; j < resolution; j++) {
-                auto range_start = static_cast<int>(std::floor((static_cast<double>(traj.points.size() - 1)) / (resolution - 1) * (j - 1) + 1));
-                auto range_end = static_cast<int>(std::floor((static_cast<double>(traj.points.size() - 1)) / (resolution - 1) * j + 1));
+                auto range_start = static_cast<int>(std::floor((static_cast<double>(trajectory.points.size() - 1)) / (resolution - 1) * (j - 1) + 1));
+                auto range_end = static_cast<int>(std::floor((static_cast<double>(trajectory.points.size() - 1)) / (resolution - 1) * j + 1));
 
-                if (j == resolution - 1 && range_end < traj.points.size()) {
+                if (j == resolution - 1 && range_end < trajectory.points.size()) {
                     throw std::range_error("Last range_end variable is not equal to size of trajectory");
                 }
 
-                error_tolerance += error_SED_sum(traj, range_start, range_end);
+                error_tolerance += error_SED_sum(trajectory, range_start, range_end);
             }
 
             error_tolerance *= 1 / (resolution - 1);
@@ -36,19 +35,19 @@ namespace simp_algorithms {
         return result;
     }
 
-    Trajectory MRPA::simplify_subtrajectory(Trajectory const& trajectory, int i, int j) const {
+    Trajectory MRPA::approximated_temporally_synchronized_position(Trajectory const& trajectory, int i, int j) const {
         Trajectory res {};
 
         for (int k = i + 1; k < j; ++k) {
             auto x = trajectory.points[i].x +
-                    (trajectory.points[k].t - trajectory.points[i].t) /
-                    (trajectory.points[j].t - trajectory.points[i].t) *
+                    ((trajectory.points[k].t - trajectory.points[i].t) /
+                    (trajectory.points[j].t - trajectory.points[i].t)) *
                     (trajectory.points[j].x - trajectory.points[i].x);
             auto y = trajectory.points[i].y +
-                     (trajectory.points[k].t - trajectory.points[i].t) /
-                     (trajectory.points[j].t - trajectory.points[i].t) *
+                    ((trajectory.points[k].t - trajectory.points[i].t) /
+                     (trajectory.points[j].t - trajectory.points[i].t)) *
                      (trajectory.points[j].y - trajectory.points[i].y);
-            auto point = MRPA::Trajectory::Point(x,y,trajectory.points[k].t);
+            auto point = MRPA::Trajectory::Point(trajectory.points[k].order, x, y,trajectory.points[k].t);
             res.points.emplace_back(point);
         }
 
@@ -60,12 +59,12 @@ namespace simp_algorithms {
         return sqrt(pow(original_point.x - approx_point.x, 2) + pow(original_point.y - approx_point.y, 2));
     }
 
-    double MRPA::error_SED_sum(const simp_algorithms::MRPA::Trajectory& trajectory, int i, int j)
-    {
+    double MRPA::error_SED_sum(const simp_algorithms::MRPA::Trajectory& trajectory, int i, int j) {
+
         // Here we subtract one from both i and j, due to 0-indexing
         i = i - 1;
         j = j - 1;
-        auto approx_trajectory = simplify_subtrajectory(trajectory, i, j);
+        auto approx_trajectory = approximated_temporally_synchronized_position(trajectory, i, j);
         double res {};
         for (int k = i + 1; k < j; ++k) {
             // Here we index the approx trajectory with the difference of k and i+1.
@@ -120,23 +119,21 @@ namespace simp_algorithms {
         std::vector<Trajectory::Point> unvisited{trajectory.points.begin() + 1, trajectory.points.end()};
 
         Node root{working_list.top()};
-        bool last_element_seen = false;
 
-        while (!last_element_seen) {
+        while (!unvisited.empty()) {
             while (!working_list.empty()) {
-                maintain_priority_queue(root, trajectory, error_tol, high_error_tol, working_list, future_work, unvisited);
+                maintain_priority_queue(root, trajectory, error_tol, high_error_tol, working_list, future_work,
+                                        unvisited);
             }
 
             while (!future_work.empty()) {
                 auto fw_point = future_work.top();
                 future_work.pop();
-                if (fw_point == trajectory.points.back()) {
-                    last_element_seen = true;
-                    break;
-                }
                 working_list.push(fw_point);
             }
         }
+
+        std::cout << root << "\n";
 
         return root;
     }
@@ -149,7 +146,11 @@ namespace simp_algorithms {
 
         for (int i = 0; i < unvisited.size(); ++i) {
             const auto index2 = unvisited[i];
+            if (index2.order < index1.order) {
+                continue;
+            }
             auto error = MRPA::error_SED_sum(trajectory, index1.order, index2.order);
+            std::cout << "Edge test: " << index1.order << " " << index2.order << " Error: " << error << "\n";
             if (error <= error_tol) {
                 unvisited.erase(unvisited.cbegin() + i);
                 i--; // decrement i because of erase
