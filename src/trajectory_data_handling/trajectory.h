@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "../datastructure/trajectory_structure.h"
+#include "../data/trajectory_structure.hpp"
 
 void load_trajectories_into_rtree();
 void insert_trajectories_into_trajectory_table();

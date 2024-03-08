@@ -111,4 +111,5 @@ project.lock.json
 
 datasets/
 sqlite/
+external/tests/doctest.h
 

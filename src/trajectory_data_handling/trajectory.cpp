@@ -1,19 +1,14 @@
 #include "trajectory.h"
 #include <iostream>
-#include <vector>
-#include <filesystem>
 #include <string>
-#include <fstream>
 #include <cstdio>
 #include <format>
-#include <cstring>
-#include <cstdlib>
-
-#include "../datastructure/trajectory_structure.h"
-#include "../sqlite/sqlite3.h"
+#include "../../external/sqlite/sqlite3.h"
 #include "sqlite_querying.h"
 
-
+namespace data_structures{
+    std::vector<Trajectory> allTrajectories;
+}
 
 void load_trajectories_into_rtree() {
     auto query = "SELECT trajectory_id, MIN(longitude) AS min_longitude, MAX(longitude) AS max_longitude,\n"
@@ -26,7 +21,7 @@ void load_trajectories_into_rtree() {
 }
 
 void insert_trajectories_into_trajectory_table() {
-    for (const auto & trajectory : allTrajectories) {
+    for (const auto & trajectory : data_structures::allTrajectories) {
         for (const auto &location : trajectory.locations) {
             char query[150];
             snprintf(query, sizeof(query), "INSERT INTO trajectory_information VALUES(NULL, %d, '%s', %f, %f)",
@@ -44,7 +39,7 @@ void load_database_into_datastructure() {
 }
 
 void print_trajectories() {
-    for (const auto & trajectory : allTrajectories) {
+    for (const auto & trajectory : data_structures::allTrajectories) {
         std::cout << "id: " << trajectory.id << std::endl;
         for (const auto &location: trajectory.locations) {
             std::cout << "order: " << location.order << '\n';
@@ -69,11 +64,14 @@ void create_rtree_table() {
 }
 
 void reset_all_data() {
-    run_sql("DELETE FROM trajectory_information", reset_database);
-    run_sql("DELETE FROM trajectory_rtree", reset_database);
-    run_sql("DELETE FROM trajectory_rtree_rowid", reset_database);
-    run_sql("DELETE FROM trajectory_rtree_parent", reset_database);
-    run_sql("DELETE FROM trajectory_rtree_node", reset_database);
+    run_sql("DROP TABLE trajectory_information", reset_database);
+    run_sql("DROP TABLE simplified_trajectory_information", reset_database);
+
+//    run_sql("DELETE FROM trajectory_information", reset_database);
+//    run_sql("DELETE FROM trajectory_rtree", reset_database);
+//    run_sql("DELETE FROM trajectory_rtree_rowid", reset_database);
+//    run_sql("DELETE FROM trajectory_rtree_parent", reset_database);
+//    run_sql("DELETE FROM trajectory_rtree_node", reset_database);
 }
 
 int returntwo() {

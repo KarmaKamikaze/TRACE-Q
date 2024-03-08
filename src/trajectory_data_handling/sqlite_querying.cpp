@@ -4,22 +4,28 @@
 #include <format>
 #include <cstring>
 #include <cstdlib>
+#include <filesystem>
 
-#include "../sqlite/sqlite3.h"
+#include "../../external/sqlite/sqlite3.h"
 
-#include "../datastructure/trajectory_structure.h"
+#include "../data/trajectory_structure.hpp"
 #include "sqlite_querying.h"
+
 
 sqlite3 *db;
 
-char const *sqlite_db_path = "../sqlite/trajectory.db";
+using recursive_directory_iterator = std::filesystem::recursive_directory_iterator;
 
-Trajectory trajectory;
-Location location;
+std::filesystem::path sqlite_db_filesystem_path = std::filesystem::current_path().parent_path() / "src" / "data" / "trajectory.db";
+std::string sqlite_db_path_string = sqlite_db_filesystem_path.generic_string();
+const char* sqlite_db_path = sqlite_db_path_string.c_str();
+
+data_structures::Trajectory trajectory;
+data_structures::Location location;
 int currentTrajectory;
 int order;
 
-static int callback(void *query_success_history, int argc, char **argv, char **azColName) {
+int callback(void *query_success_history, int argc, char **argv, char **azColName) {
     int i;
     for(i = 0; i<argc; i++) {
         printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
@@ -49,7 +55,7 @@ static int callback_datastructure(void *query_success_history, int argc, char **
     location.latitude = std::stod(argv[3]);
     trajectory.locations.push_back(location);
 
-    allTrajectories.push_back(trajectory);
+    data_structures::allTrajectories.push_back(trajectory);
 
     order += 1;
 

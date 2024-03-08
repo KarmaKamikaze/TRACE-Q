@@ -1,20 +1,17 @@
 #include <iostream>
 #include <string>
-#include <cstdio>
 #include <format>
-#include <cstring>
-#include <cstdlib>
 #include <filesystem>
 #include <fstream>
-#include "../datastructure/trajectory_structure.h"
+#include "../data/trajectory_structure.hpp"
 
 #include "trajectory_file_manager.h"
 
 using recursive_directory_iterator = std::filesystem::recursive_directory_iterator;
-std::vector<Trajectory> allTrajectories;
+std::vector<data_structures::Trajectory> allTrajectories;
 
-const std::filesystem::path TDRIVE_PATH = std::filesystem::current_path().parent_path() / "datasets" / "t-drive";
-const std::filesystem::path GEOLIFE_PATH = std::filesystem::current_path().parent_path() / "datasets" / "geolife";
+const std::filesystem::path TDRIVE_PATH = std::filesystem::current_path().parent_path() / "external" / "datasets" /  "t-drive";
+const std::filesystem::path GEOLIFE_PATH = std::filesystem::current_path().parent_path() / "external" / "datasets" / "geolife";
 const char DELIMITER = ',';
 
 void load_tdrive_dataset() {
@@ -26,8 +23,8 @@ void load_tdrive_dataset() {
             std::string line;
 
             while(std::getline(file, line)) {
-                Location location;
-                Trajectory trajectory;
+                data_structures::Location location;
+                data_structures::Trajectory trajectory;
 
                 std::istringstream lineStream(line);
                 std::string id, timestamp, longitude, latitude;
@@ -69,8 +66,8 @@ void load_geolife_dataset() {
                 if (lineCount <= 6) {
                     continue;  // Ignore the first 6 lines
                 }
-                Location location;
-                Trajectory trajectory;
+                data_structures::Location location;
+                data_structures::Trajectory trajectory;
                 std::istringstream lineStream(line);
                 std::string latitude, longitude, id, altitude, datedays, date, time;
                 if (std::getline(lineStream, latitude, DELIMITER) &&
