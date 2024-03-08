@@ -3,7 +3,9 @@
 #include <algorithm>
 #include <ranges>
 #include <queue>
+#include <deque>
 #include <iostream>
+#include <unordered_map>
 #include "MRPA.hpp"
 
 namespace simp_algorithms {
@@ -171,6 +173,40 @@ namespace simp_algorithms {
     }
 
     Trajectory MRPA::approximate(const Trajectory& trajectory, const Node& tree, double error_tol) {
+
+        std::vector<double> approx_error(trajectory.points.size(), std::numeric_limits<double>::max());
+        approx_error[0] = 0;
+
+        std::unordered_map<int, Trajectory::Point> backtrack{}; // Key is point order
+
+        auto parents = std::vector<Node>{tree};
+        auto number_output_points = 1;
+
+        while(approx_error[trajectory.points.back().order-1] == std::numeric_limits<double>::max()) {
+            std::vector<Node> children{};
+            for(const auto& p : parents) {
+                children.insert(children.cend(), p.children.cbegin(), p.children.cend());
+            }
+
+            for (const auto& node_index1: parents) {
+                for (const auto& node_index2: children){
+                    double error = error_SED_sum(trajectory, node_index1.data.order, node_index2.data.order);
+                    if ((approx_error[node_index1.data.order-1] + error < approx_error[node_index2.data.order-1]) && error <= error_tol) {
+                        backtrack[node_index2.data.order] = node_index1.data;
+                        approx_error[node_index2.data.order-1] = approx_error[node_index1.data.order-1] + error;
+                    }
+                }
+            }
+
+            parents = std::move(children);
+            number_output_points++;
+        }
+
+        std::deque<Trajectory::Point> result{trajectory.points.back()};
+        
+
+        // Before returning we must update the order values of the nodes.
+        // This is because we use order to index, and since we return a trajectory with fewer points, we can index out of range!
         return trajectory;
     }
 

@@ -31,5 +31,7 @@ int main() {
     
     auto node = mrpa.init_tree(t, 600.0, 1000.0);
 
+    auto approx = mrpa.approximate(t, node, 600);
+
     return 0;
 }
