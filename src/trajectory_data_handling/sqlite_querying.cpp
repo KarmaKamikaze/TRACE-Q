@@ -9,7 +9,7 @@
 #include "../../external/sqlite/sqlite3.h"
 
 #include "../data/trajectory_structure.hpp"
-#include "sqlite_querying.h"
+#include "sqlite_querying.hpp"
 
 
 sqlite3 *db;

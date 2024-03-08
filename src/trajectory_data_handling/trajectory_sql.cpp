@@ -1,10 +1,10 @@
-#include "trajectory.h"
+#include "trajectory_sql.hpp"
 #include <iostream>
 #include <string>
 #include <cstdio>
 #include <format>
 #include "../../external/sqlite/sqlite3.h"
-#include "sqlite_querying.h"
+#include "sqlite_querying.hpp"
 
 namespace data_structures{
     std::vector<Trajectory> allTrajectories;
@@ -64,14 +64,11 @@ void create_rtree_table() {
 }
 
 void reset_all_data() {
-    run_sql("DROP TABLE trajectory_information", reset_database);
-    run_sql("DROP TABLE simplified_trajectory_information", reset_database);
-
-//    run_sql("DELETE FROM trajectory_information", reset_database);
-//    run_sql("DELETE FROM trajectory_rtree", reset_database);
-//    run_sql("DELETE FROM trajectory_rtree_rowid", reset_database);
-//    run_sql("DELETE FROM trajectory_rtree_parent", reset_database);
-//    run_sql("DELETE FROM trajectory_rtree_node", reset_database);
+    run_sql("DELETE FROM trajectory_information", reset_database);
+    run_sql("DELETE FROM trajectory_rtree", reset_database);
+    run_sql("DELETE FROM trajectory_rtree_rowid", reset_database);
+    run_sql("DELETE FROM trajectory_rtree_parent", reset_database);
+    run_sql("DELETE FROM trajectory_rtree_node", reset_database);
 }
 
 int returntwo() {

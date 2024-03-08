@@ -12,5 +12,6 @@ void print_trajectories();
 void create_database();
 void create_rtree_table();
 void reset_all_data();
+int returntwo();
 
 #endif //P8_PROJECT_TRAJECTORY_H
