@@ -14,7 +14,7 @@ int main() {
 //    file_manager.load_geolife_dataset();
 //    trajectory_manager.load_database_into_datastructure();
 //    trajectory_manager.print_trajectories();
-//    trajectory_manager.load_trajectories_into_rtree();
+    trajectory_manager.load_trajectories_into_rtree();
 //    trajectory_manager.reset_all_data();
 
     return 0;
