@@ -81,6 +81,11 @@ namespace simp_algorithms {
     Trajectory MRPA::simplify(Trajectory const& trajectory, double const& query_error, double simplification_error) {
 
         auto approximations = mrpa(trajectory);
+
+
+
+
+
         return approximations.front();
     }
 
@@ -182,7 +187,7 @@ namespace simp_algorithms {
         auto parents = std::vector<Node>{tree};
         auto number_output_points = 1;
 
-        while(approx_error[trajectory.points.back().order-1] == std::numeric_limits<double>::max()) {
+        while(approx_error[trajectory.points.back().order - 1] == std::numeric_limits<double>::max()) {
             std::vector<Node> children{};
             for(const auto& p : parents) {
                 children.insert(children.cend(), p.children.cbegin(), p.children.cend());
@@ -191,9 +196,10 @@ namespace simp_algorithms {
             for (const auto& node_index1: parents) {
                 for (const auto& node_index2: children){
                     double error = error_SED_sum(trajectory, node_index1.data.order, node_index2.data.order);
-                    if ((approx_error[node_index1.data.order-1] + error < approx_error[node_index2.data.order-1]) && error <= error_tol) {
+                    if ((approx_error[node_index1.data.order - 1] + error < approx_error[node_index2.data.order - 1])
+                    && error <= error_tol) {
                         backtrack[node_index2.data.order] = node_index1.data;
-                        approx_error[node_index2.data.order-1] = approx_error[node_index1.data.order-1] + error;
+                        approx_error[node_index2.data.order - 1] = approx_error[node_index1.data.order - 1] + error;
                     }
                 }
             }
@@ -202,12 +208,27 @@ namespace simp_algorithms {
             number_output_points++;
         }
 
+
+
         std::deque<Trajectory::Point> result{trajectory.points.back()};
-        
+
+        for (auto& [key, value]: backtrack) {
+            std::cout << key << " has value " << value << " " << value.t << std::endl;
+        }
+
+        for (int i = number_output_points; i >= 2; --i) {
+            result.push_front(backtrack[result.front().order]);
+        }
+
+        Trajectory result_trajectory{{std::begin(result), std::end(result)}};
 
         // Before returning we must update the order values of the nodes.
         // This is because we use order to index, and since we return a trajectory with fewer points, we can index out of range!
-        return trajectory;
+        for (int i = 0; i < result_trajectory.points.size(); ++i) {
+            result_trajectory.points[i].order = i + 1;
+        }
+
+        return result_trajectory;
     }
 
 

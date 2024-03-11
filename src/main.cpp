@@ -3,7 +3,7 @@
 
 int main() {
     simp_algorithms::Trajectory t {};
-    t.points.emplace_back(simp_algorithms::Trajectory::Point(1, 1, 2, 0));
+    t.points.emplace_back(simp_algorithms::Trajectory::Point(1, 1, 2, 0)); // 1, 6, 10, 15, 18
     t.points.emplace_back(simp_algorithms::Trajectory::Point(2, 4, 2, 1));
     t.points.emplace_back(simp_algorithms::Trajectory::Point(3, 7, 4, 4));
     t.points.emplace_back(simp_algorithms::Trajectory::Point(4, 17, 9, 12));
@@ -29,9 +29,22 @@ int main() {
     }
     std::cout << "\n";
     
-    auto node = mrpa.init_tree(t, 600.0, 1000.0);
+    auto node = mrpa.init_tree(t, 20000.0, 40000.0);
 
-    auto approx = mrpa.approximate(t, node, 600);
+    auto approx = mrpa.approximate(t, node, 20000.0);
+
+    for (auto& point : approx.points) {
+        std::cout << "Order: " << point.order << ", x: " << point.x << ", y: " << point.y << ", t: " << point.t << "\n";
+    }
+
+    auto results = mrpa.mrpa(t);
+
+    for (int i = 0; i < results.size(); i++) {
+        std::cout << "Candidate " << i + 1 << "\n";
+        for (auto& point : results[i].points) {
+            std::cout << "Order: " << point.order << ", x: " << point.x << ", y: " << point.y << ", t: " << point.t << "\n";
+        }
+    }
 
     return 0;
 }
