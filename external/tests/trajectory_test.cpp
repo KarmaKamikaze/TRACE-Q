@@ -1,7 +1,7 @@
 #include "doctest.h"
 
 #include "../../src/trajectory_data_handling/trajectory_sql.cpp"
-#include "../../src/trajectory_data_handling/trajectory_file_manager.h"
+#include "../../src/trajectory_data_handling/trajectory_file_manager.hpp"
 
 
 namespace tests {

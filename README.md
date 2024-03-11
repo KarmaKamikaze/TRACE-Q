@@ -9,7 +9,7 @@
    1. /t-drive
    2. /geolife
 2. P8-Project/sqlite
-   1. Create "trajectory.db" file
+   1. Create "m_trajectory.m_db" file
 
 
 # Step 3: Install sqlite3:

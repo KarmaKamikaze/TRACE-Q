@@ -456,7 +456,7 @@ namespace doctest { namespace detail {
 // should probably take a look at https://github.com/scottt/debugbreak
 #ifdef DOCTEST_PLATFORM_LINUX
 #if defined(__GNUC__) && (defined(__i386) || defined(__x86_64))
-// Break at the location of the failing check if possible
+// Break at the m_location of the failing check if possible
 #define DOCTEST_BREAK_INTO_DEBUGGER() __asm__("int $3\n" : :) // NOLINT(hicpp-no-assembler)
 #else
 #include <signal.h>
@@ -3453,20 +3453,20 @@ using ticks_t = timer_large_integer::type;
 
         T operator++(int) DOCTEST_NOEXCEPT { return fetch_add(1); }
 
-        T fetch_add(T arg, std::memory_order order = std::memory_order_seq_cst) DOCTEST_NOEXCEPT {
-            return myAtomic().fetch_add(arg, order);
+        T fetch_add(T arg, std::memory_order m_order = std::memory_order_seq_cst) DOCTEST_NOEXCEPT {
+            return myAtomic().fetch_add(arg, m_order);
         }
 
-        T fetch_sub(T arg, std::memory_order order = std::memory_order_seq_cst) DOCTEST_NOEXCEPT {
-            return myAtomic().fetch_sub(arg, order);
+        T fetch_sub(T arg, std::memory_order m_order = std::memory_order_seq_cst) DOCTEST_NOEXCEPT {
+            return myAtomic().fetch_sub(arg, m_order);
         }
 
         operator T() const DOCTEST_NOEXCEPT { return load(); }
 
-        T load(std::memory_order order = std::memory_order_seq_cst) const DOCTEST_NOEXCEPT {
+        T load(std::memory_order m_order = std::memory_order_seq_cst) const DOCTEST_NOEXCEPT {
             auto result = T();
             for(auto const& c : m_atomics) {
-                result += c.atomic.load(order);
+                result += c.atomic.load(m_order);
             }
             return result;
         }
@@ -3476,10 +3476,10 @@ using ticks_t = timer_large_integer::type;
             return desired;
         }
 
-        void store(T desired, std::memory_order order = std::memory_order_seq_cst) DOCTEST_NOEXCEPT {
+        void store(T desired, std::memory_order m_order = std::memory_order_seq_cst) DOCTEST_NOEXCEPT {
             // first value becomes desired", all others become 0.
             for(auto& c : m_atomics) {
-                c.atomic.store(desired, order);
+                c.atomic.store(desired, m_order);
                 desired = {};
             }
         }
@@ -3672,7 +3672,7 @@ String& String::operator+=(const String& other) {
         } else {
             // alloc new chunk
             char* temp = new char[total_size + 1];
-            // copy current data to new location before writing in the union
+            // copy current data to new m_location before writing in the union
             memcpy(temp, buf, my_old_size); // skip the +1 ('\0') for speed
             // update data in union
             setOnHeap();
@@ -3694,7 +3694,7 @@ String& String::operator+=(const String& other) {
                 data.capacity = total_size + 1;
             // alloc new chunk
             char* temp = new char[data.capacity];
-            // copy current data to new location before releasing it
+            // copy current data to new m_location before releasing it
             memcpy(temp, data.ptr, my_old_size); // skip the +1 ('\0') for speed
             // release old chunk
             delete[] data.ptr;
@@ -6130,7 +6130,7 @@ namespace {
               << Whitespace(sizePrefixDisplay*1) << "reporters to use (console is default)\n";
             s << " -" DOCTEST_OPTIONS_PREFIX_DISPLAY "o,   --" DOCTEST_OPTIONS_PREFIX_DISPLAY "out=<string>                  "
               << Whitespace(sizePrefixDisplay*1) << "output filename\n";
-            s << " -" DOCTEST_OPTIONS_PREFIX_DISPLAY "ob,  --" DOCTEST_OPTIONS_PREFIX_DISPLAY "order-by=<string>             "
+            s << " -" DOCTEST_OPTIONS_PREFIX_DISPLAY "ob,  --" DOCTEST_OPTIONS_PREFIX_DISPLAY "m_order-by=<string>             "
               << Whitespace(sizePrefixDisplay*1) << "how the tests should be ordered\n";
             s << Whitespace(sizePrefixDisplay*3) << "                                       <string> - [file/suite/name/rand/none]\n";
             s << " -" DOCTEST_OPTIONS_PREFIX_DISPLAY "rs,  --" DOCTEST_OPTIONS_PREFIX_DISPLAY "rand-seed=<int>               "
@@ -6659,7 +6659,7 @@ void Context::parseArgs(int argc, const char* const* argv, bool withDefaults) {
 
     // clang-format off
     DOCTEST_PARSE_STR_OPTION("out", "o", out, "");
-    DOCTEST_PARSE_STR_OPTION("order-by", "ob", order_by, "file");
+    DOCTEST_PARSE_STR_OPTION("m_order-by", "ob", order_by, "file");
     DOCTEST_PARSE_INT_OPTION("rand-seed", "rs", rand_seed, 0);
 
     DOCTEST_PARSE_INT_OPTION("first", "f", first, 0);

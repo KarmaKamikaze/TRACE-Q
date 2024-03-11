@@ -1,8 +1,39 @@
 #ifndef TRACE_Q_SQLITE_QUERYING_HPP
 #define TRACE_Q_SQLITE_QUERYING_HPP
 
-enum query_purpose { insert_into_trajectory_table, insert_into_rtree_table, load_trajectory_information_into_datastructure, create_table, reset_database};
+#include <iostream>
+#include <string>
+#include <cstdio>
+#include <format>
+#include <cstring>
+#include <cstdlib>
+#include <filesystem>
 
-void run_sql(const char* query, query_purpose callback_type);
+#include "../data/trajectory_structure.hpp"
+#include "../../external/sqlite/sqlite3.h"
 
-#endif //TRACE_Q_SQLITE_QUERYING_HPP
+namespace SQLite_Querying {
+    enum query_purpose { insert_into_trajectory_table, insert_into_rtree_table, load_trajectory_information_into_datastructure, create_table, reset_database};
+
+    class Query_Handler {
+    private:
+        static sqlite3 *m_db;
+        using recursive_directory_iterator = std::filesystem::recursive_directory_iterator;
+
+        std::filesystem::path m_sqlite_db_filesystem_path = std::filesystem::current_path().parent_path() / "src" / "data" / "trajectory.db";
+        std::string m_sqlite_db_path_string = m_sqlite_db_filesystem_path.generic_string();
+        const char* m_sqlite_db_path = m_sqlite_db_path_string.c_str();
+
+        static data_structures::Trajectory m_trajectory;
+        static data_structures::Location m_location;
+        static int m_currentTrajectory;
+        static int m_order;
+    private:
+        static int callback(void *query_success_history, int argc, char **argv, char **azColName);
+        static int callback_datastructure(void *query_success_history, int argc, char **argv, char **azColName);
+        static int callback_rtree_insert(void *query_success_history, int argc, char **argv, char **azColName);
+    public:
+        void run_sql(const char* query, query_purpose callback_type);
+    };
+}
+#endif
