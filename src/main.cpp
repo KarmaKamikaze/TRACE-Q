@@ -3,7 +3,7 @@
 
 int main() {
     simp_algorithms::Trajectory t {};
-    t.points.emplace_back(simp_algorithms::Trajectory::Point(1, 1, 2, 0)); // 1, 6, 10, 15, 18
+    t.points.emplace_back(simp_algorithms::Trajectory::Point(1, 1, 2, 0));
     t.points.emplace_back(simp_algorithms::Trajectory::Point(2, 4, 2, 1));
     t.points.emplace_back(simp_algorithms::Trajectory::Point(3, 7, 4, 4));
     t.points.emplace_back(simp_algorithms::Trajectory::Point(4, 17, 9, 12));
@@ -23,19 +23,6 @@ int main() {
     t.points.emplace_back(simp_algorithms::Trajectory::Point(18, 300, 200, 60));
 
     simp_algorithms::MRPA mrpa{};
-
-    for (auto err_tol = mrpa.error_tolerance_init(t); const auto& err : err_tol) {
-        std::cout << err << " ";
-    }
-    std::cout << "\n";
-    
-    auto node = mrpa.init_tree(t, 20000.0, 40000.0);
-
-    auto approx = mrpa.approximate(t, node, 20000.0);
-
-    for (auto& point : approx.points) {
-        std::cout << "Order: " << point.order << ", x: " << point.x << ", y: " << point.y << ", t: " << point.t << "\n";
-    }
 
     auto results = mrpa.mrpa(t);
 

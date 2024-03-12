@@ -208,13 +208,7 @@ namespace simp_algorithms {
             number_output_points++;
         }
 
-
-
         std::deque<Trajectory::Point> result{trajectory.points.back()};
-
-        for (auto& [key, value]: backtrack) {
-            std::cout << key << " has value " << value << " " << value.t << std::endl;
-        }
 
         for (int i = number_output_points; i >= 2; --i) {
             result.push_front(backtrack[result.front().order]);
@@ -230,6 +224,5 @@ namespace simp_algorithms {
 
         return result_trajectory;
     }
-
 
 } // simp_algorithms
