@@ -1,7 +1,7 @@
 #include "trajectory_file_manager.hpp"
 
 namespace Trajectory_File_Manager {
-    void File_Manager::load_tdrive_dataset() {
+    std::vector<data_structures::Trajectory> File_Manager::load_tdrive_dataset(std::vector<data_structures::Trajectory> all_trajectories) {
         std::cout << TDRIVE_PATH << std::endl;
         unsigned trajectory_id = 0;
         for (const auto& dirEntry : recursive_directory_iterator(TDRIVE_PATH))  {
@@ -29,17 +29,17 @@ namespace Trajectory_File_Manager {
                         std::cerr << "Error reading line: " << line << '\n';
                     }
                 }
-                data_structures::allTrajectories.push_back(trajectory);
+                all_trajectories.push_back(trajectory);
                 file.close();
                 trajectory_id++;
             } else {
                 throw std::runtime_error("Error opening file: " + dirEntry.path().string());
             }
         }
-
+        return all_trajectories;
     }
 
-    void File_Manager::load_geolife_dataset() {
+    std::vector<data_structures::Trajectory> File_Manager::load_geolife_dataset(std::vector<data_structures::Trajectory> all_trajectories) {
         unsigned trajectory_id = 0;
         for (const auto &dirEntry: recursive_directory_iterator(GEOLIFE_PATH)) {
             std::ifstream file(dirEntry.path());
@@ -47,14 +47,16 @@ namespace Trajectory_File_Manager {
             if (file.is_open()) {
                 std::string line;
                 int lineCount = 0;  // Counter for lines
+                data_structures::Location location;
+                data_structures::Trajectory trajectory;
+
                 while (std::getline(file, line)) {
                     ++lineCount;
 
                     if (lineCount <= 6) {
                         continue;  // Ignore the first 6 lines
                     }
-                    data_structures::Location location;
-                    data_structures::Trajectory trajectory;
+
                     std::istringstream lineStream(line);
                     std::string latitude, longitude, id, altitude, datedays, date, time;
                     if (std::getline(lineStream, latitude, DELIMITER) &&
@@ -75,11 +77,13 @@ namespace Trajectory_File_Manager {
                         std::cerr << "Error reading line: " << line << std::endl;
                     }
                 }
+                all_trajectories.push_back(trajectory);
                 file.close();
                 trajectory_id++;
             } else {
                 throw std::runtime_error("Error opening file: " + dirEntry.path().string());
             }
         }
+        return all_trajectories;
     }
 }

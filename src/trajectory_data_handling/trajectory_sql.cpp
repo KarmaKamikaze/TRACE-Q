@@ -20,8 +20,8 @@ namespace Trajectory_SQL {
         query_handler.run_sql(query, SQLite_Querying::insert_into_rtree_table);
     }
 
-    void Trajectory_Manager::insert_trajectories_into_trajectory_table() {
-        for (const auto & trajectory : data_structures::allTrajectories) {
+    void Trajectory_Manager::insert_trajectories_into_trajectory_table(std::vector<data_structures::Trajectory> all_trajectories) {
+        for (const auto & trajectory : all_trajectories) {
             for (const auto &location : trajectory.locations) {
                 char query[150];
                 snprintf(query, sizeof(query), "INSERT INTO trajectory_information VALUES(NULL, %d, '%s', %f, %f)",
@@ -36,6 +36,7 @@ namespace Trajectory_SQL {
         auto query = "SELECT trajectory_id, timestamp, longitude, latitude FROM trajectory_information";
 
         query_handler.run_sql(query, SQLite_Querying::load_trajectory_information_into_datastructure);
+
     }
 
     void Trajectory_Manager::print_trajectories() {

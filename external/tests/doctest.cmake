@@ -3,11 +3,12 @@ include(FetchContent)
 set(FETCHCONTENT_QUIET ON)
 set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
 
-set(DOCTEST_WITH_TESTS OFF CACHE BOOL "Build tests/examples")
+set(DOCTEST_WITH_TESTS OFF CACHE BOOL "Build external/tests/examples")
 set(DOCTEST_WITH_MAIN_IN_STATIC_LIB ON CACHE BOOL "Build a static lib for doctest::doctest_with_main")
 set(DOCTEST_NO_INSTALL OFF CACHE BOOL "Skip the installation process")
 set(DOCTEST_USE_STD_HEADERS OFF CACHE BOOL "Use std headers")
 
+set(FETCHCONTENT_BASE_DIR ${CMAKE_CURRENT_LIST_DIR}/doctest)
 FetchContent_Declare(doctest
         GIT_REPOSITORY https://github.com/doctest/doctest.git
         GIT_TAG v2.4.11   # "main" for latest

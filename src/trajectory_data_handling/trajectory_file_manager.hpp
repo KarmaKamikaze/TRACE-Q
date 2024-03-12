@@ -14,7 +14,7 @@ namespace Trajectory_File_Manager {
        const std::filesystem::path GEOLIFE_PATH = std::filesystem::current_path().parent_path() / "external" / "datasets" / "geolife";
        const char DELIMITER = ',';
    public:
-       void load_tdrive_dataset();
-       void load_geolife_dataset();
+       std::vector<data_structures::Trajectory> load_tdrive_dataset(std::vector<data_structures::Trajectory> all_trajectories);
+       std::vector<data_structures::Trajectory> load_geolife_dataset(std::vector<data_structures::Trajectory> all_trajectories);
    };
 }

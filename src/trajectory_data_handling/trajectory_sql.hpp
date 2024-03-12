@@ -12,9 +12,9 @@ namespace Trajectory_SQL {
         SQLite_Querying::Query_Handler query_handler;
     public:
         void load_trajectories_into_rtree();
-        void insert_trajectories_into_trajectory_table();
-        void load_database_into_datastructure();
-        void print_trajectories();
+        void insert_trajectories_into_trajectory_table(std::vector<data_structures::Trajectory> all_trajectories);
+        std::vector<data_structures::Trajectory> load_database_into_datastructure(std::vector<data_structures::Trajectory> all_trajectories);
+        void print_trajectories(std::vector<data_structures::Trajectory> all_trajectories);
         void create_database();
         void create_rtree_table();
         void reset_all_data();
