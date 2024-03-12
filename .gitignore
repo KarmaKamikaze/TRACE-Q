@@ -62,8 +62,8 @@ cmake-build-release
 # =========================
 
 # Windows image file caches
-Thumbs.m_db
-ehthumbs.m_db
+Thumbs.db
+ehthumbs.db
 
 # Folder config file
 Desktop.ini
@@ -88,7 +88,7 @@ project.lock.json
 
 # VS 2015+
 *.vc.vc.opendb
-*.vc.m_db
+*.vc.db
 
 # Rider
 .idea/
