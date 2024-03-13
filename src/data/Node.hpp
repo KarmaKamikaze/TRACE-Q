@@ -4,7 +4,6 @@
 
 #include <vector>
 #include <memory>
-#include <optional>
 
 namespace data_structures {
 
