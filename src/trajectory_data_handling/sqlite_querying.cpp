@@ -1,22 +1,28 @@
 #include "sqlite_querying.hpp"
+#include <iostream>
+#include <cstdlib>
 
-namespace SQLite_Querying {
-    sqlite3* Query_Handler::m_db{};
-    data_structures::Trajectory Query_Handler::m_trajectory;
-    data_structures::Location Query_Handler::m_location;
-    int Query_Handler::m_currentTrajectory{};
-    int Query_Handler::m_order{};
+namespace sqlite_querying {
+    sqlite3* query_handler::m_db{};
+    data_structures::Trajectory query_handler::m_trajectory{};
+    int query_handler::m_currentTrajectory{};
+    int query_handler::m_order{};
+    std::shared_ptr<std::vector<data_structures::Trajectory>> sqlite_querying::query_handler::all_trajectories;
 
-    int Query_Handler::callback(void *query_success_history, int argc, char **argv, char **azColName) {
+
+    const std::filesystem::path query_handler::m_sqlite_db_filesystem_path = std::filesystem::current_path().parent_path() / "src" / "data" / "trajectory.db";
+    const std::string query_handler::m_sqlite_db_path_string = m_sqlite_db_filesystem_path.generic_string();
+    const char* query_handler::m_sqlite_db_path = m_sqlite_db_path_string.c_str();
+
+    int query_handler::callback(void *query_success_history, int argc, char **argv, char **azColName) {
         int i;
         for(i = 0; i<argc; i++) {
-            printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
+            std::cout << azColName[i] << argv[i] << std::endl;
         }
-        printf("\n");
         return 0;
     }
 
-    int Query_Handler::callback_datastructure(void *query_success_history, int argc, char **argv, char **azColName) {
+    int query_handler::callback_datastructure(void *query_success_history, int argc, char **argv, char **azColName) {
         char* endptr;
         m_trajectory.id = std::strtoul(argv[0], &endptr, 10);
 
@@ -25,26 +31,24 @@ namespace SQLite_Querying {
             return 1;
         }
 
-
         if (m_currentTrajectory != m_trajectory.id) {
             m_order = 1;
         }
 
         m_currentTrajectory = m_trajectory.id;
-        m_location.order = m_order;
-        m_location.timestamp = argv[1];
-        m_location.longitude = std::stod(argv[2]);
-        m_location.latitude = std::stod(argv[3]);
+        data_structures::Location m_location(m_order, std::strtold(argv[1], nullptr), std::stod(argv[2]), std::stod(argv[3]));
+//        m_location.order = m_order;
+//        m_location.timestamp = std::strtold(argv[1], nullptr);
+//        m_location.longitude = std::stod(argv[2]);
+//        m_location.latitude = std::stod(argv[3]);
         m_trajectory.locations.push_back(m_location);
 
-        data_structures::allTrajectories.push_back(m_trajectory);
-
+        all_trajectories->push_back(m_trajectory);
         m_order += 1;
-
         return 0;
     }
 
-    int Query_Handler::callback_rtree_insert(void *query_success_history, int argc, char **argv, char **azColName) {
+    int query_handler::callback_rtree_insert(void *query_success_history, int argc, char **argv, char **azColName) {
         char *zErrMsg = nullptr;
         const char* id = argv[0];
         const char* minLongitude = argv[1];
@@ -75,12 +79,12 @@ namespace SQLite_Querying {
         return 0;
     }
 
-    void Query_Handler::run_sql(const char* query, query_purpose callback_type) {
+    void query_handler::run_sql(const char* query, query_purpose callback_type) {
         char *zErrMsg = 0;
         int rc = sqlite3_open(m_sqlite_db_path, &m_db);
 
         if(rc) {
-            fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(m_db));
+            std::cout << "Can't open database: " << sqlite3_errmsg(m_db) << std::endl;
             return;
         }
 
@@ -103,10 +107,9 @@ namespace SQLite_Querying {
         }
 
         if(rc != SQLITE_OK){
-            fprintf(stderr, "SQL error: %s\n", zErrMsg);
+            std::cout << "SQL error: " << zErrMsg << std::endl;
             sqlite3_free(zErrMsg);
         }
-
         sqlite3_close(m_db);
     }
 }

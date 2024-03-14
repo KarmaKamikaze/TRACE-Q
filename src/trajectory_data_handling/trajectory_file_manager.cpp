@@ -1,16 +1,56 @@
 #include "trajectory_file_manager.hpp"
+#include <iostream>
+#include <chrono>
+#include <sstream>
+#include <stdexcept>
+#include <iomanip>
 
-namespace Trajectory_File_Manager {
-    std::vector<data_structures::Trajectory> File_Manager::load_tdrive_dataset(std::vector<data_structures::Trajectory> all_trajectories) {
+namespace trajectory_file_manager {
+    long double file_manager::stringToTime(const std::string& timeString) {
+        try {
+            struct tm timeStruct = {};
+            std::istringstream ss(timeString);
+
+            // Parse the year
+            if (!(ss >> timeStruct.tm_year)) {
+                throw std::invalid_argument("Error: Invalid year.");
+            }
+            timeStruct.tm_year -= 1900; // Adjust for tm_year starting from 1900
+
+            // Parse the month, day, hour, minute, and second
+            char dash, colon;
+            if (!(ss >> dash >> timeStruct.tm_mon >> dash >> timeStruct.tm_mday >> timeStruct.tm_hour >> colon >> timeStruct.tm_min >> colon >> timeStruct.tm_sec)) {
+                throw std::invalid_argument("Error: Invalid date and time format.");
+            }
+            timeStruct.tm_mon--; // Adjust for tm_mon starting from 0
+
+            // Convert std::tm to time_t
+            std::time_t timeT = std::mktime(&timeStruct);
+
+            // Convert time_t to std::chrono::system_clock::time_point
+            auto timePoint = std::chrono::system_clock::from_time_t(timeT);
+
+            // Convert to seconds since epoch
+            auto duration = std::chrono::duration_cast<std::chrono::seconds>(timePoint.time_since_epoch());
+            long double secondsSinceEpoch = duration.count();
+
+            return secondsSinceEpoch;
+        } catch (const std::invalid_argument& e) {
+            std::cerr << e.what() << std::endl;
+            return 0.0;
+        }
+    }
+
+    void file_manager::load_tdrive_dataset(std::vector<data_structures::Trajectory> &all_trajectories) {
         std::cout << TDRIVE_PATH << std::endl;
         unsigned trajectory_id = 0;
         for (const auto& dirEntry : recursive_directory_iterator(TDRIVE_PATH))  {
             std::ifstream file(dirEntry.path());
 
             if(file.is_open()) {
-                std::string line;
-                data_structures::Location location;
-                data_structures::Trajectory trajectory;
+                std::string line{};
+                data_structures::Location location{};
+                data_structures::Trajectory trajectory{};
 
                 while(std::getline(file, line)) {
 
@@ -21,7 +61,7 @@ namespace Trajectory_File_Manager {
                        std::getline(lineStream, longitude, DELIMITER) &&
                        std::getline(lineStream, latitude, DELIMITER)) {
                         trajectory.id = std::stoi(id);
-                        location.timestamp = timestamp;
+                        location.timestamp = file_manager::stringToTime(timestamp);
                         location.longitude = std::stod(longitude);
                         location.latitude = std::stod(latitude);
                         trajectory.locations.push_back(location);
@@ -36,19 +76,18 @@ namespace Trajectory_File_Manager {
                 throw std::runtime_error("Error opening file: " + dirEntry.path().string());
             }
         }
-        return all_trajectories;
     }
 
-    std::vector<data_structures::Trajectory> File_Manager::load_geolife_dataset(std::vector<data_structures::Trajectory> all_trajectories) {
+    void file_manager::load_geolife_dataset(std::vector<data_structures::Trajectory> &all_trajectories) {
         unsigned trajectory_id = 0;
         for (const auto &dirEntry: recursive_directory_iterator(GEOLIFE_PATH)) {
             std::ifstream file(dirEntry.path());
 
             if (file.is_open()) {
-                std::string line;
+                std::string line{};
                 int lineCount = 0;  // Counter for lines
-                data_structures::Location location;
-                data_structures::Trajectory trajectory;
+                data_structures::Location location{};
+                data_structures::Trajectory trajectory{};
 
                 while (std::getline(file, line)) {
                     ++lineCount;
@@ -68,7 +107,7 @@ namespace Trajectory_File_Manager {
                         std::getline(lineStream, time, DELIMITER)) {
                         if(location.longitude == 0.0 or location.latitude == 0.0)
                             continue;
-                        location.timestamp = date + " " + time;
+                        location.timestamp = file_manager::stringToTime(date + " " + time);
                         location.longitude = std::stod(longitude);
                         location.latitude = std::stod(latitude);
                         trajectory.id = std::stod(id);
@@ -84,6 +123,5 @@ namespace Trajectory_File_Manager {
                 throw std::runtime_error("Error opening file: " + dirEntry.path().string());
             }
         }
-        return all_trajectories;
     }
 }

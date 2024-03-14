@@ -6,7 +6,7 @@
 namespace data_structures {
     struct Location {
         unsigned order{};
-        std::string timestamp{};
+        long double timestamp{};
         double longitude{};
         double latitude{};
     };
@@ -16,7 +16,7 @@ namespace data_structures {
         std::vector<Location> locations{};
     };
 
-    extern std::vector<Trajectory> allTrajectories;
+//    extern std::vector<Trajectory> allTrajectories;
 
 }
 
