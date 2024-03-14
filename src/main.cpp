@@ -1,7 +1,28 @@
 #include <iostream>
+#include "trajectory_data_handling/trajectory_sql.hpp"
+#include "trajectory_data_handling/sqlite_querying.hpp"
+#include "trajectory_data_handling/trajectory_file_manager.hpp"
 #include "../src/simp-algorithms/MRPA.hpp"
 
 int main() {
+    trajectory_file_manager::file_manager file_manager{};
+    auto all_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
+    sqlite_querying::query_handler::all_trajectories = all_trajectories;
+    trajectory_sql::trajectory_manager trajectory_manager{};
+
+
+//    trajectory_manager.reset_all_data();
+    trajectory_manager.create_database();
+//    trajectory_manager.create_rtree_table();
+//    file_manager.load_tdrive_dataset(*alltrajectories);
+    file_manager.load_geolife_dataset(*all_trajectories);
+    trajectory_manager.insert_trajectories_into_trajectory_table(*all_trajectories);
+//    trajectory_manager.load_database_into_datastructure();
+//    trajectory_manager.print_trajectories(*alltrajectories);
+//    trajectory_manager.load_trajectories_into_rtree();
+//    trajectory_manager.reset_all_data();
+
+
     simp_algorithms::Trajectory t {};
     t.points.emplace_back(simp_algorithms::Trajectory::Point(1, 1, 2, 0));
     t.points.emplace_back(simp_algorithms::Trajectory::Point(2, 4, 2, 1));
