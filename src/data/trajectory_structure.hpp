@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 namespace data_structures {
+
     struct Location {
         unsigned order{};
         long double timestamp{};
@@ -14,6 +15,10 @@ namespace data_structures {
     struct Trajectory {
         unsigned id{};
         std::vector<Location> locations{};
+
+        Location& operator[] (int index) {
+            return locations[index];
+        }
     };
 
 }
