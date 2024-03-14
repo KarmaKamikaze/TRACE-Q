@@ -5,7 +5,7 @@
 namespace sqlite_querying {
     sqlite3* query_handler::m_db{};
     data_structures::Trajectory query_handler::m_trajectory{};
-    unsigned long query_handler::m_currentTrajectory{};
+    unsigned long query_handler::m_currentTrajectory = 1;
     int query_handler::m_order{};
     std::shared_ptr<std::vector<data_structures::Trajectory>> sqlite_querying::query_handler::all_trajectories;
 
@@ -35,6 +35,7 @@ namespace sqlite_querying {
         if (m_currentTrajectory != traj_id) {
             all_trajectories->push_back(m_trajectory);
             m_trajectory = data_structures::Trajectory{};
+            m_trajectory.id = traj_id;
             m_order = 1;
             m_currentTrajectory = traj_id;
         }
@@ -89,6 +90,7 @@ namespace sqlite_querying {
         switch(callback_type) {
             case load_trajectory_information_into_datastructure:
                 rc = sqlite3_exec(m_db, query, callback_datastructure, 0, &zErrMsg);
+                all_trajectories->push_back(m_trajectory);
                 break;
             case insert_into_trajectory_table:
                 rc = sqlite3_exec(m_db, query, callback, 0, &zErrMsg);
