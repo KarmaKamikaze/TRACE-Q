@@ -13,4 +13,5 @@ add_executable(TRACE_Q src/main.cpp external/sqlite/sqlite3.c
         src/trajectory_data_handling/trajectory_file_manager.hpp
         src/trajectory_data_handling/trajectory_sql.cpp
         src/trajectory_data_handling/sqlite_querying.cpp
-        src/main.cpp)
+        src/main.cpp
+        src/trajectory_data_handling/sqlite_querying.cpp)

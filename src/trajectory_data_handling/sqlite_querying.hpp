@@ -25,8 +25,7 @@ namespace sqlite_querying {
         static const char* m_sqlite_db_path;
 
         static data_structures::Trajectory m_trajectory;
-        data_structures::Location m_location;
-        static int m_currentTrajectory;
+        static unsigned long m_currentTrajectory;
         static int m_order;
         static int callback(void *query_success_history, int argc, char **argv, char **azColName);
         static int callback_datastructure(void *query_success_history, int argc, char **argv, char **azColName);

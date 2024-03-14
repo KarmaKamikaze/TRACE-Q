@@ -5,7 +5,7 @@
 namespace sqlite_querying {
     sqlite3* query_handler::m_db{};
     data_structures::Trajectory query_handler::m_trajectory{};
-    int query_handler::m_currentTrajectory{};
+    unsigned long query_handler::m_currentTrajectory{};
     int query_handler::m_order{};
     std::shared_ptr<std::vector<data_structures::Trajectory>> sqlite_querying::query_handler::all_trajectories;
 
@@ -24,26 +24,24 @@ namespace sqlite_querying {
 
     int query_handler::callback_datastructure(void *query_success_history, int argc, char **argv, char **azColName) {
         char* endptr;
-        m_trajectory.id = std::strtoul(argv[0], &endptr, 10);
+
+        auto traj_id = std::strtoul(argv[0], &endptr, 10);
 
         if (*endptr != '\0') {
             std::cerr << "Error: Invalid m_trajectory ID\n";
             return 1;
         }
 
-        if (m_currentTrajectory != m_trajectory.id) {
+        if (m_currentTrajectory != traj_id) {
+            all_trajectories->push_back(m_trajectory);
+            m_trajectory = data_structures::Trajectory{};
             m_order = 1;
+            m_currentTrajectory = traj_id;
         }
 
-        m_currentTrajectory = m_trajectory.id;
-        data_structures::Location m_location(m_order, std::strtold(argv[1], nullptr), std::stod(argv[2]), std::stod(argv[3]));
-//        m_location.order = m_order;
-//        m_location.timestamp = std::strtold(argv[1], nullptr);
-//        m_location.longitude = std::stod(argv[2]);
-//        m_location.latitude = std::stod(argv[3]);
-        m_trajectory.locations.push_back(m_location);
+        data_structures::Location location(m_order, std::strtold(argv[1], nullptr), std::stod(argv[2]), std::stod(argv[3]));
 
-        all_trajectories->push_back(m_trajectory);
+        m_trajectory.locations.push_back(location);
         m_order += 1;
         return 0;
     }
