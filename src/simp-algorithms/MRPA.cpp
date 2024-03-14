@@ -10,7 +10,7 @@
 
 namespace simp_algorithms {
 
-    std::vector<Trajectory> MRPA::run(Trajectory const& trajectory) {
+    std::vector<Trajectory> MRPA::operator()(Trajectory const& trajectory) {
         std::vector<Trajectory> result{};
         auto error_tolerances = MRPA::error_tolerance_init(trajectory);
 
@@ -233,7 +233,8 @@ namespace simp_algorithms {
 
     Trajectory MRPA::simplify(Trajectory const& trajectory, double const& query_error, double simplification_error) {
 
-        auto approximations = simp_algorithms::MRPA::run(trajectory);
+        auto mrpa = simp_algorithms::MRPA{};
+        auto approximations = mrpa(trajectory);;
 
         return approximations.front();
     }

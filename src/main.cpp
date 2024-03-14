@@ -22,11 +22,12 @@ int main() {
     t.points.emplace_back(simp_algorithms::Trajectory::Point(17, 277, 143, 53));
     t.points.emplace_back(simp_algorithms::Trajectory::Point(18, 300, 200, 60));
 
-    auto results = simp_algorithms::MRPA::run(t);
+    auto mrpa = simp_algorithms::MRPA{};
+    auto results = mrpa(t);
 
     for (int i = 0; i < results.size(); i++) {
         std::cout << "Candidate " << i + 1 << "\n";
-        for (auto& point : results[i].points) {
+        for (const auto& point : results[i].points) {
             std::cout << "Order: " << point.order << ", x: " << point.x << ", y: " << point.y << ", t: " << point.t << "\n";
         }
     }
