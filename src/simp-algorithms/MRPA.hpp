@@ -3,43 +3,20 @@
 
 #include <vector>
 #include <queue>
+#include "../data/trajectory_structure.hpp"
 #include "../data/Node.hpp"
 
 namespace simp_algorithms {
 
-    class Trajectory {
-    public:
-        struct Point {
-            int order {-1};
-            double x {};
-            double y {};
-            double t {};
-            bool operator==(const Point& other) const {
-                if (this->order == other.order && this->x == other.x && this->y == other.y && this->t == other.t) {
-                    return true;
-                }
-                else {
-                    return false;
-                }
-            }
-
-            friend std::ostream& operator<<(std::ostream& os, const Point& p) {
-                os << p.order;
-
-                return os;
-            }
-        };
-        std::vector<Point> points {};
-    };
-
     class MRPA {
-        using Trajectory = simp_algorithms::Trajectory;
-        using Node = data_structures::Node<Trajectory::Point>;
+        using Trajectory = data_structures::Trajectory;
+        using Node = data_structures::Node<data_structures::Location>;
+        using Location = data_structures::Location;
         static constexpr auto compare =
-                [](Trajectory::Point const &left, Trajectory::Point const &right) {
+                [](Location const &left, Location const &right) {
             return left.order < right.order;
         };
-        using MRPA_PTQ = std::priority_queue<Trajectory::Point, std::vector<Trajectory::Point>, decltype(compare)>;
+        using MRPA_PTQ = std::priority_queue<Location, std::vector<Location>, decltype(compare)>;
 
         /**
          * The resolution scale (called c in the MRPA paper) describes the number of the intermediate scale.
@@ -63,7 +40,7 @@ namespace simp_algorithms {
          * @param j End of the range of points from the trajectory to determine the SED error sum for.
          * @return The SED error sum for the range of points in the trajectory.
          */
-        static double error_SED_sum(const simp_algorithms::MRPA::Trajectory& trajectory, int i, int j);
+        static double error_SED_sum(const Trajectory& trajectory, int i, int j);
 
         /**
          * Considers both spatial and temporal information on sub-trajectories to create approximate point.
@@ -80,7 +57,7 @@ namespace simp_algorithms {
          * @param approx_point The associated approximated trajectory point.
          * @return The SED error (double).
          */
-        static double single_SED(Trajectory::Point const& original_point, Trajectory::Point const& approx_point);
+        static double single_SED(Location const& original_point, Location const& approx_point);
 
         /**
          * Initializes and returns a single root node, describing a tree structure.
@@ -108,7 +85,7 @@ namespace simp_algorithms {
          */
         static void maintain_priority_queue(Node& tree, Trajectory const& trajectory, double error_tol,
                                             double high_error_tol, MRPA_PTQ& working_list, MRPA_PTQ& future_work,
-                                            std::vector<Trajectory::Point>& unvisited);
+                                            std::vector<Location>& unvisited);
 
         /**
          *

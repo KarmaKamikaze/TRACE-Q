@@ -89,20 +89,20 @@ namespace sqlite_querying {
 
         switch(callback_type) {
             case load_trajectory_information_into_datastructure:
-                rc = sqlite3_exec(m_db, query, callback_datastructure, 0, &zErrMsg);
+                rc = sqlite3_exec(m_db, query.c_str(), callback_datastructure, 0, &zErrMsg);
                 all_trajectories->push_back(m_trajectory);
                 break;
             case insert_into_trajectory_table:
-                rc = sqlite3_exec(m_db, query, callback, 0, &zErrMsg);
+                rc = sqlite3_exec(m_db, query.c_str(), callback, 0, &zErrMsg);
                 break;
             case insert_into_rtree_table:
-                rc = sqlite3_exec(m_db, query, callback_rtree_insert, 0, &zErrMsg);
+                rc = sqlite3_exec(m_db, query.c_str(), callback_rtree_insert, 0, &zErrMsg);
                 break;
             case create_table:
-                rc = sqlite3_exec(m_db, query, callback, 0, &zErrMsg);
+                rc = sqlite3_exec(m_db, query.c_str(), callback, 0, &zErrMsg);
                 break;
             case reset_database:
-                rc = sqlite3_exec(m_db, query, callback, 0, &zErrMsg);
+                rc = sqlite3_exec(m_db, query.c_str(), callback, 0, &zErrMsg);
                 break;
         }
 

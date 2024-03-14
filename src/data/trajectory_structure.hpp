@@ -6,18 +6,42 @@
 namespace data_structures {
 
     struct Location {
-        unsigned order{};
+        int order{-1};
         long double timestamp{};
         double longitude{};
         double latitude{};
+
+        bool operator==(const Location& other) const {
+            if (this->order == other.order && this->longitude == other.longitude
+            && this->latitude == other.latitude && this->timestamp == other.timestamp) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+
+        friend std::ostream& operator<<(std::ostream& os, const Location& p) {
+            os << p.order;
+
+            return os;
+        }
     };
 
     struct Trajectory {
         unsigned id{};
         std::vector<Location> locations{};
 
-        Location& operator[] (int index) {
+        Location& operator[](const size_t index) {
             return locations[index];
+        }
+
+        const Location& operator[](const size_t index) const {
+            return locations[index];
+        }
+
+        [[nodiscard]] size_t size() const {
+            return locations.size();
         }
     };
 

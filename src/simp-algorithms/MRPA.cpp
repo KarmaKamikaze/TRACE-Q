@@ -10,7 +10,7 @@
 
 namespace simp_algorithms {
 
-    std::vector<Trajectory> MRPA::operator()(Trajectory const& trajectory) const {
+    std::vector<data_structures::Trajectory> MRPA::operator()(Trajectory const& trajectory) const {
         std::vector<Trajectory> result{};
         auto error_tolerances = MRPA::error_tolerance_init(trajectory);
 
@@ -31,23 +31,23 @@ namespace simp_algorithms {
     std::vector<double> MRPA::error_tolerance_init(Trajectory const& trajectory) {
         std::vector<double> result{};
 
-        auto number_of_tolerances = std::floor(std::log(trajectory.points.size()) /
+        auto number_of_tolerances = std::floor(std::log(trajectory.size()) /
                 std::log(resolution_scale));
 
         for (auto k = 1; k <= number_of_tolerances; k++) {
             // Here we add 1 to the resolution and floor it in order to handle cases where the resolution
             // calculation is exactly an int.
-            auto resolution = std::floor(static_cast<double>(trajectory.points.size()) /
+            auto resolution = std::floor(static_cast<double>(trajectory.size()) /
                     std::pow(resolution_scale, k) + 1);
             double error_tolerance{};
 
             for (auto j = 1; j < resolution; j++) {
-                auto range_start = static_cast<int>(std::floor((static_cast<double>(trajectory.points.size() - 1)) /
+                auto range_start = static_cast<int>(std::floor((static_cast<double>(trajectory.size() - 1)) /
                         (resolution - 1) * (j - 1) + 1));
-                auto range_end = static_cast<int>(std::floor((static_cast<double>(trajectory.points.size() - 1)) /
+                auto range_end = static_cast<int>(std::floor((static_cast<double>(trajectory.size() - 1)) /
                         (resolution - 1) * j + 1));
 
-                if (j == resolution - 1 && range_end < trajectory.points.size()) {
+                if (j == resolution - 1 && range_end < trajectory.size()) {
                     throw std::range_error("Last range_end variable is not equal to size of trajectory");
                 }
 
@@ -62,7 +62,7 @@ namespace simp_algorithms {
     }
 
 
-    double MRPA::error_SED_sum(const simp_algorithms::MRPA::Trajectory& trajectory, int i, int j) {
+    double MRPA::error_SED_sum(const Trajectory& trajectory, int i, int j) {
 
         // Here we subtract one from both i and j, due to 0-indexing
         i = i - 1;
@@ -73,46 +73,47 @@ namespace simp_algorithms {
             // Here we index the approx trajectory with the difference of k and i+1.
             // This is because the approx trajectory does not have as many points,
             // therefore it does not have values in the same indexes as the original trajectory.
-            res += pow(single_SED(trajectory.points[k],
-                                  approx_trajectory.points[k - (i + 1)]), 2);
+            res += pow(single_SED(trajectory[k], approx_trajectory[k - (i + 1)]), 2);
         }
 
         return res;
     }
 
 
-    Trajectory MRPA::approximated_temporally_synchronized_position(Trajectory const& trajectory, int i, int j) {
+    data_structures::Trajectory MRPA::approximated_temporally_synchronized_position(Trajectory const& trajectory,
+                                                                                    int i, int j) {
         Trajectory res {};
 
         for (int k = i + 1; k < j; ++k) {
-            auto x = trajectory.points[i].x +
-                     ((trajectory.points[k].t - trajectory.points[i].t) /
-                      (trajectory.points[j].t - trajectory.points[i].t)) *
-                     (trajectory.points[j].x - trajectory.points[i].x);
-            auto y = trajectory.points[i].y +
-                     ((trajectory.points[k].t - trajectory.points[i].t) /
-                      (trajectory.points[j].t - trajectory.points[i].t)) *
-                     (trajectory.points[j].y - trajectory.points[i].y);
-            auto point = MRPA::Trajectory::Point(trajectory.points[k].order, x, y,trajectory.points[k].t);
-            res.points.emplace_back(point);
+            auto x = trajectory[i].longitude +
+                     ((trajectory[k].timestamp - trajectory[i].timestamp) /
+                      (trajectory[j].timestamp - trajectory[i].timestamp)) *
+                     (trajectory[j].longitude - trajectory[i].longitude);
+            auto y = trajectory[i].latitude +
+                     ((trajectory[k].timestamp - trajectory[i].timestamp) /
+                      (trajectory[j].timestamp - trajectory[i].timestamp)) *
+                     (trajectory[j].latitude - trajectory[i].latitude);
+            auto point = Location (trajectory[k].order, trajectory[k].timestamp, x, y);
+            res.locations.emplace_back(point);
         }
 
         return res;
     }
 
 
-    double MRPA::single_SED(Trajectory::Point const& original_point, Trajectory::Point const& approx_point) {
-        return sqrt(pow(original_point.x - approx_point.x, 2) + pow(original_point.y - approx_point.y, 2));
+    double MRPA::single_SED(Location const& original_point, Location const& approx_point) {
+        return sqrt(pow(original_point.longitude - approx_point.longitude, 2)
+        + pow(original_point.latitude - approx_point.latitude, 2));
     }
 
 
-    data_structures::Node<Trajectory::Point> MRPA::init_tree(Trajectory const& trajectory,
+    data_structures::Node<data_structures::Location> MRPA::init_tree(Trajectory const& trajectory,
                                                              double error_tol, double high_error_tol) {
 
         MRPA_PTQ working_list{compare};
-        working_list.push(trajectory.points.front());
+        working_list.push(trajectory.locations.front());
         MRPA_PTQ future_work(compare);
-        std::vector<Trajectory::Point> unvisited{trajectory.points.begin() + 1, trajectory.points.end()};
+        std::vector<Location> unvisited{trajectory.locations.begin() + 1, trajectory.locations.end()};
 
         Node root{working_list.top()};
 
@@ -129,16 +130,14 @@ namespace simp_algorithms {
             }
         }
 
-        std::cout << root << "\n";
-
         return root;
     }
 
 
     void MRPA::maintain_priority_queue(Node& tree, Trajectory const& trajectory, double error_tol,
                                        double high_error_tol, MRPA_PTQ& working_list, MRPA_PTQ& future_work,
-                                       std::vector<Trajectory::Point>& unvisited) {
-        Trajectory::Point index1 = working_list.top();
+                                       std::vector<Location>& unvisited) {
+        Location index1 = working_list.top();
         working_list.pop();
 
         for (int i = 0; i < unvisited.size(); ++i) {
@@ -168,17 +167,17 @@ namespace simp_algorithms {
     }
 
 
-    Trajectory MRPA::approximate(const Trajectory& trajectory, const Node& tree, double error_tol) {
+    data_structures::Trajectory MRPA::approximate(const Trajectory& trajectory, const Node& tree, double error_tol) {
 
-        std::vector<double> approx_error(trajectory.points.size(), std::numeric_limits<double>::max());
+        std::vector<double> approx_error(trajectory.size(), std::numeric_limits<double>::max());
         approx_error[0] = 0;
 
-        std::unordered_map<int, Trajectory::Point> backtrack{}; // Key is point order
+        std::unordered_map<int, Location > backtrack{}; // Key is point order
 
         auto parents = std::vector<Node>{tree};
         auto number_output_points = 1;
 
-        while(approx_error[trajectory.points.back().order - 1] == std::numeric_limits<double>::max()) {
+        while(approx_error[trajectory.locations.back().order - 1] == std::numeric_limits<double>::max()) {
             std::vector<Node> children{};
             for(const auto& p : parents) {
                 children.insert(children.cend(), p.children.cbegin(), p.children.cend());
@@ -199,26 +198,26 @@ namespace simp_algorithms {
             number_output_points++;
         }
 
-        std::deque<Trajectory::Point> result{trajectory.points.back()};
+        std::deque<Location > result{trajectory.locations.back()};
 
         for (int i = number_output_points; i >= 2; --i) {
             result.push_front(backtrack[result.front().order]);
         }
 
-        Trajectory result_trajectory{{std::begin(result), std::end(result)}};
+        Trajectory result_trajectory{trajectory.id, {std::begin(result), std::end(result)}};
 
         // Before returning we must update the order values of the nodes.
         // This is because we use order to index, and since we return a trajectory with fewer points,
         // we can index out of range!
-        for (int i = 0; i < result_trajectory.points.size(); ++i) {
-            result_trajectory.points[i].order = i + 1;
+        for (int i = 0; i < result_trajectory.size(); ++i) {
+            result_trajectory[i].order = i + 1;
         }
 
         return result_trajectory;
     }
 
 
-    data_structures::Node<Trajectory::Point> MRPA::apply_error_tolerance_scale_to_tree(
+    data_structures::Node<data_structures::Location> MRPA::apply_error_tolerance_scale_to_tree(
             Trajectory const& trajectory, int index, const std::vector<double>& error_tolerances) {
 
         if (index == error_tolerances.size() - 1) {
@@ -231,7 +230,7 @@ namespace simp_algorithms {
     }
 
 
-    Trajectory MRPA::simplify(Trajectory const& trajectory, double const& query_error, double simplification_error) {
+    data_structures::Trajectory MRPA::simplify(Trajectory const& trajectory, double const& query_error, double simplification_error) {
 
         auto mrpa = simp_algorithms::MRPA{};
         auto approximations = mrpa(trajectory);;
