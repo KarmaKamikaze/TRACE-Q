@@ -139,7 +139,7 @@ namespace simp_algorithms {
          * @param trajectory The trajectory to be simplified.
          * @return A list of simplified trajectories with decreasing resolution.
          */
-        std::vector<Trajectory> operator()(Trajectory const& trajectory);
+        std::vector<Trajectory> operator()(Trajectory const& trajectory) const;
     };
 
 } // simp_algorithms

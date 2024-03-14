@@ -10,7 +10,7 @@
 
 namespace simp_algorithms {
 
-    std::vector<Trajectory> MRPA::operator()(Trajectory const& trajectory) {
+    std::vector<Trajectory> MRPA::operator()(Trajectory const& trajectory) const {
         std::vector<Trajectory> result{};
         auto error_tolerances = MRPA::error_tolerance_init(trajectory);
 
