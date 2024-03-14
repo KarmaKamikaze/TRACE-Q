@@ -32,7 +32,7 @@ namespace sqlite_querying {
         static int callback_rtree_insert(void *query_success_history, int argc, char **argv, char **azColName);
     public:
         static std::shared_ptr<std::vector<data_structures::Trajectory>>  all_trajectories;
-        static void run_sql(const char* query, query_purpose callback_type);
+        static void run_sql(std::string query, query_purpose callback_type);
     };
 }
 #endif

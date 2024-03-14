@@ -5,11 +5,11 @@
 
 namespace trajectory_sql {
     void trajectory_manager::load_trajectories_into_rtree() {
-        auto query = "SELECT trajectory_id, MIN(longitude) AS min_longitude, MAX(longitude) AS max_longitude,\n"
+        auto query = std::string{"SELECT trajectory_id, MIN(longitude) AS min_longitude, MAX(longitude) AS max_longitude,\n"
                      "MIN(latitude) AS min_latitude, MAX(latitude) AS max_latitude,\n"
                      "MIN(timestamp) AS min_timestamp, MAX(timestamp) AS max_timestamp\n"
                      "FROM trajectory_information\n"
-                     "GROUP BY trajectory_id;";
+                     "GROUP BY trajectory_id;"};
 
         sqlite_querying::query_handler::run_sql(query, sqlite_querying::insert_into_rtree_table);
     }
@@ -27,7 +27,7 @@ namespace trajectory_sql {
     }
 
     void trajectory_manager::load_database_into_datastructure() {
-        auto query = "SELECT trajectory_id, timestamp, longitude, latitude FROM trajectory_information";
+        auto query = std::string{"SELECT trajectory_id, timestamp, longitude, latitude FROM trajectory_information"};
 
         sqlite_querying::query_handler::run_sql(query, sqlite_querying::load_trajectory_information_into_datastructure);
     }
@@ -44,16 +44,16 @@ namespace trajectory_sql {
     }
 
     void trajectory_manager::create_database() {
-        auto query = "CREATE TABLE trajectory_information(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, trajectory_id INTEGER NOT NULL, timestamp REAL NOT NULL, longitude REAL NOT NULL, latitude REAL NOT NULL)";
+        auto query = std::string{"CREATE TABLE trajectory_information(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, trajectory_id INTEGER NOT NULL, timestamp REAL NOT NULL, longitude REAL NOT NULL, latitude REAL NOT NULL)"};
         sqlite_querying::query_handler::run_sql(query, sqlite_querying::create_table);
-        query = "CREATE TABLE simplified_trajectory_information(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, trajectory_id INTEGER NOT NULL, timestamp REAL NOT NULL, longitude REAL NOT NULL, latitude REAL NOT NULL)";
+        query = std::string{"CREATE TABLE simplified_trajectory_information(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, trajectory_id INTEGER NOT NULL, timestamp REAL NOT NULL, longitude REAL NOT NULL, latitude REAL NOT NULL)"};
         sqlite_querying::query_handler::run_sql(query, sqlite_querying::create_table);
     }
 
     void trajectory_manager::create_rtree_table() {
-        auto query = "CREATE VIRTUAL TABLE trajectory_rtree USING rtree(id INTEGER PRIMARY KEY, minLongitude REAL, maxLongitude REAL, minLatitude REAL, maxLatitude REAL, minTimestamp TEXT, maxTimestamp TEXT)";
+        auto query = std::string{"CREATE VIRTUAL TABLE trajectory_rtree USING rtree(id INTEGER PRIMARY KEY, minLongitude REAL, maxLongitude REAL, minLatitude REAL, maxLatitude REAL, minTimestamp TEXT, maxTimestamp TEXT)"};
         sqlite_querying::query_handler::run_sql(query, sqlite_querying::create_table);
-        query = "CREATE VIRTUAL TABLE simplified_trajectory_rtree USING rtree(id INTEGER PRIMARY KEY, minLongitude REAL, maxLongitude REAL, minLatitude REAL, maxLatitude REAL, minTimestamp TEXT, maxTimestamp TEXT)";
+        query = std::string{"CREATE VIRTUAL TABLE simplified_trajectory_rtree USING rtree(id INTEGER PRIMARY KEY, minLongitude REAL, maxLongitude REAL, minLatitude REAL, maxLatitude REAL, minTimestamp TEXT, maxTimestamp TEXT)"};
         sqlite_querying::query_handler::run_sql(query, sqlite_querying::create_table);
     }
 

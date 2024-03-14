@@ -78,7 +78,7 @@ namespace sqlite_querying {
         return 0;
     }
 
-    void query_handler::run_sql(const char* query, query_purpose callback_type) {
+    void query_handler::run_sql(std::string query, query_purpose callback_type) {
         char *zErrMsg = 0;
         int rc = sqlite3_open(m_sqlite_db_path, &m_db);
 
