@@ -80,22 +80,21 @@ namespace trajectory_file_manager {
 
     void file_manager::load_geolife_dataset(std::vector<data_structures::Trajectory> &all_trajectories) {
         unsigned trajectory_id = 0;
+
         for (const auto &dirEntry: recursive_directory_iterator(GEOLIFE_PATH)) {
             std::ifstream file(dirEntry.path());
 
             if (file.is_open()) {
                 std::string line{};
-                int lineCount = 0;  // Counter for lines
                 data_structures::Location location{};
                 data_structures::Trajectory trajectory{};
 
+                // ignores the first 6 lines as they are irrelevant
+                for(int i = 0; i < 6; i++) {
+                    std::getline(file, line);
+                }
+
                 while (std::getline(file, line)) {
-                    ++lineCount;
-
-                    if (lineCount <= 6) {
-                        continue;  // Ignore the first 6 lines
-                    }
-
                     std::istringstream lineStream(line);
                     std::string latitude, longitude, id, altitude, datedays, date, time;
                     if (std::getline(lineStream, latitude, DELIMITER) &&
