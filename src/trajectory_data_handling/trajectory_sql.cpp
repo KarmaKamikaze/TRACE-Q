@@ -17,11 +17,11 @@ namespace trajectory_sql {
     void trajectory_manager::insert_trajectories_into_trajectory_table(std::vector<data_structures::Trajectory> &all_trajectories) {
         for (const auto & trajectory : all_trajectories) {
             for (const auto &location : trajectory.locations) {
-                char query[150];
-                snprintf(query, sizeof(query), "INSERT INTO trajectory_information VALUES(NULL, %d, '%Lf', %f, %f)",
-                         trajectory.id, location.timestamp, location.longitude, location.latitude);
+                std::stringstream query{};
+                query << "INSERT INTO trajectory_information VALUES(NULL, " << trajectory.id << ", '"
+                    << location.timestamp << "', " << location.longitude << ", " << location.latitude << ")";
 
-                sqlite_querying::query_handler::run_sql(query, sqlite_querying::insert_into_trajectory_table);
+                sqlite_querying::query_handler::run_sql(query.str().c_str(), sqlite_querying::insert_into_trajectory_table);
             }
         }
     }

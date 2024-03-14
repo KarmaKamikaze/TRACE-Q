@@ -49,23 +49,23 @@ namespace sqlite_querying {
 
     int query_handler::callback_rtree_insert(void *query_success_history, int argc, char **argv, char **azColName) {
         char *zErrMsg = nullptr;
-        const char* id = argv[0];
-        const char* minLongitude = argv[1];
-        const char* maxLongitude = argv[2];
-        const char* minLatitude = argv[3];
-        const char* maxLatitude = argv[4];
-        const char* minTimestamp = argv[5];
-        const char* maxTimestamp = argv[6];
+        std::string id = argv[0];
+        std::string minLongitude = argv[1];
+        std::string maxLongitude = argv[2];
+        std::string minLatitude = argv[3];
+        std::string maxLatitude = argv[4];
+        std::string minTimestamp = argv[5];
+        std::string maxTimestamp = argv[6];
 
         // Construct the SQL query using raw string literals and std::to_string()
         std::string query = R"(INSERT INTO trajectory_rtree VALUES()"
-                            + std::string(id) + ", "
-                            + std::string(minLongitude) + ", "
-                            + std::string(maxLongitude) + ", "
-                            + std::string(minLatitude) + ", "
-                            + std::string(maxLatitude) + ", '"
-                            + std::string(minTimestamp) + "', '"
-                            + std::string(maxTimestamp) + "')";
+                            + id + ", "
+                            + minLongitude + ", "
+                            + maxLongitude + ", "
+                            + minLatitude + ", "
+                            + maxLatitude + ", '"
+                            + minTimestamp + "', '"
+                            + maxTimestamp + "')";
 
         std::cout << query << '\n';
 
