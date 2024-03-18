@@ -3,9 +3,8 @@
 #include <chrono>
 #include <sstream>
 #include <stdexcept>
-#include <iomanip>
 
-namespace trajectory_file_manager {
+namespace trajectory_data_handling {
     long double file_manager::stringToTime(const std::string& timeString) {
         try {
             struct tm timeStruct = {};

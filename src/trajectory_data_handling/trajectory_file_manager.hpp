@@ -5,7 +5,7 @@
 #include <fstream>
 #include "../data/trajectory_structure.hpp"
 
-namespace trajectory_file_manager {
+namespace trajectory_data_handling {
    class file_manager {
    private:
        using recursive_directory_iterator = std::filesystem::recursive_directory_iterator;

@@ -6,7 +6,7 @@
 #include "../data/trajectory_structure.hpp"
 #include "sqlite_querying.hpp"
 
-namespace trajectory_sql {
+namespace trajectory_data_handling {
     class trajectory_manager {
     public:
         void load_trajectories_into_rtree();
