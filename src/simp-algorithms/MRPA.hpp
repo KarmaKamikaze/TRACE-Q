@@ -23,7 +23,7 @@ namespace simp_algorithms {
          * The lower c is, the more error tolerances we will have; thereby we have more simplified trajectories
          * to choose from. Additionally, the more error tolerances, the less the difference is between them.
          */
-        static double constexpr resolution_scale {2}; // c
+        double resolution_scale {2}; // c
 
         /**
          * Calculates a vector of error tolerances for the given trajectory based on the resolution scale and the
@@ -31,7 +31,7 @@ namespace simp_algorithms {
          * @param trajectory The trajectory which for we calculate error tolerances.
          * @return A vector of error tolerances for the given trajectory.
          */
-        static std::vector<double> error_tolerance_init(Trajectory const& trajectory);
+        [[nodiscard]] std::vector<double> error_tolerance_init(Trajectory const& trajectory) const;
 
         /**
          * Calculates the sum of SED error over a range of an input trajectory.
@@ -108,6 +108,9 @@ namespace simp_algorithms {
                                                         const std::vector<double>& error_tolerances);
 
     public:
+
+        MRPA() = default;
+        explicit MRPA(double c) : resolution_scale{c} {};
 
         Trajectory simplify(Trajectory const&, double const&, double); // Yeet later https://tinyurl.com/tapvp9ch
 
