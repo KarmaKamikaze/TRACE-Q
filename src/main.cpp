@@ -2,13 +2,13 @@
 #include "trajectory_data_handling/trajectory_sql.hpp"
 #include "trajectory_data_handling/sqlite_querying.hpp"
 #include "trajectory_data_handling/trajectory_file_manager.hpp"
-#include "../src/simp-algorithms/MRPA.hpp"
+#include "simp-algorithms/MRPA.hpp"
 
 int main() {
-    trajectory_file_manager::file_manager file_manager{};
+    trajectory_data_handling::file_manager file_manager{};
     auto all_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
-    sqlite_querying::query_handler::all_trajectories = all_trajectories;
-    trajectory_sql::trajectory_manager trajectory_manager{};
+    trajectory_data_handling::query_handler::all_trajectories = all_trajectories;
+    trajectory_data_handling::trajectory_manager trajectory_manager{};
 
 
 //    trajectory_manager.reset_all_data();

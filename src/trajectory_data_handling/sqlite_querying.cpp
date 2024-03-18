@@ -1,13 +1,13 @@
-#include "sqlite_querying.hpp"
 #include <iostream>
 #include <cstdlib>
+#include "sqlite_querying.hpp"
 
-namespace sqlite_querying {
+namespace trajectory_data_handling {
     sqlite3* query_handler::m_db{};
     data_structures::Trajectory query_handler::m_trajectory{};
     unsigned long query_handler::m_currentTrajectory = 1;
     int query_handler::m_order{};
-    std::shared_ptr<std::vector<data_structures::Trajectory>> sqlite_querying::query_handler::all_trajectories;
+    std::shared_ptr<std::vector<data_structures::Trajectory>> trajectory_data_handling::query_handler::all_trajectories;
 
 
     const std::filesystem::path query_handler::m_sqlite_db_filesystem_path = std::filesystem::current_path().parent_path() / "src" / "data" / "trajectory.db";

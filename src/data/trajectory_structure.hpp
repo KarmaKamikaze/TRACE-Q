@@ -22,7 +22,7 @@ namespace data_structures {
         }
 
         friend std::ostream& operator<<(std::ostream& os, const Location& p) {
-            os << p.order;
+            os << std::to_string(p.order);
 
             return os;
         }

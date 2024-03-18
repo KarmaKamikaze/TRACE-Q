@@ -12,8 +12,13 @@
 #include "../data/trajectory_structure.hpp"
 #include "../../external/sqlite/sqlite3.h"
 
-namespace sqlite_querying {
-    enum query_purpose { insert_into_trajectory_table, insert_into_rtree_table, load_trajectory_information_into_datastructure, create_table, reset_database};
+namespace trajectory_data_handling {
+    enum query_purpose {
+        insert_into_trajectory_table,
+        insert_into_rtree_table,
+        load_trajectory_information_into_datastructure,
+        create_table,
+        reset_database};
 
     class query_handler {
     private:

@@ -17,3 +17,4 @@ add_definitions(-DSQLITE_ENABLE_RTREE=1)
 
 # Add subdirectories
 add_subdirectory(src)
+target_link_libraries(TRACE_Q LINK_PUBLIC sqlite3)
