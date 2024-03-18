@@ -15,6 +15,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY
 
 add_definitions(-DSQLITE_ENABLE_RTREE=1)
 
+include(sanitizers.cmake)
+include(doctest.cmake)
+
+enable_testing()
+
 # Add subdirectories
 add_subdirectory(src)
 target_link_libraries(TRACE_Q LINK_PUBLIC sqlite3)
