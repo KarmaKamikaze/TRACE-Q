@@ -22,7 +22,7 @@ namespace data_structures {
          * @return A reference to the found node or a dummy node if not found.
          */
         Node<T>& find(const T& node_data) {
-            static auto dummy = Node{T{}};
+            static auto dummy = Node{T{-1}};
 
             if (this->data == node_data) {
                 return *this; // Found the node

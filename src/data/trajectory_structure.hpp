@@ -6,7 +6,7 @@
 namespace data_structures {
 
     struct Location {
-        int order{-1};
+        int order{};
         long double timestamp{};
         double longitude{};
         double latitude{};
