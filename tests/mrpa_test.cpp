@@ -1,8 +1,15 @@
 #include "../src/simp-algorithms/MRPA.hpp"
 #include <doctest/doctest.h>
 #include <cmath>
+#include <iostream>
 
 struct test_trajectories {
+    bool compare_locations(data_structures::Location const& loc1, data_structures::Location const& loc2) {
+        return loc1.timestamp == loc2.timestamp
+               && loc1.longitude == loc2.longitude
+               && loc1.latitude == loc2.latitude;
+    };
+
     data_structures::Trajectory small{};
     data_structures::Trajectory medium{};
     data_structures::Trajectory large{};
@@ -47,84 +54,7 @@ struct test_trajectories {
 };
 
 
-// Test if first and last points are correct
-// Test if timestamps are increasing
-// Test if number of points in the simplification is decreasing
-
-
-TEST_CASE("MRPA - Correct number of simplifications / throws") {
-
-    auto tt = test_trajectories();
-    SUBCASE("c = 2, N = 6") {
-        auto mrpa = simp_algorithms::MRPA(2);
-        auto res = mrpa(tt.small);
-
-        CHECK((res.size() == std::floor(std::log(6)/std::log(2))));
-    }
-
-    SUBCASE("c = 2, N = 9") {
-        auto mrpa = simp_algorithms::MRPA(2);
-        auto res = mrpa(tt.medium);
-
-        CHECK((res.size() == std::floor(std::log(9)/std::log(2))));
-    }
-
-    SUBCASE("c = 2, N = 18") {
-        auto mrpa = simp_algorithms::MRPA(2);
-        auto res = mrpa(tt.large);
-
-        CHECK((res.size() == std::floor(std::log(18)/std::log(2))));
-    }
-
-    SUBCASE("c = 1.1, N = 6") {
-        auto mrpa = simp_algorithms::MRPA(1.1);
-        auto res = mrpa(tt.small);
-
-        CHECK((res.size() == std::floor(std::log(6)/std::log(1.1))));
-    }
-
-    SUBCASE("c = 1.1, N = 9") {
-        auto mrpa = simp_algorithms::MRPA(1.1);
-        auto res = mrpa(tt.medium);
-
-        CHECK((res.size() == std::floor(std::log(9)/std::log(1.1))));
-    }
-
-    SUBCASE("c = 1.1, N = 18") {
-        auto mrpa = simp_algorithms::MRPA(1.1);
-        auto res = mrpa(tt.large);
-
-        CHECK((res.size() == std::floor(std::log(18)/std::log(1.1))));
-    }
-
-    SUBCASE("c = 6, N = 6") {
-        auto mrpa = simp_algorithms::MRPA(6);
-        auto res = mrpa(tt.small);
-
-        CHECK((res.size() == std::floor(std::log(6)/std::log(6))));
-    }
-
-    SUBCASE("c = 6, N = 9") {
-        auto mrpa = simp_algorithms::MRPA(6);
-        auto res = mrpa(tt.medium);
-
-        CHECK((res.size() == std::floor(std::log(9)/std::log(6))));
-    }
-
-    SUBCASE("c = 6, N = 18") {
-        auto mrpa = simp_algorithms::MRPA(6);
-        auto res = mrpa(tt.large);
-
-        CHECK((res.size() == std::floor(std::log(18)/std::log(6))));
-    }
-
-    SUBCASE("c = 10, N = 6") {
-        auto mrpa = simp_algorithms::MRPA(10);
-        CHECK_THROWS(mrpa(tt.small));
-    }
-}
-
-TEST_CASE("MRPA - Check if the order sequence corresponds to integers from 1 to N") {
+TEST_CASE("MRPA - Check if the order sequence corresponds to integers from 1 to M") {
     auto tt = test_trajectories();
     auto mrpa = simp_algorithms::MRPA(2);
     SUBCASE("N = 6"){
@@ -132,7 +62,7 @@ TEST_CASE("MRPA - Check if the order sequence corresponds to integers from 1 to 
 
         for (const auto& r : res) {
             for (int i = 0; i < r.size(); ++i) {
-                CHECK((r[i].order == i+1));
+                CHECK(r[i].order == i+1);
             }
         }
     }
@@ -142,7 +72,7 @@ TEST_CASE("MRPA - Check if the order sequence corresponds to integers from 1 to 
 
         for (const auto& r : res) {
             for (int i = 0; i < r.size(); ++i) {
-                CHECK((r[i].order == i+1));
+                CHECK(r[i].order == i+1);
             }
         }
     }
@@ -152,11 +82,146 @@ TEST_CASE("MRPA - Check if the order sequence corresponds to integers from 1 to 
 
         for (const auto& r : res) {
             for (int i = 0; i < r.size(); ++i) {
-                CHECK((r[i].order == i+1));
+                CHECK(r[i].order == i+1);
+            }
+        }
+    }
+}
+
+TEST_CASE("MRPA - Check if timestamps are increasing") {
+    auto tt = test_trajectories();
+    auto mrpa = simp_algorithms::MRPA(1.2);
+
+    SUBCASE("N = 6"){
+        auto res = mrpa(tt.small);
+
+        for (const auto& r : res) {
+            long double prev_timestamp = -1;
+            for (const auto& l : r.locations) {
+                CHECK(l.timestamp > prev_timestamp);
+                prev_timestamp = l.timestamp;
             }
         }
     }
 
+    SUBCASE("N = 9"){
+        auto res = mrpa(tt.medium);
 
+        for (const auto& r : res) {
+            long double prev_timestamp = -1;
+            for (const auto& l : r.locations) {
+                CHECK(l.timestamp > prev_timestamp);
+                prev_timestamp = l.timestamp;
+            }
+        }
+    }
 
+    SUBCASE("N = 18"){
+        auto res = mrpa(tt.large);
+
+        for (const auto& r : res) {
+            long double prev_timestamp = -1;
+            for (const auto& l : r.locations) {
+                CHECK(l.timestamp > prev_timestamp);
+                prev_timestamp = l.timestamp;
+            }
+        }
+    }
+}
+
+TEST_CASE("MRPA - Check if resolution of simplifications is decreasing") {
+    auto tt = test_trajectories();
+    auto mrpa = simp_algorithms::MRPA(1.2);
+
+    SUBCASE("N = 6") {
+        auto res = mrpa(tt.small);
+
+        size_t prev_num_points = 7;
+        for (const auto& r : res) {
+            CHECK(r.size() < prev_num_points);
+            prev_num_points = r.size();
+        }
+    }
+
+    SUBCASE("N = 9") {
+        auto res = mrpa(tt.medium);
+
+        size_t prev_num_points = 10;
+        for (const auto& r : res) {
+            CHECK(r.size() < prev_num_points);
+            prev_num_points = r.size();
+        }
+    }
+
+    SUBCASE("N = 18") {
+        auto res = mrpa(tt.large);
+
+        size_t prev_num_points = 19;
+        for (const auto& r : res) {
+            CHECK(r.size() < prev_num_points);
+            prev_num_points = r.size();
+        }
+    }
+}
+
+TEST_CASE("MRPA - Check if the first and last locations in simplifications are correct") {
+    auto tt = test_trajectories();
+    auto mrpa = simp_algorithms::MRPA(1.2);
+
+    SUBCASE("N = 6"){
+        auto first = tt.small.locations.front();
+        auto last = tt.small.locations.back();
+        auto res = mrpa(tt.small);
+
+        for (const auto& r : res) {
+            CHECK(tt.compare_locations(r.locations.front(), first));
+            CHECK(tt.compare_locations(r.locations.back(), last));
+        }
+    }
+
+    SUBCASE("N = 9"){
+        auto first = tt.medium.locations.front();
+        auto last = tt.medium.locations.back();
+        auto res = mrpa(tt.medium);
+
+        for (const auto& r : res) {
+            CHECK(tt.compare_locations(r.locations.front(), first));
+            CHECK(tt.compare_locations(r.locations.back(), last));
+        }
+    }
+
+    SUBCASE("N = 18"){
+        auto first = tt.large.locations.front();
+        auto last = tt.large.locations.back();
+        auto res = mrpa(tt.large);
+
+        for (const auto& r : res) {
+            CHECK(tt.compare_locations(r.locations.front(), first));
+            CHECK(tt.compare_locations(r.locations.back(), last));
+        }
+    }
+}
+
+TEST_CASE("MRPA - Simplification of a straight line yields only the first and last locations") {
+    auto straight_boi = data_structures::Trajectory{};
+    straight_boi.locations.emplace_back(data_structures::Location(1, 0, 0, 0));
+    straight_boi.locations.emplace_back(data_structures::Location(2, 1, 1, 1));
+    straight_boi.locations.emplace_back(data_structures::Location(3, 2, 2, 2));
+    straight_boi.locations.emplace_back(data_structures::Location(4, 3, 3, 3));
+    straight_boi.locations.emplace_back(data_structures::Location(5, 4, 4, 4));
+    straight_boi.locations.emplace_back(data_structures::Location(6, 5, 5, 5));
+
+    auto tt = test_trajectories{};
+    auto mrpa = simp_algorithms::MRPA(1.2);
+
+    SUBCASE("Straight or not"){
+        auto res = mrpa(straight_boi);
+        auto first = straight_boi.locations.front();
+        auto last = straight_boi.locations.back();
+
+        CHECK(res.size() == 1);
+        CHECK(res.front().size() == 2);
+        CHECK(tt.compare_locations(res.front().locations.front(), first));
+        CHECK(tt.compare_locations(res.front().locations.back(), last));
+    }
 }

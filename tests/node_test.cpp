@@ -28,27 +28,27 @@ TEST_CASE("Find method finds the Node with specified data if available or return
     auto tree = test_node{};
     SUBCASE("Finds deep Node with specified data when node is in tree.") {
         auto actual_node = tree.node.find(4);
-        CHECK((actual_node.data == 4));
+        CHECK(actual_node.data == 4);
     }
 
     SUBCASE("Finds mid-ish Node with specified data when node is in tree.") {
         auto actual_node = tree.node.find(2);
-        CHECK((actual_node.data == 2));
+        CHECK(actual_node.data == 2);
     }
 
     SUBCASE("Finds direct child Node with specified data when node is in tree.") {
         auto actual_node = tree.node.find(5);
-        CHECK((actual_node.data == 5));
+        CHECK(actual_node.data == 5);
     }
 
     SUBCASE("Finds root Node with specified data when node is in tree.") {
         auto actual_node = tree.node.find(1);
-        CHECK((actual_node.data == 1));
+        CHECK(actual_node.data == 1);
     }
 
     SUBCASE("Returns dummy node when node is not in tree.") {
         auto actual_node = tree.node.find(6);
-        CHECK((actual_node.data == -1));
+        CHECK(actual_node.data == -1);
     }
 }
 

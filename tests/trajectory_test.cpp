@@ -7,7 +7,7 @@ TEST_CASE("Trajectory - Size method returns correct size for location container"
     SUBCASE("0 point trajectory") {
     auto trajectory = data_structures::Trajectory{0, std::vector<data_structures::Location>{}};
 
-    CHECK((trajectory.size() == 0));
+    CHECK(trajectory.size() == 0);
     }
 
     SUBCASE("1 point trajectory") {
@@ -17,7 +17,7 @@ TEST_CASE("Trajectory - Size method returns correct size for location container"
             }
         };
 
-        CHECK((trajectory.size() == 1));
+        CHECK(trajectory.size() == 1);
     }
     SUBCASE("10 point trajectory") {
         auto trajectory = data_structures::Trajectory{
@@ -35,7 +35,7 @@ TEST_CASE("Trajectory - Size method returns correct size for location container"
                 }
         };
 
-        CHECK((trajectory.size() == 10));
+        CHECK(trajectory.size() == 10);
     }
 }
 
@@ -44,7 +44,7 @@ TEST_CASE("Trajectory - Subscripting operator returns correct element from conta
     auto expected_location = data_structures::Location{1, 0, 0, 0};
     trajectory.locations.emplace_back(expected_location);
 
-    CHECK((expected_location == trajectory[0]));
+    CHECK(expected_location == trajectory[0]);
 }
 
 TEST_CASE("Location - Equal operator returns correct equality between two locations") {
@@ -53,14 +53,14 @@ TEST_CASE("Location - Equal operator returns correct equality between two locati
         auto location1 = data_structures::Location{1, 0, 0, 0};
         auto location2 = data_structures::Location{1, 0, 0, 0};
 
-        CHECK((location1 == location2));
+        CHECK(location1 == location2);
     }
 
     SUBCASE("Location - Two Locations with different order, timestamp, longitude, and latitude are not equal") {
         auto location1 = data_structures::Location{1, 0, 0, 0};
         auto location2 = data_structures::Location{1, 2, 3, 4};
 
-        CHECK_FALSE((location1 == location2));
+        CHECK_FALSE(location1 == location2);
     }
 }
 
@@ -71,7 +71,7 @@ TEST_CASE("operator<< prints location order") {
         auto os = std::ostringstream{};
         os << location;
 
-        CHECK((os.str() == std::to_string(location.order)));
+        CHECK(os.str() == std::to_string(location.order));
     }
 
     SUBCASE("Two locations prints two location orders") {
@@ -80,6 +80,6 @@ TEST_CASE("operator<< prints location order") {
         auto os = std::ostringstream{};
         os << location1 << location2;
 
-        CHECK((os.str() == std::to_string(location1.order) + std::to_string(location2.order)));
+        CHECK(os.str() == std::to_string(location1.order) + std::to_string(location2.order));
     }
 }
