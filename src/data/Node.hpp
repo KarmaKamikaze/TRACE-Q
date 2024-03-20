@@ -16,7 +16,7 @@ namespace data_structures {
         explicit Node(T data) : data(data) {};
 
         /**
-         * Finds a node with the specified data value.
+         * Finds a node with the specified data value. Node data values are assumed to be unique.
          * @param node_data The data value to search for.
          * @return A reference to the found node or a dummy node if not found.
          */
