@@ -28,6 +28,13 @@ namespace simp_algorithms {
             result.emplace_back(approximation);
         }
 
+        // Remove duplicates that may occur with very small resolution scales
+        for (auto i = static_cast<int>(result.size() - 1); i > 0; i--) {
+            if (result[i].size() == result[i - 1].size()) {
+                result.erase(std::begin(result) + i);
+            }
+        }
+
         return result;
     }
 

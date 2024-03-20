@@ -5,10 +5,10 @@
 2. Geolife: https://www.microsoft.com/en-us/download/details.aspx?id=52367
 
 # Step 2: Create folders:
-1. P8-Project/datasets
+1. TRACE-Q/datasets
    1. /t-drive
    2. /geolife
-2. P8-Project/sqlite
+2. TRACE-Q/sqlite
    1. Create "m_trajectory.m_db" file
 
 
