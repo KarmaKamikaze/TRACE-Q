@@ -8,8 +8,7 @@
 namespace data_structures {
 
     template<typename T>
-    class Node {
-    public:
+    struct Node {
         T data {};
         std::shared_ptr<Node<T>> parent {};
         std::vector<Node<T>> children {};
