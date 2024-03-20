@@ -58,7 +58,7 @@ TEST_CASE("operator<< prints correct tree structure with node data values") {
         auto os = std::ostringstream{};
         os << tree.node;
 
-        auto expected_tree = std::string{"1{2{3 4 } 5 }"};
+        auto expected_tree = std::string{"1 { 2 { 3 4 } 5 }"};
 
         CHECK(os.str() == expected_tree);
     }

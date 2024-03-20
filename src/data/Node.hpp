@@ -46,7 +46,7 @@ namespace data_structures {
         friend std::ostream& operator<<(std::ostream& os, const Node& node) {
             os << node.data;
             if (!node.children.empty()) {
-                os << "{";
+                os << ' ' << "{" << ' ';
             }
             for (const auto& x : node.children) {
                 os << x << " "; // Recursively print child nodes
