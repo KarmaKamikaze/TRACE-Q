@@ -43,7 +43,7 @@ int main() {
     t.locations.emplace_back(data_structures::Location(17, 53, 277, 143));
     t.locations.emplace_back(data_structures::Location(18, 60, 300, 200));
 
-    auto mrpa = simp_algorithms::MRPA{};
+    auto mrpa = simp_algorithms::MRPA{2};
     auto results = mrpa(t);
 
     for (int i = 0; i < results.size(); i++) {

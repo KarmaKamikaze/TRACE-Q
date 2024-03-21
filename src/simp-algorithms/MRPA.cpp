@@ -11,6 +11,10 @@
 namespace simp_algorithms {
 
     std::vector<data_structures::Trajectory> MRPA::operator()(Trajectory const& trajectory) const {
+        if(resolution_scale > static_cast<double>(trajectory.size())) {
+            throw std::invalid_argument("resolution_scale is larger than the trajectory's size");
+        }
+
         std::vector<Trajectory> result{};
         auto error_tolerances = MRPA::error_tolerance_init(trajectory);
 
@@ -24,11 +28,18 @@ namespace simp_algorithms {
             result.emplace_back(approximation);
         }
 
+        // Remove duplicates that may occur with very small resolution scales
+        for (auto i = static_cast<int>(result.size() - 1); i > 0; i--) {
+            if (result[i].size() == result[i - 1].size()) {
+                result.erase(std::begin(result) + i);
+            }
+        }
+
         return result;
     }
 
 
-    std::vector<double> MRPA::error_tolerance_init(Trajectory const& trajectory) {
+    std::vector<double> MRPA::error_tolerance_init(Trajectory const& trajectory) const {
         std::vector<double> result{};
 
         auto number_of_tolerances = std::floor(std::log(trajectory.size()) /
@@ -146,7 +157,6 @@ namespace simp_algorithms {
                 continue;
             }
             auto error = MRPA::error_SED_sum(trajectory, index1.order, index2.order);
-            std::cout << "Edge test: " << index1.order << " " << index2.order << " Error: " << error << "\n";
             if (error <= error_tol) {
                 unvisited.erase(unvisited.cbegin() + i);
                 i--; // decrement i because of erase

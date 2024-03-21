@@ -8,8 +8,7 @@
 namespace data_structures {
 
     template<typename T>
-    class Node {
-    public:
+    struct Node {
         T data {};
         std::shared_ptr<Node<T>> parent {};
         std::vector<Node<T>> children {};
@@ -17,7 +16,7 @@ namespace data_structures {
         explicit Node(T data) : data(data) {};
 
         /**
-         * Finds a node with the specified data value.
+         * Finds a node with the specified data value. Node data values are assumed to be unique.
          * @param node_data The data value to search for.
          * @return A reference to the found node or a dummy node if not found.
          */
@@ -47,7 +46,7 @@ namespace data_structures {
         friend std::ostream& operator<<(std::ostream& os, const Node& node) {
             os << node.data;
             if (!node.children.empty()) {
-                os << "{";
+                os << " { ";
             }
             for (const auto& x : node.children) {
                 os << x << " "; // Recursively print child nodes
