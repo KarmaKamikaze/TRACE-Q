@@ -203,21 +203,21 @@ TEST_CASE("MRPA - Check if the first and last locations in simplifications are c
 }
 
 TEST_CASE("MRPA - Simplification of a straight line yields only the first and last locations") {
-    auto straight_boi = data_structures::Trajectory{};
-    straight_boi.locations.emplace_back(data_structures::Location(1, 0, 0, 0));
-    straight_boi.locations.emplace_back(data_structures::Location(2, 1, 1, 1));
-    straight_boi.locations.emplace_back(data_structures::Location(3, 2, 2, 2));
-    straight_boi.locations.emplace_back(data_structures::Location(4, 3, 3, 3));
-    straight_boi.locations.emplace_back(data_structures::Location(5, 4, 4, 4));
-    straight_boi.locations.emplace_back(data_structures::Location(6, 5, 5, 5));
+    auto straight_trajectory = data_structures::Trajectory{};
+    straight_trajectory.locations.emplace_back(data_structures::Location(1, 0, 0, 0));
+    straight_trajectory.locations.emplace_back(data_structures::Location(2, 1, 1, 1));
+    straight_trajectory.locations.emplace_back(data_structures::Location(3, 2, 2, 2));
+    straight_trajectory.locations.emplace_back(data_structures::Location(4, 3, 3, 3));
+    straight_trajectory.locations.emplace_back(data_structures::Location(5, 4, 4, 4));
+    straight_trajectory.locations.emplace_back(data_structures::Location(6, 5, 5, 5));
 
     auto tt = test_trajectories{};
     auto mrpa = simp_algorithms::MRPA(1.2);
 
     SUBCASE("Straight or not"){
-        auto res = mrpa(straight_boi);
-        auto first = straight_boi.locations.front();
-        auto last = straight_boi.locations.back();
+        auto res = mrpa(straight_trajectory);
+        auto first = straight_trajectory.locations.front();
+        auto last = straight_trajectory.locations.back();
 
         CHECK(res.size() == 1);
         CHECK(res.front().size() == 2);
