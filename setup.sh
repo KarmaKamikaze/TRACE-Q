@@ -94,6 +94,3 @@ then
 fi
 
 echo "Finished setup!"
-echo "MANUAL INTERVENTION IS REQUIRED!"
-echo "Please download the T-Drive Trajectory dataset and place it in $t_drive_dir"
-echo "https://onedrive.live.com/?authkey=%21ADgmvTgfqs4hn4Q&cid=CF159105855090C5&id=CF159105855090C5%2141466&parId=CF159105855090C5%211438&o=OneUp"
