@@ -16,6 +16,7 @@ namespace spatial_queries {
         };
 
         static bool in_range(data_structures::Trajectory const& trajectory, Window const& window);
+        static double query_error(data_structures::Trajectory const& );
     };
 
 } // spatial_queries
