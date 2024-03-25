@@ -22,7 +22,7 @@ namespace trajectory_data_handling {
         return 0;
     }
 
-    int query_handler::callback_datastructure(void *query_success_history, int argc, char **argv, char **azColName) {
+    int query_handler::callback_original_datastructure(void *query_success_history, int argc, char **argv, char **azColName) {
         char* endptr;
 
         auto traj_id = std::strtoul(argv[0], &endptr, 10);
@@ -47,7 +47,32 @@ namespace trajectory_data_handling {
         return 0;
     }
 
-    int query_handler::callback_rtree_insert(void *query_success_history, int argc, char **argv, char **azColName) {
+    int query_handler::callback_simplified_datastructure(void *query_success_history, int argc, char **argv, char **azColName) {
+        char* endptr;
+
+        auto traj_id = std::strtoul(argv[0], &endptr, 10);
+
+        if (*endptr != '\0') {
+            std::cerr << "Error: Invalid m_trajectory ID\n";
+            return 1;
+        }
+
+        if (m_currentTrajectory != traj_id) {
+            simplified_trajectories->push_back(m_trajectory);
+            m_trajectory = data_structures::Trajectory{};
+            m_trajectory.id = traj_id;
+            m_order = 1;
+            m_currentTrajectory = traj_id;
+        }
+
+        data_structures::Location location(m_order, std::strtold(argv[1], nullptr), std::stod(argv[2]), std::stod(argv[3]));
+
+        m_trajectory.locations.push_back(location);
+        m_order += 1;
+        return 0;
+    }
+
+    int query_handler::callback_original_rtree_insert(void *query_success_history, int argc, char **argv, char **azColName) {
         char *zErrMsg = nullptr;
         std::string id = argv[0];
         std::string minLongitude = argv[1];
@@ -57,7 +82,6 @@ namespace trajectory_data_handling {
         std::string minTimestamp = argv[5];
         std::string maxTimestamp = argv[6];
 
-        // Construct the SQL query using raw string literals and std::to_string()
         std::string query = R"(INSERT INTO trajectory_rtree VALUES()"
                             + id + ", "
                             + minLongitude + ", "
@@ -67,9 +91,33 @@ namespace trajectory_data_handling {
                             + minTimestamp + "', '"
                             + maxTimestamp + "')";
 
-        std::cout << query << '\n';
+        int rc = sqlite3_exec(m_db, query.c_str(), callback, 0, &zErrMsg);
+        if (rc != SQLITE_OK) {
+            std::cerr << "SQL error: " << zErrMsg << std::endl;
+            sqlite3_free(zErrMsg);
+        }
+        return 0;
+    }
 
-        // Execute the SQL query
+    int query_handler::callback_simplified_rtree_insert(void *query_success_history, int argc, char **argv, char **azColName) {
+        char *zErrMsg = nullptr;
+        std::string id = argv[0];
+        std::string minLongitude = argv[1];
+        std::string maxLongitude = argv[2];
+        std::string minLatitude = argv[3];
+        std::string maxLatitude = argv[4];
+        std::string minTimestamp = argv[5];
+        std::string maxTimestamp = argv[6];
+
+        std::string query = R"(INSERT INTO trajectory_rtree VALUES()"
+                            + id + ", "
+                            + minLongitude + ", "
+                            + maxLongitude + ", "
+                            + minLatitude + ", "
+                            + maxLatitude + ", '"
+                            + minTimestamp + "', '"
+                            + maxTimestamp + "')";
+
         int rc = sqlite3_exec(m_db, query.c_str(), callback, 0, &zErrMsg);
         if (rc != SQLITE_OK) {
             std::cerr << "SQL error: " << zErrMsg << std::endl;
@@ -88,15 +136,21 @@ namespace trajectory_data_handling {
         }
 
         switch(callback_type) {
-            case load_trajectory_information_into_datastructure:
-                rc = sqlite3_exec(m_db, query.c_str(), callback_datastructure, 0, &zErrMsg);
+            case load_original_trajectory_information_into_datastructure:
+                rc = sqlite3_exec(m_db, query.c_str(), callback_original_datastructure, 0, &zErrMsg);
                 all_trajectories->push_back(m_trajectory);
                 break;
+            case load_simplified_trajectory_information_into_datastructure:
+                rc = sqlite3_exec(m_db, query.c_str(), callback_simplified_datastructure, 0, &zErrMsg);
+                simplified_trajectories->push_back(m_trajectory);
             case insert_into_trajectory_table:
                 rc = sqlite3_exec(m_db, query.c_str(), callback, 0, &zErrMsg);
                 break;
-            case insert_into_rtree_table:
-                rc = sqlite3_exec(m_db, query.c_str(), callback_rtree_insert, 0, &zErrMsg);
+            case insert_into_original_rtree_table:
+                rc = sqlite3_exec(m_db, query.c_str(), callback_original_rtree_insert, 0, &zErrMsg);
+                break;
+            case insert_into_simplified_rtree_table:
+                rc = sqlite3_exec(m_db, query.c_str(), callback_original_rtree_insert, 0, &zErrMsg);
                 break;
             case create_table:
                 rc = sqlite3_exec(m_db, query.c_str(), callback, 0, &zErrMsg);
