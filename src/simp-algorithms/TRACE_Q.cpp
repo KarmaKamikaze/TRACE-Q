@@ -1,5 +1,6 @@
 #include <future>
 #include <iostream>
+#include <cmath>
 #include "TRACE_Q.hpp"
 #include "MRPA.hpp"
 #include "../querying/Range_Query.hpp"
