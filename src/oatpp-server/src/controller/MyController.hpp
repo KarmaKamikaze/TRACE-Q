@@ -26,7 +26,7 @@ public:
     ENDPOINT("GET", "/", root) {
         auto dto = MyDto::createShared();
         dto->statusCode = 200;
-        dto->message = "Hello World!";
+        dto->message = "oat++ bad?";
         return createDtoResponse(Status::CODE_200, dto);
     }
     ENDPOINT("GET", "/second", second) {
