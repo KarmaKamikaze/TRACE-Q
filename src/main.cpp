@@ -53,6 +53,5 @@ int main() {
             << ", t: " << point.timestamp << "\n";
         }
     }
-
     return 0;
 }
