@@ -8,9 +8,9 @@
 #include <cstring>
 #include <cstdlib>
 #include <filesystem>
+#include <sqlite3.h>
 
 #include "../data/trajectory_structure.hpp"
-#include "../../external/sqlite/sqlite3.h"
 
 namespace trajectory_data_handling {
     enum query_purpose {
