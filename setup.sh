@@ -9,6 +9,7 @@ sqlite_version="sqlite-amalgamation-3450100"
 sqlite_db_name="trajectory.db"
 
 echo "Checking that folder structure exists"
+
 if [ ! -d "$external_dir" ]
 then
   echo "Creating $external_dir"
