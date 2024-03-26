@@ -25,6 +25,6 @@ If you are on Linux, run the bash script to install the project dependencies:
 
 #### Step 3: Move datasets into folders:
 1. T-Drive dataset goes into `/t-drive`
-2. `/geolife`
+2. Geolife dataset goes into `/geolife`
 2. `TRACE-Q/`
    1. Create `trajectory.db` file
