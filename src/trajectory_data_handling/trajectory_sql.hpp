@@ -2,7 +2,7 @@
 #define P8_PROJECT_TRAJECTORY_H
 
 #include <vector>
-
+#include <sqlite3.h>
 #include "../data/trajectory_structure.hpp"
 #include "sqlite_querying.hpp"
 

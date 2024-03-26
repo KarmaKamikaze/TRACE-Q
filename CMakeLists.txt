@@ -23,4 +23,3 @@ enable_testing()
 # Add subdirectories
 add_subdirectory(src)
 add_subdirectory(tests)
-target_link_libraries(TRACE_Q LINK_PUBLIC sqlite3)

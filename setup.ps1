@@ -2,8 +2,6 @@ $external_dir = ".\external"
 $dataset_dir = ".\external\datasets"
 $t_drive_dir = ".\external\datasets\t-drive"
 $geolife_dir = ".\external\datasets\geolife"
-$sqlite_dir = ".\external\sqlite"
-$sqlite_version = "sqlite-amalgamation-3450100"
 $sqlite_db_name = "trajectory.db"
 
 Write-Host "Checking that folder structure exists"
@@ -24,47 +22,38 @@ if (-not (Test-Path $t_drive_dir -PathType Container)) {
     Write-Host "Downloading T-Drive trajectory dataset"
     $outputPath = Join-Path -Path $t_drive_dir -ChildPath "temp.zip"
     Invoke-WebRequest -Uri "https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/06.zip" -OutFile $outputPath
-    Start-Sleep -Milliseconds 500
     Write-Host "Unpacking T-Drive dataset part 1"
     Expand-Archive -Path $outputPath -DestinationPath $t_drive_dir
     Remove-Item -Path $outputPath
     Invoke-WebRequest -Uri "https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/07.zip" -OutFile $outputPath
-    Start-Sleep -Milliseconds 500
     Write-Host "Unpacking T-Drive dataset part 2"
     Expand-Archive -Path $outputPath -DestinationPath $t_drive_dir
     Remove-Item -Path $outputPath
     Invoke-WebRequest -Uri "https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/08.zip" -OutFile $outputPath
-    Start-Sleep -Milliseconds 500
     Write-Host "Unpacking T-Drive dataset part 3"
     Expand-Archive -Path $outputPath -DestinationPath $t_drive_dir
     Remove-Item -Path $outputPath
     Invoke-WebRequest -Uri "https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/09.zip" -OutFile $outputPath
-    Start-Sleep -Milliseconds 500
     Write-Host "Unpacking T-Drive dataset part 4"
     Expand-Archive -Path $outputPath -DestinationPath $t_drive_dir
     Remove-Item -Path $outputPath
     Invoke-WebRequest -Uri "https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/010.zip" -OutFile $outputPath
-    Start-Sleep -Milliseconds 500
     Write-Host "Unpacking T-Drive dataset part 5"
     Expand-Archive -Path $outputPath -DestinationPath $t_drive_dir
     Remove-Item -Path $outputPath
     Invoke-WebRequest -Uri "https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/011.zip" -OutFile $outputPath
-    Start-Sleep -Milliseconds 500
     Write-Host "Unpacking T-Drive dataset part 6"
     Expand-Archive -Path $outputPath -DestinationPath $t_drive_dir
     Remove-Item -Path $outputPath
     Invoke-WebRequest -Uri "https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/012.zip" -OutFile $outputPath
-    Start-Sleep -Milliseconds 500
     Write-Host "Unpacking T-Drive dataset part 7"
     Expand-Archive -Path $outputPath -DestinationPath $t_drive_dir
     Remove-Item -Path $outputPath
     Invoke-WebRequest -Uri "https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/013.zip" -OutFile $outputPath
-    Start-Sleep -Milliseconds 500
     Write-Host "Unpacking T-Drive dataset part 8"
     Expand-Archive -Path $outputPath -DestinationPath $t_drive_dir
     Remove-Item -Path $outputPath
     Invoke-WebRequest -Uri "https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/014.zip" -OutFile $outputPath
-    Start-Sleep -Milliseconds 500
     Write-Host "Unpacking T-Drive dataset part 9"
     Expand-Archive -Path $outputPath -DestinationPath $t_drive_dir
     Remove-Item -Path $outputPath
@@ -76,29 +65,12 @@ if (-not (Test-Path $geolife_dir -PathType Container)) {
     Write-Host "Downloading Geolife trajectory dataset"
     $outputPath = Join-Path -Path $geolife_dir -ChildPath "temp.zip"
     Invoke-WebRequest -Uri "https://download.microsoft.com/download/F/4/8/F4894AA5-FDBC-481E-9285-D5F8C4C4F039/Geolife%20Trajectories%201.3.zip" -OutFile $outputPath
-    Start-Sleep -Milliseconds 500
     Write-Host "Unpacking Geolife trajectory dataset"
     Expand-Archive -Path $outputPath -DestinationPath $geolife_dir
     Remove-Item -Path $outputPath
 }
 
-if (-not (Test-Path $sqlite_dir -PathType Container)) {
-    Write-Host "Creating $sqlite_dir"
-    New-Item -Path $sqlite_dir -ItemType Directory | Out-Null
-    Write-Host "Downloading sqlite3 C/C++ library"
-    $outputPath = Join-Path -Path $sqlite_dir -ChildPath "temp.zip"
-    Invoke-WebRequest -Uri "https://www.sqlite.org/2024/sqlite-amalgamation-3450100.zip" -OutFile $outputPath
-    Start-Sleep -Milliseconds 500
-    Write-Host "Unpacking sqlite3 library"
-    Expand-Archive -Path $outputPath -DestinationPath $sqlite_dir
-    Remove-Item -Path $outputPath
-    Move-Item -Path "$sqlite_dir\$sqlite_version\shell.c" -Destination "$sqlite_dir\shell.c"
-    Move-Item -Path "$sqlite_dir\$sqlite_version\sqlite3.c" -Destination "$sqlite_dir\sqlite3.c"
-    Move-Item -Path "$sqlite_dir\$sqlite_version\sqlite3.h" -Destination "$sqlite_dir\sqlite3.h"
-    Move-Item -Path "$sqlite_dir\$sqlite_version\sqlite3ext.h" -Destination "$sqlite_dir\sqlite3ext.h"
-    Remove-Item -Path "$sqlite_dir\$sqlite_version" -Force -Recurse
-    Write-Host "Creating $sqlite_db_name file"
-    New-Item -Path $sqlite_db_name -ItemType File | Out-Null
-}
+Write-Host "Creating $sqlite_db_name file"
+New-Item -Path $sqlite_db_name -ItemType File | Out-Null
 
 Write-Host "Finished setup!"

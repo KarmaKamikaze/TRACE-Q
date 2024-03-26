@@ -3,6 +3,7 @@
 #include "trajectory_data_handling/sqlite_querying.hpp"
 #include "trajectory_data_handling/trajectory_file_manager.hpp"
 #include "simp-algorithms/MRPA.hpp"
+#include "TRACE_Q.hpp"
 
 int main() {
     trajectory_data_handling::file_manager file_manager{};
@@ -60,6 +61,9 @@ int main() {
 //            << ", t: " << point.timestamp << "\n";
 //        }
 //    }
+
+    auto trace_q = trace_q::TRACE_Q{0.10, 0.3, 3, 0.5, 0.2};
+    auto result = trace_q.simplify(t, 20, 10);
 
     return 0;
 }
