@@ -49,14 +49,15 @@ namespace trajectory_data_handling {
     void trajectory_manager::load_database_into_datastructure(db_table table) {
         std::string table_name{};
         std::stringstream query{};
-        query << "SELECT trajectory_id, timestamp, longitude, latitude FROM " << table_name;
         switch(table) {
             case original_trajectories:
                 table_name = "trajectory_information";
+                query << "SELECT trajectory_id, timestamp, longitude, latitude FROM " << table_name;
                 trajectory_data_handling::query_handler::run_sql(query.str().c_str(), trajectory_data_handling::load_original_trajectory_information_into_datastructure);
                 break;
             case simplified_trajectories:
                 table_name = "simplified_trajectory_information";
+                query << "SELECT trajectory_id, timestamp, longitude, latitude FROM " << table_name;
                 trajectory_data_handling::query_handler::run_sql(query.str().c_str(), trajectory_data_handling::load_simplified_trajectory_information_into_datastructure);
                 break;
             default:

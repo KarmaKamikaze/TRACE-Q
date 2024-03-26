@@ -8,9 +8,10 @@ namespace trajectory_data_handling {
     unsigned long query_handler::m_currentTrajectory = 1;
     int query_handler::m_order{};
     std::shared_ptr<std::vector<data_structures::Trajectory>> trajectory_data_handling::query_handler::all_trajectories;
+    std::shared_ptr<std::vector<data_structures::Trajectory>> trajectory_data_handling::query_handler::simplified_trajectories;
 
 
-    const std::filesystem::path query_handler::m_sqlite_db_filesystem_path = std::filesystem::current_path().parent_path() / "src" / "data" / "trajectory.db";
+    const std::filesystem::path query_handler::m_sqlite_db_filesystem_path = std::filesystem::current_path().parent_path().parent_path() / "trajectory.db";
     const std::string query_handler::m_sqlite_db_path_string = m_sqlite_db_filesystem_path.generic_string();
     const char* query_handler::m_sqlite_db_path = m_sqlite_db_path_string.c_str();
 
@@ -109,7 +110,7 @@ namespace trajectory_data_handling {
         std::string minTimestamp = argv[5];
         std::string maxTimestamp = argv[6];
 
-        std::string query = R"(INSERT INTO trajectory_rtree VALUES()"
+        std::string query = R"(INSERT INTO simplified_trajectory_rtree VALUES()"
                             + id + ", "
                             + minLongitude + ", "
                             + maxLongitude + ", "
@@ -143,6 +144,7 @@ namespace trajectory_data_handling {
             case load_simplified_trajectory_information_into_datastructure:
                 rc = sqlite3_exec(m_db, query.c_str(), callback_simplified_datastructure, 0, &zErrMsg);
                 simplified_trajectories->push_back(m_trajectory);
+                break;
             case insert_into_trajectory_table:
                 rc = sqlite3_exec(m_db, query.c_str(), callback, 0, &zErrMsg);
                 break;
@@ -150,7 +152,7 @@ namespace trajectory_data_handling {
                 rc = sqlite3_exec(m_db, query.c_str(), callback_original_rtree_insert, 0, &zErrMsg);
                 break;
             case insert_into_simplified_rtree_table:
-                rc = sqlite3_exec(m_db, query.c_str(), callback_original_rtree_insert, 0, &zErrMsg);
+                rc = sqlite3_exec(m_db, query.c_str(), callback_simplified_rtree_insert, 0, &zErrMsg);
                 break;
             case create_table:
                 rc = sqlite3_exec(m_db, query.c_str(), callback, 0, &zErrMsg);
