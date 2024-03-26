@@ -76,22 +76,4 @@ then
   rm "$tmpfile"
 fi
 
-if [ ! -d "$sqlite_dir" ]
-then
-  echo "Creating $sqlite_dir"
-  mkdir -p -- "$sqlite_dir"
-  echo "Downloading sqlite3 C/C++ library"
-  wget "https://www.sqlite.org/2024/sqlite-amalgamation-3450100.zip" -O "$tmpfile"
-  echo "Unpacking sqlite3 library"
-  unzip -d "$sqlite_dir" "$tmpfile"
-  rm "$tmpfile"
-  mv "$sqlite_dir/$sqlite_version/shell.c" "$sqlite_dir/shell.c"
-  mv "$sqlite_dir/$sqlite_version/sqlite3.c" "$sqlite_dir/sqlite3.c"
-  mv "$sqlite_dir/$sqlite_version/sqlite3.h" "$sqlite_dir/sqlite3.h"
-  mv "$sqlite_dir/$sqlite_version/sqlite3ext.h" "$sqlite_dir/sqlite3ext.h"
-  rm -d "$sqlite_dir/$sqlite_version/"
-  echo "Creating $sqlite_db_name file"
-  touch "$sqlite_db_name"
-fi
-
 echo "Finished setup!"

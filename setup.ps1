@@ -72,22 +72,4 @@ if (-not (Test-Path $geolife_dir -PathType Container)) {
     Remove-Item -Path $outputPath
 }
 
-if (-not (Test-Path $sqlite_dir -PathType Container)) {
-    Write-Host "Creating $sqlite_dir"
-    New-Item -Path $sqlite_dir -ItemType Directory | Out-Null
-    Write-Host "Downloading sqlite3 C/C++ library"
-    $outputPath = Join-Path -Path $sqlite_dir -ChildPath "temp.zip"
-    Invoke-WebRequest -Uri "https://www.sqlite.org/2024/sqlite-amalgamation-3450100.zip" -OutFile $outputPath
-    Write-Host "Unpacking sqlite3 library"
-    Expand-Archive -Path $outputPath -DestinationPath $sqlite_dir
-    Remove-Item -Path $outputPath
-    Move-Item -Path "$sqlite_dir\$sqlite_version\shell.c" -Destination "$sqlite_dir\shell.c"
-    Move-Item -Path "$sqlite_dir\$sqlite_version\sqlite3.c" -Destination "$sqlite_dir\sqlite3.c"
-    Move-Item -Path "$sqlite_dir\$sqlite_version\sqlite3.h" -Destination "$sqlite_dir\sqlite3.h"
-    Move-Item -Path "$sqlite_dir\$sqlite_version\sqlite3ext.h" -Destination "$sqlite_dir\sqlite3ext.h"
-    Remove-Item -Path "$sqlite_dir\$sqlite_version" -Force -Recurse
-    Write-Host "Creating $sqlite_db_name file"
-    New-Item -Path $sqlite_db_name -ItemType File | Out-Null
-}
-
 Write-Host "Finished setup!"
