@@ -22,8 +22,8 @@ int main() {
 //    file_manager.load_tdrive_dataset(*original_trajectories);
 //    file_manager.load_geolife_dataset(*original_trajectories);
 //    trajectory_manager.insert_trajectories_into_trajectory_table(*original_trajectories, trajectory_data_handling::db_table::original_trajectories);
-    trajectory_manager.load_database_into_datastructure(trajectory_data_handling::query_purpose::load_original_trajectory_information_into_datastructure);
-    trajectory_manager.insert_trajectories_into_trajectory_table(*original_trajectories, trajectory_data_handling::db_table::simplified_trajectories);
+//    trajectory_manager.load_database_into_datastructure(trajectory_data_handling::query_purpose::load_original_trajectory_information_into_datastructure);
+//    trajectory_manager.insert_trajectories_into_trajectory_table(*original_trajectories, trajectory_data_handling::db_table::simplified_trajectories);
 
 //    trajectory_manager.print_trajectories(*alltrajectories);
 //    trajectory_manager.load_trajectories_into_original_rtree();
