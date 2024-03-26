@@ -13,7 +13,7 @@
 #include "../data/trajectory_structure.hpp"
 
 namespace trajectory_data_handling {
-    enum query_purpose {
+    enum class query_purpose {
         insert_into_trajectory_table,
         insert_into_original_rtree_table,
         insert_into_simplified_rtree_table,
@@ -40,9 +40,9 @@ namespace trajectory_data_handling {
         static int callback_original_rtree_insert(void *query_success_history, int argc, char **argv, char **azColName);
         static int callback_simplified_rtree_insert(void *query_success_history, int argc, char **argv, char **azColName);
     public:
-        static std::shared_ptr<std::vector<data_structures::Trajectory>> all_trajectories;
+        static std::shared_ptr<std::vector<data_structures::Trajectory>> original_trajectories;
         static std::shared_ptr<std::vector<data_structures::Trajectory>> simplified_trajectories;
-        static void run_sql(std::string query, query_purpose callback_type);
+        static void run_sql(const std::string& query, query_purpose callback_type);
     };
 }
 #endif

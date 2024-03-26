@@ -14,10 +14,9 @@ namespace trajectory_data_handling {
 
     class trajectory_manager {
     public:
-        void load_trajectories_into_original_rtree();
-        void load_trajectories_into_simplified_rtree();
+        void load_trajectories_into_rtree(query_purpose rtree_table);
         void insert_trajectories_into_trajectory_table(std::vector<data_structures::Trajectory> &all_trajectories, db_table table);
-        void load_database_into_datastructure(db_table table);
+        void load_database_into_datastructure(query_purpose purpose);
         void print_trajectories(std::vector<data_structures::Trajectory> &all_trajectories);
         void create_database();
         void create_rtree_table();

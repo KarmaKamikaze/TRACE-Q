@@ -7,8 +7,8 @@
 
 int main() {
     trajectory_data_handling::file_manager file_manager{};
-    auto all_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
-    trajectory_data_handling::query_handler::all_trajectories = all_trajectories;
+    auto original_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
+    trajectory_data_handling::query_handler::original_trajectories = original_trajectories;
 
     auto simplified_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
     trajectory_data_handling::query_handler::simplified_trajectories = simplified_trajectories;
@@ -19,11 +19,11 @@ int main() {
 //    trajectory_manager.reset_all_data();
 //    trajectory_manager.create_database();
 //    trajectory_manager.create_rtree_table();
-//    file_manager.load_tdrive_dataset(*all_trajectories);
-//    file_manager.load_geolife_dataset(*all_trajectories);
-//    trajectory_manager.insert_trajectories_into_trajectory_table(*all_trajectories, trajectory_data_handling::db_table::original_trajectories);
-//    trajectory_manager.load_database_into_datastructure(trajectory_data_handling::db_table::simplified_trajectories);
-//    trajectory_manager.insert_trajectories_into_trajectory_table(*all_trajectories, trajectory_data_handling::db_table::simplified_trajectories);
+//    file_manager.load_tdrive_dataset(*original_trajectories);
+//    file_manager.load_geolife_dataset(*original_trajectories);
+//    trajectory_manager.insert_trajectories_into_trajectory_table(*original_trajectories, trajectory_data_handling::db_table::original_trajectories);
+    trajectory_manager.load_database_into_datastructure(trajectory_data_handling::query_purpose::load_original_trajectory_information_into_datastructure);
+    trajectory_manager.insert_trajectories_into_trajectory_table(*original_trajectories, trajectory_data_handling::db_table::simplified_trajectories);
 
 //    trajectory_manager.print_trajectories(*alltrajectories);
 //    trajectory_manager.load_trajectories_into_original_rtree();
