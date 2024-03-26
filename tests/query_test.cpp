@@ -29,5 +29,5 @@ TEST_CASE("Range_Query - operator()") {
 
         CHECK_FALSE(in_window);
     }
-    
+
 }
