@@ -1,6 +1,5 @@
 #include "trajectory_sql.hpp"
 #include <iostream>
-#include "../../external/sqlite/sqlite3.h"
 
 namespace trajectory_data_handling {
     void trajectory_manager::load_trajectories_into_rtree() {

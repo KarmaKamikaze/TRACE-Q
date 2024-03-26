@@ -10,4 +10,5 @@ target_link_libraries(TRACE_Q
             simp-algorithms
             trajectory_data_handling
             querying
+            sqlite3
 )
