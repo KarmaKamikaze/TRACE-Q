@@ -43,13 +43,23 @@ namespace trace_q {
          * Possible values: 0.1, 1
          */
         double time_interval_multiplier{};
-        /**
-         * The percentage split between range queries and knn queries
-         * Possible values: 60% (60% range queries and 40% knn queries)
-         */
 
+        /**
+         * Calculates the amount of queries to be performed for a particular trajectory to determine the query error.
+         * The amount is calculated by determining the amount of points in the query grid. The grid is then used
+         * to decide the amount of queries based on the time interval multiplier in both the range and KNN query cases.
+         * Additionally, in range queries, the windows-per-grid-point is taken into account.
+         * @return The total amount of queries to be performed.
+         */
         [[nodiscard]] int calculate_query_amount() const;
 
+        /**
+         * Calculates the query error of a simplified trajectory on a set of query objects.
+         * This is more accurately a query accuracy, since it is a percentage queries that return correct results.
+         * @param trajectory Simplified trajectory
+         * @param query_objects Vector of query objects that define a query and contain the original trajectory's result
+         * @return Query accuracy
+         */
         [[nodiscard]] double query_error(data_structures::Trajectory const& trajectory,
                              std::vector<std::shared_ptr<spatial_queries::Query>> const& query_objects) const;
 
