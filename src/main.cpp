@@ -5,8 +5,6 @@
 #include "simp-algorithms/MRPA.hpp"
 #include "TRACE_Q.hpp"
 
-#include <tuple>
-
 int main() {
     trajectory_data_handling::file_manager file_manager{};
     auto original_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
@@ -27,15 +25,15 @@ int main() {
 //    trajectory_manager.load_database_into_datastructure(trajectory_data_handling::query_purpose::load_original_trajectory_information_into_datastructure, {2, 18, 20, 21});
 //    trajectory_manager.insert_trajectories_into_trajectory_table(*original_trajectories, trajectory_data_handling::db_table::simplified_trajectories);
 
-    std::tuple<float, float> longitudeRange, latitudeRange, timestampRange;
-    longitudeRange = std::make_tuple(115, 116.65901184082031);
-    latitudeRange = std::make_tuple(39.0, 41.0);
-    timestampRange = std::make_tuple(0, 91202490113);
-
-    trajectory_manager.spatial_query_on_rtree_table(trajectory_data_handling::query_purpose::load_original_rtree_into_datastructure, longitudeRange, latitudeRange, timestampRange);
-
-
-    trajectory_manager.print_trajectories(*original_trajectories);
+//    std::tuple<float, float> longitudeRange, latitudeRange, timestampRange;
+//    longitudeRange = std::make_tuple(115, 116.65901184082031);
+//    latitudeRange = std::make_tuple(39.0, 41.0);
+//    timestampRange = std::make_tuple(0, 91202490113);
+//
+//    trajectory_manager.spatial_query_on_rtree_table(trajectory_data_handling::query_purpose::load_original_rtree_into_datastructure, longitudeRange, latitudeRange, timestampRange);
+//
+//
+//    trajectory_manager.print_trajectories(*original_trajectories);
 //    trajectory_manager.load_trajectories_into_rtree(trajectory_data_handling::query_purpose::insert_into_original_rtree_table);
 //    trajectory_manager.load_trajectories_into_simplified_rtree();
 //    trajectory_manager.reset_all_data();
