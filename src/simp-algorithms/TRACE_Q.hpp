@@ -90,7 +90,7 @@ namespace trace_q {
         MBR expand_MBR(MBR) const;
 
         [[nodiscard]] std::vector<std::shared_ptr<spatial_queries::Range_Query>> range_query_initialization(
-                data_structures::Trajectory const& trajectory, double x, double y, long double t, MBR mbr) const;
+                data_structures::Trajectory const& trajectory, double x, double y, long double t, MBR const& mbr) const;
 
     public:
         /**

@@ -91,15 +91,15 @@ namespace trace_q {
     }
 
     TRACE_Q::MBR TRACE_Q::expand_MBR(MBR mbr) const {
-        mbr.x_low = mbr.x_low * grid_expansion_multiplier;
-        mbr.x_high = mbr.x_high * grid_expansion_multiplier;
-        mbr.y_low = mbr.y_low * grid_expansion_multiplier;
-        mbr.y_high = mbr.y_high * grid_expansion_multiplier;
+        mbr.x_low = mbr.x_low / (1 + grid_expansion_multiplier);
+        mbr.x_high = mbr.x_high * (1 + grid_expansion_multiplier);
+        mbr.y_low = mbr.y_low / (1 + grid_expansion_multiplier);
+        mbr.y_high = mbr.y_high * (1 + grid_expansion_multiplier);
         return mbr;
     }
 
     std::vector<std::shared_ptr<spatial_queries::Range_Query>> TRACE_Q::range_query_initialization(
-            data_structures::Trajectory const& trajectory, double x, double y, long double t, MBR mbr) const {
+            data_structures::Trajectory const& trajectory, double x, double y, long double t, MBR const& mbr) const {
         std::vector<std::shared_ptr<spatial_queries::Range_Query>> result{};
         std::vector<std::future<spatial_queries::Range_Query>> futures{};
 
@@ -127,12 +127,12 @@ namespace trace_q {
             }
 
             auto w_t_low = t - 0.5 * (pow(window_expansion_rate, window_number)
-                                      * grid_density_multiplier * (mbr.t_high - mbr.t_low));
+                                      * time_interval_multiplier * (mbr.t_high - mbr.t_low));
             if (w_t_low < mbr.t_low) {
                 w_t_low = mbr.t_low;
             }
             auto w_t_high = t + 0.5 * (pow(window_expansion_rate, window_number)
-                                       * grid_density_multiplier * (mbr.t_high - mbr.t_low));
+                                       * time_interval_multiplier * (mbr.t_high - mbr.t_low));
             if (w_t_high > mbr.t_high) {
                 w_t_high = mbr.t_high;
             }

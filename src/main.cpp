@@ -55,7 +55,7 @@ int main() {
         }
     }
 
-    auto trace_q = trace_q::TRACE_Q{2, 0.3, 3, 0.5, 0.2};
+    auto trace_q = trace_q::TRACE_Q{2, 0.1, 3, 1.3, 0.2};
     auto result = trace_q.simplify(t, 20, 10);
 
     return 0;
