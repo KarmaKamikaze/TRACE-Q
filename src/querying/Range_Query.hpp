@@ -11,8 +11,8 @@ namespace spatial_queries {
             double x_high{};
             double y_low{};
             double y_high{};
-            double t_low{};
-            double t_high{};
+            long double t_low{};
+            long double t_high{};
         };
 
         /**
@@ -45,7 +45,7 @@ namespace spatial_queries {
          * @param t_high The high time value of the range query.
          */
         Range_Query(const data_structures::Trajectory& original_trajectory, double x_low, double x_high, double y_low,
-                    double y_high, double t_low, double t_high) : window{x_low, x_high, y_low, y_high, t_low, t_high}
+                    double y_high, long double t_low, long double t_high) : window{x_low, x_high, y_low, y_high, t_low, t_high}
         {
             original_in_window = in_range(original_trajectory);
         }

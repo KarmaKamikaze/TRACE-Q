@@ -3,32 +3,44 @@
 
 #include "../data/trajectory_structure.hpp"
 #include "../querying/Query.hpp"
+#include "../querying/Range_Query.hpp"
+#include "../querying/KNN_Query.hpp"
+#include "MRPA.hpp"
 
 namespace trace_q {
 
     class TRACE_Q {
         /**
+         * The MRPA algorithm as a function object.
+         */
+        simp_algorithms::MRPA mrpa{};
+
+        /**
          * Total amount of queries to perform when checking query accuracy
          */
         int query_amount{};
+
         /**
          * The factor with which we will scale the grid.
          * The grid is defined by the highest and lowest values of latitude and longitude for a given trajectory.
          * Possible values: 1, 1.3
          */
         double grid_expansion_multiplier{};
+
         /**
          * Factor describing how close points appear in the grid.
          * Lower values cause points to be more densely packed, thus increasing the number of queries
          * Possible values: 0.2, 0.05
          */
         double grid_density_multiplier{};
+
         /**
          * Number of windows we will create for each grid point.
          * Only relevant to range queries, as these use windows
          * Increases to this value will increase the number of queries.
          */
         int windows_per_grid_point{};
+
         /**
          * The factor which the different windows of a grid point will scale.
          * This factor will be applied to the previous window's longitude and latitude to create the new window
@@ -37,6 +49,7 @@ namespace trace_q {
          * Possible values: 1.3, 2
          */
         double window_expansion_rate{};
+
         /**
          * The factor that will be used to scale time intervals for each window.
          * Lower values will result in more queries.
@@ -63,19 +76,36 @@ namespace trace_q {
         [[nodiscard]] double query_error(data_structures::Trajectory const& trajectory,
                              std::vector<std::shared_ptr<spatial_queries::Query>> const& query_objects) const;
 
+        struct MBR {
+            double x_low{};
+            double x_high{};
+            double y_low{};
+            double y_high{};
+            long double t_low{};
+            long double t_high{};
+        };
+
+        static MBR calculate_MBR(data_structures::Trajectory const&);
+
+        MBR expand_MBR(MBR) const;
+
+        [[nodiscard]] std::vector<std::shared_ptr<spatial_queries::Range_Query>> range_query_initialization(
+                data_structures::Trajectory const& trajectory, double x, double y, long double t, MBR mbr) const;
+
     public:
         /**
          * The TRACE_Q constructor that determines the query_amount based on the given parameters.
-         * @param grid_expansion_multiplier The grid scaling factor.
+         * @param resolution_scale The MRPA resolution scale.
          * @param grid_density_multiplier The grid density factor, which describes how close points
          * appear in the grid.
          * @param windows_per_grid_point The amount of windows per point in the grid.
          * @param window_expansion_rate The window scaling rate for each grid point.
          * @param time_interval_multiplier The multiplier used to scale the time interval for each window.
          */
-        TRACE_Q(double grid_expansion_multiplier, double grid_density_multiplier, int windows_per_grid_point,
+        TRACE_Q(double resolution_scale, double grid_density_multiplier, int windows_per_grid_point,
                 double window_expansion_rate, double time_interval_multiplier)
-                : grid_expansion_multiplier(grid_expansion_multiplier),
+                : mrpa(resolution_scale),
+                grid_expansion_multiplier(grid_density_multiplier * 0.8),
                 grid_density_multiplier(grid_density_multiplier),
                 windows_per_grid_point(windows_per_grid_point),
                 window_expansion_rate(window_expansion_rate),
