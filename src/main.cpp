@@ -2,7 +2,6 @@
 #include "trajectory_data_handling/trajectory_sql.hpp"
 #include "trajectory_data_handling/sqlite_querying.hpp"
 #include "trajectory_data_handling/trajectory_file_manager.hpp"
-#include "simp-algorithms/MRPA.hpp"
 #include "TRACE_Q.hpp"
 
 int main() {
@@ -44,19 +43,13 @@ int main() {
     t.locations.emplace_back(data_structures::Location(17, 53, 277, 143));
     t.locations.emplace_back(data_structures::Location(18, 60, 300, 200));
 
-    auto mrpa = simp_algorithms::MRPA{2};
-    auto results = mrpa(t);
-
-    for (int i = 0; i < results.size(); i++) {
-        std::cout << "Candidate " << i + 1 << "\n";
-        for (const auto& point : results[i].locations) {
-            std::cout << "Order: " << point.order << ", x: " << point.longitude << ", y: " << point.latitude
-            << ", t: " << point.timestamp << "\n";
-        }
-    }
-
     auto trace_q = trace_q::TRACE_Q{2, 0.1, 3, 1.3, 0.2};
-    auto result = trace_q.simplify(t, 20, 10);
+    auto result = trace_q.simplify(t, 0.99);
+
+    for (int i = 0; i < result.locations.size(); ++i) {
+        std::cout << "loc" << i + 1 << ", longitude: " << result.locations[i].longitude
+        << ", latitude: " << result.locations[i].latitude << ", t: " << result.locations[i].timestamp << '\n';
+    }
 
     return 0;
 }

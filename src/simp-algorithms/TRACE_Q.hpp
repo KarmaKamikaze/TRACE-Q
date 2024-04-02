@@ -21,18 +21,18 @@ namespace trace_q {
         int query_amount{};
 
         /**
-         * The factor with which we will scale the grid.
+         * The factor with which we will scale the grid. Calculated based on the grid_density_multiplier.
          * The grid is defined by the highest and lowest values of latitude and longitude for a given trajectory.
-         * Possible values: 1, 1.3
+         * Possible values: 0.2, 0.43
          */
-        double grid_expansion_multiplier{};
+        double grid_expansion_factor{};
 
         /**
          * Factor describing how close points appear in the grid.
          * Lower values cause points to be more densely packed, thus increasing the number of queries
          * Possible values: 0.2, 0.05
          */
-        double grid_density_multiplier{};
+        double grid_density{};
 
         /**
          * Number of windows we will create for each grid point.
@@ -73,9 +73,12 @@ namespace trace_q {
          * @param query_objects Vector of query objects that define a query and contain the original trajectory's result
          * @return Query accuracy
          */
-        [[nodiscard]] double query_error(data_structures::Trajectory const& trajectory,
-                             std::vector<std::shared_ptr<spatial_queries::Query>> const& query_objects) const;
+        [[nodiscard]] double query_accuracy(data_structures::Trajectory const& trajectory,
+                                            std::vector<std::shared_ptr<spatial_queries::Query>> const& query_objects) const;
 
+        /**
+         * A Minimum Bounding Rectangle for trajectory data.
+         */
         struct MBR {
             double x_low{};
             double x_high{};
@@ -85,10 +88,29 @@ namespace trace_q {
             long double t_high{};
         };
 
-        static MBR calculate_MBR(data_structures::Trajectory const&);
+        /**
+         * Calculates the Minimum Bounding Rectangle for a given trajectory.
+         * @param trajectory The Trajectory for which to calculate the MBR.
+         * @return The resultant MBR encompassing the trajectory.
+         */
+        static MBR calculate_MBR(data_structures::Trajectory const& trajectory);
 
-        MBR expand_MBR(MBR) const;
+        /**
+         * Expands the Minimum Bounding Rectangle according to the grid expansion factor.
+         * @param mbr The MBR which will be expanded.
+         * @return The expanded MBR.
+         */
+        [[nodiscard]] MBR expand_MBR(MBR mbr) const;
 
+        /**
+         * Initializes a list of range query objects with the given trajectory used for the original_in_window boolean.
+         * @param trajectory The original trajectory for which range queries will be performed.
+         * @param x The x-axis grid point.
+         * @param y The y-axis grid point.
+         * @param t The t-axis grid point.
+         * @param mbr The Minimum Bounding Rectangle that encompasses the Trajectory.
+         * @return A list of shared pointers to a number of range query objects that have been initialized with the given trajectory.
+         */
         [[nodiscard]] std::vector<std::shared_ptr<spatial_queries::Range_Query>> range_query_initialization(
                 data_structures::Trajectory const& trajectory, double x, double y, long double t, MBR const& mbr) const;
 
@@ -105,16 +127,17 @@ namespace trace_q {
         TRACE_Q(double resolution_scale, double grid_density_multiplier, int windows_per_grid_point,
                 double window_expansion_rate, double time_interval_multiplier)
                 : mrpa(resolution_scale),
-                grid_expansion_multiplier(grid_density_multiplier * 0.8),
-                grid_density_multiplier(grid_density_multiplier),
-                windows_per_grid_point(windows_per_grid_point),
-                window_expansion_rate(window_expansion_rate),
-                time_interval_multiplier(time_interval_multiplier) {
+                  grid_expansion_factor(grid_density_multiplier * 0.8),
+                  grid_density(grid_density_multiplier),
+                  windows_per_grid_point(windows_per_grid_point),
+                  window_expansion_rate(window_expansion_rate),
+                  time_interval_multiplier(time_interval_multiplier) {
             query_amount = calculate_query_amount();
         }
 
+
         [[nodiscard]] data_structures::Trajectory simplify(const data_structures::Trajectory& original_trajectory,
-                                             double max_locations, double min_query_accuracy) const;
+                                             double min_query_accuracy) const;
 
     };
 
