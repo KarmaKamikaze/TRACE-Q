@@ -23,6 +23,8 @@ namespace trajectory_data_handling {
         trajectory_data_handling::query_handler::run_sql(query, purpose);
     }
 
+
+
     void trajectory_manager::insert_trajectories_into_trajectory_table(std::vector<data_structures::Trajectory> &all_trajectories, db_table table) {
         std::string table_name{};
         switch(table) {
@@ -46,7 +48,7 @@ namespace trajectory_data_handling {
         }
     }
 
-    void trajectory_manager::load_database_into_datastructure(query_purpose purpose) {
+    void trajectory_manager::load_database_into_datastructure(query_purpose purpose, std::vector<std::string> const& id) {
         std::string table_name{};
         std::stringstream query{};
 
@@ -57,22 +59,67 @@ namespace trajectory_data_handling {
             case query_purpose::load_simplified_trajectory_information_into_datastructure:
                 table_name = "simplified_trajectory_information";
                 break;
+
             default:
                 std::cout << "Error in switch statement in load_database_into_datastructure." << '\n';
         }
 
-        query << "SELECT trajectory_id, timestamp, longitude, latitude FROM " << table_name;
+        if(id.empty()) {
+            query << "SELECT trajectory_id, timestamp, longitude, latitude FROM " << table_name;
+        }
+        else {
+            query << "SELECT trajectory_id, timestamp, longitude, latitude FROM " << table_name << " WHERE trajectory_id IN (";
+            for(auto i = id.begin(); i != id.end(); ++i) {
+                query << *i;
+                if (std::next(i) != id.end()) {
+                    query << ",";
+                }
+            }
+            query << ")";
+        }
         trajectory_data_handling::query_handler::run_sql(query.str().c_str(), purpose);
+    }
+
+    void trajectory_manager::spatial_query_on_rtree_table(query_purpose purpose, std::tuple<float, float> longitudeRange, std::tuple<float, float> latitudeRange, std::tuple<float, float> timestampRange) {
+        std::string table_name{};
+        std::stringstream query{};
+
+        switch(purpose) {
+            case query_purpose::load_original_rtree_into_datastructure:
+                table_name = "trajectory_rtree";
+                break;
+            case query_purpose::load_simplified_rtree_into_datastructure:
+                table_name = "simplified_trajectory_rtree";
+                break;
+
+            default:
+                std::cout << "Error in switch statement in spatial_query_on_rtree_table." << '\n';
+        }
+
+        query << "SELECT id FROM " << table_name << " WHERE minLongitude>=" << get<0>(longitudeRange) << " AND maxLongitude<=" << get<1>(longitudeRange) << " AND minLatitude>=" << get<0>(latitudeRange) << " AND maxLatitude<=" << get<1>(latitudeRange) << " AND minTimestamp>=" << get<0>(timestampRange) << " AND maxTimestamp<=" << get<1>(timestampRange) << ";";
+        trajectory_data_handling::query_handler::run_sql(query.str().c_str(), purpose);
+
+        if (trajectory_data_handling::query_handler::id.empty()){}
+        else {
+            switch(purpose) {
+                case query_purpose::load_original_rtree_into_datastructure:
+                    load_database_into_datastructure(query_purpose::load_original_trajectory_information_into_datastructure,trajectory_data_handling::query_handler::id);
+                    break;
+                case query_purpose::load_simplified_rtree_into_datastructure:
+                    load_database_into_datastructure(query_purpose::load_simplified_trajectory_information_into_datastructure,  trajectory_data_handling::query_handler::id);
+                    break;
+            }
+        }
     }
 
     void trajectory_manager::print_trajectories(std::vector<data_structures::Trajectory> &all_trajectories) {
         for (const auto & trajectory : all_trajectories) {
             std::cout << "id: " << trajectory.id << std::endl;
-            for (const auto &location: trajectory.locations) {
-                std::cout << "m_order: " << location.order << '\n';
-                std::cout << "timestamp: " << std::fixed <<  location.timestamp << '\n';
-                std::cout << "longitude, latitude: " << location.longitude << " " << location.latitude << '\n';
-            }
+//            for (const auto &location: trajectory.locations) {
+//                std::cout << "m_order: " << location.order << '\n';
+//                std::cout << "timestamp: " << std::fixed <<  location.timestamp << '\n';
+//                std::cout << "longitude, latitude: " << location.longitude << " " << location.latitude << '\n';
+//            }
         }
     }
 

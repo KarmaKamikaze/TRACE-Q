@@ -9,6 +9,8 @@ namespace trajectory_data_handling {
     int query_handler::m_order{};
     std::shared_ptr<std::vector<data_structures::Trajectory>> trajectory_data_handling::query_handler::original_trajectories;
     std::shared_ptr<std::vector<data_structures::Trajectory>> trajectory_data_handling::query_handler::simplified_trajectories;
+    std::vector<std::string> query_handler::id{};
+
 
 
     const std::filesystem::path query_handler::m_sqlite_db_filesystem_path = std::filesystem::current_path().parent_path().parent_path() / "trajectory.db";
@@ -70,6 +72,13 @@ namespace trajectory_data_handling {
 
         m_trajectory.locations.push_back(location);
         m_order += 1;
+        return 0;
+    }
+
+    int query_handler::callback_rtree_datastructure(void *query_success_history, int argc, char **argv,
+                                                    char **azColName) {
+        std::string id = argv[0];
+        query_handler::id.push_back(id);
         return 0;
     }
 
@@ -144,6 +153,12 @@ namespace trajectory_data_handling {
             case query_purpose::load_simplified_trajectory_information_into_datastructure:
                 rc = sqlite3_exec(m_db, query.c_str(), callback_simplified_datastructure, 0, &zErrMsg);
                 simplified_trajectories->push_back(m_trajectory);
+                break;
+            case query_purpose::load_original_rtree_into_datastructure:
+                rc = sqlite3_exec(m_db, query.c_str(), callback_rtree_datastructure, 0, &zErrMsg);
+                break;
+            case query_purpose::load_simplified_rtree_into_datastructure:
+                rc = sqlite3_exec(m_db, query.c_str(), callback_rtree_datastructure, 0, &zErrMsg);
                 break;
             case query_purpose::insert_into_trajectory_table:
                 rc = sqlite3_exec(m_db, query.c_str(), callback, 0, &zErrMsg);
