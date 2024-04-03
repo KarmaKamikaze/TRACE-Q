@@ -19,6 +19,8 @@ namespace trajectory_data_handling {
         insert_into_simplified_rtree_table,
         load_original_trajectory_information_into_datastructure,
         load_simplified_trajectory_information_into_datastructure,
+        load_original_rtree_into_datastructure,
+        load_simplified_rtree_into_datastructure,
         create_table,
         reset_database};
 
@@ -37,11 +39,13 @@ namespace trajectory_data_handling {
         static int callback(void *query_success_history, int argc, char **argv, char **azColName);
         static int callback_original_datastructure(void *query_success_history, int argc, char **argv, char **azColName);
         static int callback_simplified_datastructure(void *query_success_history, int argc, char **argv, char **azColName);
+        static int callback_rtree_datastructure(void *query_success_history, int argc, char **argv, char **azColName);
         static int callback_original_rtree_insert(void *query_success_history, int argc, char **argv, char **azColName);
         static int callback_simplified_rtree_insert(void *query_success_history, int argc, char **argv, char **azColName);
     public:
         static std::shared_ptr<std::vector<data_structures::Trajectory>> original_trajectories;
         static std::shared_ptr<std::vector<data_structures::Trajectory>> simplified_trajectories;
+        static std::vector<std::string> trajectory_ids_in_range;
         static void run_sql(const std::string& query, query_purpose callback_type);
     };
 }
