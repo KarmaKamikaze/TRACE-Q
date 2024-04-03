@@ -48,7 +48,7 @@ namespace trajectory_data_handling {
         }
     }
 
-    void trajectory_manager::load_database_into_datastructure(query_purpose purpose, std::vector<std::string> const& id) {
+    void trajectory_manager::load_database_into_datastructure(query_purpose purpose, std::vector<std::string> const& id = {}) {
         std::string table_name{};
         std::stringstream query{};
 
@@ -97,7 +97,7 @@ namespace trajectory_data_handling {
         }
 
         query << "SELECT id FROM " << table_name << " WHERE minLongitude<=" << get<1>(longitudeRange) << " AND maxLongitude>=" << get<0>(longitudeRange) << " AND minLatitude<=" << get<1>(latitudeRange) << " AND maxLatitude>=" << get<0>(latitudeRange) << " AND minTimestamp<=" << get<1>(timestampRange) << " AND maxTimestamp>=" << get<0>(timestampRange) << ";";
-        trajectory_data_handling::query_handler::run_sql(query.str().c_str(), query_purpose::load_rtree_into_datastructure);
+        trajectory_data_handling::query_handler::run_sql(query.str().c_str(), purpose);
 
         if (!trajectory_data_handling::query_handler::trajectory_ids_in_range.empty()){
             switch(purpose) {
@@ -114,11 +114,11 @@ namespace trajectory_data_handling {
     void trajectory_manager::print_trajectories(std::vector<data_structures::Trajectory> &all_trajectories) {
         for (const auto & trajectory : all_trajectories) {
             std::cout << "id: " << trajectory.id << std::endl;
-//            for (const auto &location: trajectory.locations) {
-//                std::cout << "m_order: " << location.order << '\n';
-//                std::cout << "timestamp: " << std::fixed <<  location.timestamp << '\n';
-//                std::cout << "longitude, latitude: " << location.longitude << " " << location.latitude << '\n';
-//            }
+            for (const auto &location: trajectory.locations) {
+                std::cout << "m_order: " << location.order << '\n';
+                std::cout << "timestamp: " << std::fixed <<  location.timestamp << '\n';
+                std::cout << "longitude, latitude: " << location.longitude << " " << location.latitude << '\n';
+            }
         }
     }
 

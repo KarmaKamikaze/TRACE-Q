@@ -21,7 +21,6 @@ namespace trajectory_data_handling {
         load_simplified_trajectory_information_into_datastructure,
         load_original_rtree_into_datastructure,
         load_simplified_rtree_into_datastructure,
-        load_rtree_into_datastructure,
         create_table,
         reset_database};
 

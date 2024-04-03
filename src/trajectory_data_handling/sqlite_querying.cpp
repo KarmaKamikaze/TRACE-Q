@@ -153,7 +153,8 @@ namespace trajectory_data_handling {
                 rc = sqlite3_exec(m_db, query.c_str(), callback_simplified_datastructure, 0, &zErrMsg);
                 simplified_trajectories->push_back(m_trajectory);
                 break;
-            case query_purpose::load_rtree_into_datastructure:
+            case query_purpose::load_original_rtree_into_datastructure:
+            case query_purpose::load_simplified_rtree_into_datastructure:
                 rc = sqlite3_exec(m_db, query.c_str(), callback_rtree_datastructure, 0, &zErrMsg);
                 break;
             case query_purpose::insert_into_trajectory_table:
