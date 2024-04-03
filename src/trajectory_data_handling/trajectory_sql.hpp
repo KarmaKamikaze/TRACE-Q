@@ -17,8 +17,8 @@ namespace trajectory_data_handling {
     public:
         void load_trajectories_into_rtree(query_purpose rtree_table);
         void insert_trajectories_into_trajectory_table(std::vector<data_structures::Trajectory> &all_trajectories, db_table table);
-        void spatial_query_on_rtree_table(query_purpose purpose, std::tuple<float, float> longitudeRange, std::tuple<float, float> latitudeRange, std::tuple<float, float> timestampRange);
-        void load_database_into_datastructure(query_purpose purpose, std::vector<std::string> const& id);
+        void spatial_range_query_on_rtree_table(query_purpose purpose, std::tuple<float, float> longitudeRange, std::tuple<float, float> latitudeRange, std::tuple<float, float> timestampRange);
+        void load_database_into_datastructure(query_purpose purpose, std::vector<std::string> const& id = {});
         void print_trajectories(std::vector<data_structures::Trajectory> &all_trajectories);
         void create_database();
         void create_rtree_table();

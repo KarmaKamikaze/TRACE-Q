@@ -21,6 +21,7 @@ namespace trajectory_data_handling {
         load_simplified_trajectory_information_into_datastructure,
         load_original_rtree_into_datastructure,
         load_simplified_rtree_into_datastructure,
+        load_rtree_into_datastructure,
         create_table,
         reset_database};
 
@@ -45,7 +46,7 @@ namespace trajectory_data_handling {
     public:
         static std::shared_ptr<std::vector<data_structures::Trajectory>> original_trajectories;
         static std::shared_ptr<std::vector<data_structures::Trajectory>> simplified_trajectories;
-        static std::vector<std::string> id;
+        static std::vector<std::string> trajectory_ids_in_range;
         static void run_sql(const std::string& query, query_purpose callback_type);
     };
 }

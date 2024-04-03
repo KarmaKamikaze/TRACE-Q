@@ -65,7 +65,7 @@ namespace trajectory_data_handling {
         }
 
         if(id.empty()) {
-            query << "SELECT trajectory_id, timestamp, longitude, latitude FROM " << table_name;
+            query << "SELECT trajectory_id, timestamp, longitude, latitude FROM " << table_name << ";";
         }
         else {
             query << "SELECT trajectory_id, timestamp, longitude, latitude FROM " << table_name << " WHERE trajectory_id IN (";
@@ -75,12 +75,12 @@ namespace trajectory_data_handling {
                     query << ",";
                 }
             }
-            query << ")";
+            query << ");";
         }
         trajectory_data_handling::query_handler::run_sql(query.str().c_str(), purpose);
     }
 
-    void trajectory_manager::spatial_query_on_rtree_table(query_purpose purpose, std::tuple<float, float> longitudeRange, std::tuple<float, float> latitudeRange, std::tuple<float, float> timestampRange) {
+    void trajectory_manager::spatial_range_query_on_rtree_table(query_purpose purpose, std::tuple<float, float> longitudeRange, std::tuple<float, float> latitudeRange, std::tuple<float, float> timestampRange) {
         std::string table_name{};
         std::stringstream query{};
 
@@ -96,17 +96,16 @@ namespace trajectory_data_handling {
                 std::cout << "Error in switch statement in spatial_query_on_rtree_table." << '\n';
         }
 
-        query << "SELECT id FROM " << table_name << " WHERE minLongitude>=" << get<0>(longitudeRange) << " AND maxLongitude<=" << get<1>(longitudeRange) << " AND minLatitude>=" << get<0>(latitudeRange) << " AND maxLatitude<=" << get<1>(latitudeRange) << " AND minTimestamp>=" << get<0>(timestampRange) << " AND maxTimestamp<=" << get<1>(timestampRange) << ";";
-        trajectory_data_handling::query_handler::run_sql(query.str().c_str(), purpose);
+        query << "SELECT id FROM " << table_name << " WHERE minLongitude<=" << get<1>(longitudeRange) << " AND maxLongitude>=" << get<0>(longitudeRange) << " AND minLatitude<=" << get<1>(latitudeRange) << " AND maxLatitude>=" << get<0>(latitudeRange) << " AND minTimestamp<=" << get<1>(timestampRange) << " AND maxTimestamp>=" << get<0>(timestampRange) << ";";
+        trajectory_data_handling::query_handler::run_sql(query.str().c_str(), query_purpose::load_rtree_into_datastructure);
 
-        if (trajectory_data_handling::query_handler::id.empty()){}
-        else {
+        if (!trajectory_data_handling::query_handler::trajectory_ids_in_range.empty()){
             switch(purpose) {
                 case query_purpose::load_original_rtree_into_datastructure:
-                    load_database_into_datastructure(query_purpose::load_original_trajectory_information_into_datastructure,trajectory_data_handling::query_handler::id);
+                    load_database_into_datastructure(query_purpose::load_original_trajectory_information_into_datastructure,trajectory_data_handling::query_handler::trajectory_ids_in_range);
                     break;
                 case query_purpose::load_simplified_rtree_into_datastructure:
-                    load_database_into_datastructure(query_purpose::load_simplified_trajectory_information_into_datastructure,  trajectory_data_handling::query_handler::id);
+                    load_database_into_datastructure(query_purpose::load_simplified_trajectory_information_into_datastructure,  trajectory_data_handling::query_handler::trajectory_ids_in_range);
                     break;
             }
         }

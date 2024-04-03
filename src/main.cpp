@@ -22,15 +22,15 @@ int main() {
 //    file_manager.load_tdrive_dataset(*original_trajectories);
 //    file_manager.load_geolife_dataset(*original_trajectories);
 //    trajectory_manager.insert_trajectories_into_trajectory_table(*original_trajectories, trajectory_data_handling::db_table::original_trajectories);
-//    trajectory_manager.load_database_into_datastructure(trajectory_data_handling::query_purpose::load_original_trajectory_information_into_datastructure, {2, 18, 20, 21});
+//    trajectory_manager.load_database_into_datastructure(trajectory_data_handling::query_purpose::load_original_trajectory_information_into_datastructure);
 //    trajectory_manager.insert_trajectories_into_trajectory_table(*original_trajectories, trajectory_data_handling::db_table::simplified_trajectories);
 
 //    std::tuple<float, float> longitudeRange, latitudeRange, timestampRange;
 //    longitudeRange = std::make_tuple(115, 116.65901184082031);
-//    latitudeRange = std::make_tuple(39.0, 41.0);
+//    latitudeRange = std::make_tuple(40.07930374145508, 41);
 //    timestampRange = std::make_tuple(0, 91202490113);
 //
-//    trajectory_manager.spatial_query_on_rtree_table(trajectory_data_handling::query_purpose::load_original_rtree_into_datastructure, longitudeRange, latitudeRange, timestampRange);
+//    trajectory_manager.spatial_range_query_on_rtree_table(trajectory_data_handling::query_purpose::load_original_rtree_into_datastructure, longitudeRange, latitudeRange, timestampRange);
 //
 //
 //    trajectory_manager.print_trajectories(*original_trajectories);
