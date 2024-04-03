@@ -22,6 +22,10 @@ public:
         stop();
     }
 
+    /**  Records time off a functions start and end.
+     *   Then calculates the time spend on running the function
+     */
+
     void stop()
     {
         auto endpoint = std::chrono::high_resolution_clock::now();
