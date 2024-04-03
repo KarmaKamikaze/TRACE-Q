@@ -61,17 +61,17 @@ int main() {
     auto trace_q = trace_q::TRACE_Q{0.10, 0.3, 3, 0.5, 0.2};
     auto result = trace_q.simplify(t, 20, 10);
 
-
     // Register endpoints
-    register_endpoint("/", handle_root);
-    register_endpoint("/hello", handle_hello);
+    endpoint_handlers::register_endpoint("/", endpoint_handlers::handle_root);
+    endpoint_handlers::register_endpoint("/hello", endpoint_handlers::handle_hello);
+
 
     // Set up the io_context
-    boost::asio::io_context io_context;
+    boost::asio::io_context io_context{};
     // Create and bind an acceptor to listen for incoming connections
     boost::asio::ip::tcp::acceptor acceptor(io_context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), 8080));
     // Run the server
-    run(acceptor, endpoints);
+    api::run(acceptor, endpoint_handlers::endpoints);
 
     return 0;
 }

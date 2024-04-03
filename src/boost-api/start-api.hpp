@@ -6,5 +6,7 @@
 #include <string>
 #include "endpoint_handlers.hpp"
 
+namespace api {
 // Function to run the server
-void run(boost::asio::ip::tcp::acceptor& acceptor, std::map<std::string, RequestHandler>& endpoints);
+    void run(boost::asio::ip::tcp::acceptor &acceptor, std::map<std::string, endpoint_handlers::RequestHandler> &endpoints);
+}
