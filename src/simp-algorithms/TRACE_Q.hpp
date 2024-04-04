@@ -126,7 +126,12 @@ namespace trace_q {
          * @param window_number The number of the window for which the range is calculated.
          * @return A pair containing the lower and upper bounds of the calculated range.
          */
-        static std::pair<long double, long double> calculate_window_range(long double center, long double mbr_low, long double mbr_high, double window_expansion_rate, double grid_density, int window_number);
+        static std::pair<long double, long double> calculate_window_range(
+                long double center, long double mbr_low, long double mbr_high,
+                double window_expansion_rate, double grid_density, int window_number);
+
+        [[nodiscard]] std::vector<std::shared_ptr<spatial_queries::Query>> initialize_query_tests(
+                data_structures::Trajectory const& original_trajectory) const;
 
     public:
         /**

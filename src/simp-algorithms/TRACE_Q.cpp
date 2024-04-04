@@ -10,6 +10,20 @@ namespace trace_q {
     data_structures::Trajectory TRACE_Q::simplify(data_structures::Trajectory const& original_trajectory, double min_query_accuracy) const {
         auto simplifications = mrpa(original_trajectory);
 
+        auto query_objects = initialize_query_tests(original_trajectory);
+
+        // iterate from the back since simplifications appear in decreasing resolution
+        for (int i = static_cast<int>(simplifications.size()) - 1; i >= 0; --i) {
+            if (query_accuracy(simplifications[i], query_objects) >= min_query_accuracy) {
+                return simplifications[i];
+            }
+        }
+
+        return original_trajectory;
+    }
+
+    std::vector<std::shared_ptr<spatial_queries::Query>> TRACE_Q::initialize_query_tests(
+            data_structures::Trajectory const& original_trajectory) const {
         std::vector<std::shared_ptr<spatial_queries::Query>> query_objects{};
 
         auto mbr = expand_MBR(calculate_MBR(original_trajectory));
@@ -27,24 +41,18 @@ namespace trace_q {
                 for (int t_point = 0; t_point <= time_points; ++t_point) {
                     auto t = mbr.t_low + t_point * time_interval_multiplier * (mbr.t_high - mbr.t_low);
 
-                    auto range_queries = range_query_initialization(original_trajectory, x_coord, y_coord, t, mbr);
-                    query_objects.insert(std::end(query_objects), std::begin(range_queries), std::end(range_queries));
+                    auto range_queries = range_query_initialization(original_trajectory,
+                                                                    x_coord, y_coord, t, mbr);
+                    query_objects.insert(std::end(query_objects), std::begin(range_queries),
+                                         std::end(range_queries));
 
                     // TODO: KNN
                 }
             }
         }
 
-        // iterate from the back since simplifications appear in decreasing resolution
-        for (int i = static_cast<int>(simplifications.size()) - 1; i >= 0; --i) {
-            if (query_accuracy(simplifications[i], query_objects) >= min_query_accuracy) {
-                return simplifications[i];
-            }
-        }
-
-        return original_trajectory;
+        return query_objects;
     }
-
 
     double TRACE_Q::query_accuracy(data_structures::Trajectory const& trajectory,
                                    std::vector<std::shared_ptr<spatial_queries::Query>> const& query_objects) const {
