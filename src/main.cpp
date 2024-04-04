@@ -4,6 +4,9 @@
 #include "trajectory_data_handling/trajectory_file_manager.hpp"
 #include "simp-algorithms/MRPA.hpp"
 #include "TRACE_Q.hpp"
+#include <boost/asio.hpp>
+#include "start-api.hpp"
+#include "endpoint_handlers.hpp"
 
 int main() {
     trajectory_data_handling::file_manager file_manager{};
@@ -72,6 +75,18 @@ int main() {
 //
 //    auto trace_q = trace_q::TRACE_Q{0.10, 0.3, 3, 0.5, 0.2};
 //    auto result = trace_q.simplify(t, 20, 10);
+
+    // Define and populate endpoints map
+    std::map<std::string, api::RequestHandler> endpoints;
+    endpoints["/"] = api::handle_root;
+    endpoints["/hello"] = api::handle_hello;
+
+    // Set up the io_context
+    boost::asio::io_context io_context{};
+    // Create and bind an acceptor to listen for incoming connections
+    boost::asio::ip::tcp::acceptor acceptor(io_context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), 8080));
+    // Run the server
+    api::run(acceptor, endpoints);
 
     return 0;
 }
