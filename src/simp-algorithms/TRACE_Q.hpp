@@ -130,6 +130,11 @@ namespace trace_q {
                 long double center, long double mbr_low, long double mbr_high,
                 double window_expansion_rate, double grid_density, int window_number);
 
+        /**
+         * Creates and initializes query test function objects for the given trajectory.
+         * @param original_trajectory The trajectory for which query tests will be created.
+         * @return A list of query tests.
+         */
         [[nodiscard]] std::vector<std::shared_ptr<spatial_queries::Query>> initialize_query_tests(
                 data_structures::Trajectory const& original_trajectory) const;
 
