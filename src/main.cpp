@@ -3,6 +3,9 @@
 #include "trajectory_data_handling/sqlite_querying.hpp"
 #include "trajectory_data_handling/trajectory_file_manager.hpp"
 #include "TRACE_Q.hpp"
+#include <boost/asio.hpp>
+#include "start-api.hpp"
+#include "endpoint_handlers.hpp"
 
 int main() {
     trajectory_data_handling::file_manager file_manager{};
@@ -64,6 +67,18 @@ int main() {
         std::cout << "loc" << i + 1 << ", longitude: " << result.locations[i].longitude
         << ", latitude: " << result.locations[i].latitude << ", t: " << result.locations[i].timestamp << '\n';
     }
+
+    // Define and populate endpoints map
+    std::map<std::string, api::RequestHandler> endpoints;
+    endpoints["/"] = api::handle_root;
+    endpoints["/hello"] = api::handle_hello;
+
+    // Set up the io_context
+    boost::asio::io_context io_context{};
+    // Create and bind an acceptor to listen for incoming connections
+    boost::asio::ip::tcp::acceptor acceptor(io_context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), 8080));
+    // Run the server
+    api::run(acceptor, endpoints);
 
     return 0;
 }
