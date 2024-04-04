@@ -51,7 +51,7 @@ namespace trace_q {
 
         std::vector<std::future<bool>> futures{};
         for (auto const& query_object : query_objects) {
-            if (auto range_query = std::dynamic_pointer_cast<spatial_queries::Range_Query>(query_object)) {
+            if (auto range_query = std::dynamic_pointer_cast<spatial_queries::Range_Query_Test>(query_object)) {
                 futures.emplace_back(std::async(std::launch::async, *range_query, std::ref(trajectory)));
             }
             //if (auto knn_query = std::dynamic_pointer_cast<spatial_queries::KNN_Query>(query_object)) {
@@ -104,10 +104,10 @@ namespace trace_q {
         return mbr;
     }
 
-    std::vector<std::shared_ptr<spatial_queries::Range_Query>> TRACE_Q::range_query_initialization(
+    std::vector<std::shared_ptr<spatial_queries::Range_Query_Test>> TRACE_Q::range_query_initialization(
             data_structures::Trajectory const& trajectory, double x, double y, long double t, MBR const& mbr) const {
-        std::vector<std::shared_ptr<spatial_queries::Range_Query>> result{};
-        std::vector<std::future<spatial_queries::Range_Query>> futures{};
+        std::vector<std::shared_ptr<spatial_queries::Range_Query_Test>> result{};
+        std::vector<std::future<spatial_queries::Range_Query_Test>> futures{};
 
         for (int window_number = 0; window_number < windows_per_grid_point; ++window_number) {
             auto w_x_low = x - 0.5 * (pow(window_expansion_rate, window_number)
@@ -148,8 +148,8 @@ namespace trace_q {
                                [](const data_structures::Trajectory& original_trajectory, double x_low,
                                        double x_high, double y_low, double y_high, long double t_low,
                                        long double t_high)
-                                       { return spatial_queries::Range_Query{original_trajectory, x_low, x_high,
-                                                                             y_low, y_high, t_low, t_high};
+                                       { return spatial_queries::Range_Query_Test{original_trajectory, x_low, x_high,
+                                                                                  y_low, y_high, t_low, t_high};
                                            },
                                            trajectory, w_x_low, w_x_high, w_y_low,
                                            w_y_high, w_t_low, w_t_high));
@@ -157,7 +157,7 @@ namespace trace_q {
         }
 
         for (auto& fut : futures) {
-            result.push_back(std::make_shared<spatial_queries::Range_Query>(fut.get()));
+            result.push_back(std::make_shared<spatial_queries::Range_Query_Test>(fut.get()));
         }
         return result;
     };

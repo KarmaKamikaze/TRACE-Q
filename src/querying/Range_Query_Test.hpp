@@ -1,11 +1,11 @@
-#ifndef TRACE_Q_RANGE_QUERY_HPP
-#define TRACE_Q_RANGE_QUERY_HPP
+#ifndef TRACE_Q_RANGE_QUERY_TEST_HPP
+#define TRACE_Q_RANGE_QUERY_TEST_HPP
 
 #include "Query.hpp"
 
 namespace spatial_queries {
 
-    class Range_Query : public Query {
+    class Range_Query_Test : public Query {
         struct Window {
             double x_low{};
             double x_high{};
@@ -44,8 +44,8 @@ namespace spatial_queries {
          * @param t_low The low time value of the range query.
          * @param t_high The high time value of the range query.
          */
-        Range_Query(const data_structures::Trajectory& original_trajectory, double x_low, double x_high, double y_low,
-                    double y_high, long double t_low, long double t_high) : window{x_low, x_high, y_low, y_high, t_low, t_high}
+        Range_Query_Test(const data_structures::Trajectory& original_trajectory, double x_low, double x_high, double y_low,
+                         double y_high, long double t_low, long double t_high) : window{x_low, x_high, y_low, y_high, t_low, t_high}
         {
             original_in_window = in_range(original_trajectory);
         }
@@ -58,10 +58,10 @@ namespace spatial_queries {
          */
         bool operator()(data_structures::Trajectory const& trajectory) override;
 
-        ~Range_Query() override = default;
+        ~Range_Query_Test() override = default;
 
     };
 
 } // spatial_queries
 
-#endif //TRACE_Q_RANGE_QUERY_HPP
+#endif //TRACE_Q_RANGE_QUERY_TEST_HPP

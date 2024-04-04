@@ -3,8 +3,8 @@
 
 #include "../data/trajectory_structure.hpp"
 #include "../querying/Query.hpp"
-#include "../querying/Range_Query.hpp"
-#include "../querying/KNN_Query.hpp"
+#include "../querying/Range_Query_Test.hpp"
+#include "../querying/KNN_Query_Test.hpp"
 #include "MRPA.hpp"
 
 namespace trace_q {
@@ -111,7 +111,7 @@ namespace trace_q {
          * @param mbr The Minimum Bounding Rectangle that encompasses the Trajectory.
          * @return A list of shared pointers to a number of range query objects that have been initialized with the given trajectory.
          */
-        [[nodiscard]] std::vector<std::shared_ptr<spatial_queries::Range_Query>> range_query_initialization(
+        [[nodiscard]] std::vector<std::shared_ptr<spatial_queries::Range_Query_Test>> range_query_initialization(
                 data_structures::Trajectory const& trajectory, double x, double y, long double t, MBR const& mbr) const;
 
     public:
