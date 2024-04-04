@@ -13,8 +13,8 @@ target_link_libraries(node_test PRIVATE doctest::doctest_with_main)
 
 add_executable(query_test
         query_test.cpp
-        ../src/querying/Range_Query.hpp
-        ../src/querying/Range_Query.cpp
+        ../src/querying/Range_Query_Test.hpp
+        ../src/querying/Range_Query_Test.cpp
 )
 target_link_libraries(query_test PRIVATE doctest::doctest_with_main)
 
