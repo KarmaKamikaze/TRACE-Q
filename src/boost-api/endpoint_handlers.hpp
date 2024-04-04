@@ -6,7 +6,7 @@
 
 using namespace boost::beast::http;
 
-namespace endpoint_handlers {
+namespace api {
     // Define a handler type for request handling functions
     using RequestHandler = std::function<void(const request<string_body> &, response<string_body> &)>;
 

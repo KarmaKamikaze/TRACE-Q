@@ -2,7 +2,7 @@
 
 namespace api {
 // Function to run the server
-    void run(boost::asio::ip::tcp::acceptor &acceptor, std::map<std::string, endpoint_handlers::RequestHandler> &endpoints) {
+    void run(boost::asio::ip::tcp::acceptor &acceptor, std::map<std::string, api::RequestHandler> &endpoints) {
         // Set up the io_context
         boost::asio::io_context io_context{};
 
@@ -27,7 +27,7 @@ namespace api {
             if (it != endpoints.end()) {
                 it->second(request, response);
             } else {
-                endpoint_handlers::handle_not_found(request, response);
+                api::handle_not_found(request, response);
             }
 
             // Send the response

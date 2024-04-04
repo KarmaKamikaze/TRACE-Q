@@ -3,7 +3,7 @@
 
 using namespace boost::beast::http;
 
-namespace endpoint_handlers {
+namespace api {
     // Map of endpoints to their corresponding handlers
     std::map<std::string, RequestHandler> endpoints;
 
