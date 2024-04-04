@@ -110,38 +110,9 @@ namespace trace_q {
         std::vector<std::future<spatial_queries::Range_Query_Test>> futures{};
 
         for (int window_number = 0; window_number < windows_per_grid_point; ++window_number) {
-            auto w_x_low = x - 0.5 * (pow(window_expansion_rate, window_number)
-                                      * grid_density * (mbr.x_high - mbr.x_low));
-            if (w_x_low < mbr.x_low) {
-                w_x_low = mbr.x_low;
-            }
-            auto w_x_high = x + 0.5 * (pow(window_expansion_rate, window_number)
-                                       * grid_density * (mbr.x_high - mbr.x_low));
-            if (w_x_high > mbr.x_high) {
-                w_x_high = mbr.x_high;
-            }
-
-            auto w_y_low = y - 0.5 * (pow(window_expansion_rate, window_number)
-                                      * grid_density * (mbr.y_high - mbr.y_low));
-            if (w_y_low < mbr.y_low) {
-                w_y_low = mbr.y_low;
-            }
-            auto w_y_high = y + 0.5 * (pow(window_expansion_rate, window_number)
-                                       * grid_density * (mbr.y_high - mbr.y_low));
-            if (w_y_high > mbr.y_high) {
-                w_y_high = mbr.y_high;
-            }
-
-            auto w_t_low = t - 0.5 * (pow(window_expansion_rate, window_number)
-                                      * time_interval_multiplier * (mbr.t_high - mbr.t_low));
-            if (w_t_low < mbr.t_low) {
-                w_t_low = mbr.t_low;
-            }
-            auto w_t_high = t + 0.5 * (pow(window_expansion_rate, window_number)
-                                       * time_interval_multiplier * (mbr.t_high - mbr.t_low));
-            if (w_t_high > mbr.t_high) {
-                w_t_high = mbr.t_high;
-            }
+            auto [w_x_low, w_x_high] = calculate_window_range(x, mbr.x_low, mbr.x_high, window_expansion_rate, grid_density, window_number);
+            auto [w_y_low, w_y_high] = calculate_window_range(y, mbr.y_low, mbr.y_high, window_expansion_rate, grid_density, window_number);
+            auto [w_t_low, w_t_high] = calculate_window_range(t, mbr.t_low, mbr.t_high, window_expansion_rate, time_interval_multiplier, window_number);
 
             futures.emplace_back(
                     std::async(std::launch::async,
@@ -161,5 +132,17 @@ namespace trace_q {
         }
         return result;
     };
+
+    std::pair<long double, long double> TRACE_Q::calculate_window_range(long double center, long double mbr_low, long double mbr_high, double window_expansion_rate, double grid_density, int window_number) {
+        long double w_low = center - 0.5 * (pow(window_expansion_rate, window_number) * grid_density * (mbr_high - mbr_low));
+        if (w_low < mbr_low) {
+            w_low = mbr_low;
+        }
+        long double w_high = center + 0.5 * (pow(window_expansion_rate, window_number) * grid_density * (mbr_high - mbr_low));
+        if (w_high > mbr_high) {
+            w_high = mbr_high;
+        }
+        return {w_low, w_high};
+    }
 
 } // trace_q

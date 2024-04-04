@@ -114,6 +114,20 @@ namespace trace_q {
         [[nodiscard]] std::vector<std::shared_ptr<spatial_queries::Range_Query_Test>> range_query_initialization(
                 data_structures::Trajectory const& trajectory, double x, double y, long double t, MBR const& mbr) const;
 
+        /**
+         * This function calculates the lower and upper bounds of a range centered around a given value,
+         * considering the window expansion rate, grid density, and window number.
+         *
+         * @param center The center value around which the range is calculated.
+         * @param mbr_low The lower bound of the Minimum Bounding Rectangle (MBR) for the dimension.
+         * @param mbr_high The upper bound of the Minimum Bounding Rectangle (MBR) for the dimension.
+         * @param window_expansion_rate The rate at which the window expands with each window number.
+         * @param grid_density The density of the grid, affecting the size of the window.
+         * @param window_number The number of the window for which the range is calculated.
+         * @return A pair containing the lower and upper bounds of the calculated range.
+         */
+        static std::pair<long double, long double> calculate_window_range(long double center, long double mbr_low, long double mbr_high, double window_expansion_rate, double grid_density, int window_number);
+
     public:
         /**
          * The TRACE_Q constructor that determines the query_amount based on the given parameters.
