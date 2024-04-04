@@ -15,30 +15,28 @@ int main() {
     auto simplified_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
     trajectory_data_handling::query_handler::simplified_trajectories = simplified_trajectories;
 
-    trajectory_data_handling::trajectory_manager trajectory_manager{};
 
-
-//    trajectory_manager.reset_all_data();
-//    trajectory_manager.create_database();
-//    trajectory_manager.create_rtree_table();
+//    trajectory_data_handling::trajectory_manager.reset_all_data();
+//    trajectory_data_handling::trajectory_managercreate_database();
+//    trajectory_data_handling::trajectory_manager.create_rtree_table();
 //    file_manager.load_tdrive_dataset(*original_trajectories);
 //    file_manager.load_geolife_dataset(*original_trajectories);
-//    trajectory_manager.insert_trajectories_into_trajectory_table(*original_trajectories, trajectory_data_handling::db_table::original_trajectories);
-//    trajectory_manager.load_database_into_datastructure(trajectory_data_handling::query_purpose::load_original_trajectory_information_into_datastructure);
-//    trajectory_manager.insert_trajectories_into_trajectory_table(*original_trajectories, trajectory_data_handling::db_table::simplified_trajectories);
+//    trajectory_data_handling::trajectory_manager.insert_trajectories_into_trajectory_table(*original_trajectories, trajectory_data_handling::db_table::original_trajectories);
+//    trajectory_data_handling::trajectory_manager.load_database_into_datastructure(trajectory_data_handling::query_purpose::load_original_trajectory_information_into_datastructure);
+//    trajectory_data_handling::trajectory_manager.insert_trajectories_into_trajectory_table(*original_trajectories, trajectory_data_handling::db_table::simplified_trajectories);
 
 //    std::tuple<float, float> longitudeRange, latitudeRange, timestampRange;
 //    longitudeRange = std::make_tuple(115, 116.65901184082031);
 //    latitudeRange = std::make_tuple(40.07930374145508, 41);
 //    timestampRange = std::make_tuple(0, 91202490113);
 //
-//    trajectory_manager.spatial_range_query_on_rtree_table(trajectory_data_handling::query_purpose::load_original_rtree_into_datastructure, longitudeRange, latitudeRange, timestampRange);
+//    trajectory_data_handling::trajectory_manager.spatial_range_query_on_rtree_table(trajectory_data_handling::query_purpose::load_original_rtree_into_datastructure, longitudeRange, latitudeRange, timestampRange);
 //
 //
-//    trajectory_manager.print_trajectories(*original_trajectories);
-//    trajectory_manager.load_trajectories_into_rtree(trajectory_data_handling::query_purpose::insert_into_original_rtree_table);
-//    trajectory_manager.load_trajectories_into_simplified_rtree();
-//    trajectory_manager.reset_all_data();
+//    trajectory_data_handling::trajectory_manager.print_trajectories(*original_trajectories);
+//    trajectory_data_handling::trajectory_managerload_trajectories_into_rtree(trajectory_data_handling::query_purpose::insert_into_original_rtree_table);
+//    trajectory_data_handling::trajectory_manager.load_trajectories_into_simplified_rtree();
+//    trajectory_data_handling::trajectory_manager.reset_all_data();
 
     data_structures::Trajectory t {};
     t.locations.emplace_back(data_structures::Location(1, 0, 1, 2));

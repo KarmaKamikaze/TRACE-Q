@@ -2,7 +2,7 @@ add_library(boost-api "")
 
 find_package(Boost REQUIRED COMPONENTS filesystem)
 include_directories(${Boost_INCLUDE_DIRS})
-target_link_libraries(boost-api PRIVATE ${Boost_LIBRARIES} Ws2_32.lib)
+target_link_libraries(boost-api PRIVATE ${Boost_LIBRARIES})
 
 target_sources(boost-api
         PRIVATE

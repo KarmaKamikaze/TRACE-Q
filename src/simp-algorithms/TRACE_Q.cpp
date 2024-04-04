@@ -12,13 +12,16 @@ namespace trace_q {
 
         auto query_objects = initialize_query_tests(original_trajectory);
 
+
         // iterate from the back since simplifications appear in decreasing resolution
         for (int i = static_cast<int>(simplifications.size()) - 1; i >= 0; --i) {
+            // TODO: Temporarily replace trajectory with id corresponding to original in the database with the simplified trajectory
             if (query_accuracy(simplifications[i], query_objects) >= min_query_accuracy) {
+                // TODO: Reinsert original into the database and remove the simplified
                 return simplifications[i];
             }
         }
-
+        // TODO: Reinsert original into the database and remove the simplified
         return original_trajectory;
     }
 

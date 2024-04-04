@@ -1,4 +1,5 @@
 #pragma once
+#pragma comment(lib, "ws2_32.lib")
 
 #include <boost/beast/http.hpp>
 #include <map>
