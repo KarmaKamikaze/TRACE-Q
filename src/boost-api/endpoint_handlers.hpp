@@ -4,9 +4,8 @@
 #include <map>
 #include <functional>
 
-using namespace boost::beast::http;
-
 namespace api {
+    using namespace boost::beast::http;
     // Define a handler type for request handling functions
     using RequestHandler = std::function<void(const request<string_body> &, response<string_body> &)>;
 

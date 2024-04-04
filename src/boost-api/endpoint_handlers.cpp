@@ -1,9 +1,8 @@
 #include "endpoint_handlers.hpp"
 #include <utility>
 
-using namespace boost::beast::http;
-
 namespace api {
+    using namespace boost::beast::http;
     void handle_root(const request<string_body> &req, response<string_body> &res) {
         res.body() = "Welcome to the root endpoint!";
         res.prepare_payload();
