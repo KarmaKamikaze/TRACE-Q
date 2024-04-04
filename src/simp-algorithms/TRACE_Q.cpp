@@ -85,11 +85,11 @@ namespace trace_q {
         result.t_low = trajectory.locations.front().timestamp;
         result.t_high = trajectory.locations.back().timestamp;
 
-        auto [x_min, x_max] = std::ranges::minmax(trajectory.locations, [](Location loc1, Location loc2) { return loc1.longitude < loc2.longitude; });
+        auto [x_min, x_max] = std::ranges::minmax(trajectory.locations, [](Location const& loc1, Location const& loc2) { return loc1.longitude < loc2.longitude; });
         result.x_low = x_min.longitude;
         result.x_high = x_max.longitude;
 
-        auto [y_min, y_max] = std::ranges::minmax(trajectory.locations, [](Location loc1, Location loc2) { return loc1.latitude < loc2.latitude; });
+        auto [y_min, y_max] = std::ranges::minmax(trajectory.locations, [](Location const& loc1, Location const& loc2) { return loc1.latitude < loc2.latitude; });
         result.y_low = y_min.latitude;
         result.y_high = y_max.latitude;
 
@@ -131,7 +131,7 @@ namespace trace_q {
             result.push_back(std::make_shared<spatial_queries::Range_Query_Test>(fut.get()));
         }
         return result;
-    };
+    }
 
     std::pair<long double, long double> TRACE_Q::calculate_window_range(long double center, long double mbr_low, long double mbr_high, double window_expansion_rate, double grid_density, int window_number) {
         long double w_low = center - 0.5 * (pow(window_expansion_rate, window_number) * grid_density * (mbr_high - mbr_low));
