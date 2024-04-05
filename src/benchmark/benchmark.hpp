@@ -3,13 +3,7 @@
 #ifndef TRACE_Q_BENCHMARK_HPP
 #define TRACE_Q_BENCHMARK_HPP
 
-#include <iosfwd>
-#include <vector>
 #include <chrono>
-#include <iostream>
-#include <source_location>
-#include <complex>
-#include <utility>
 
 namespace analytics {
 
@@ -23,7 +17,11 @@ namespace analytics {
      * @return The duration of the input function. Endtime-starttime.
      */
     template<typename F, typename... Args>
-    long long int funcTime(F func, Args&&... args);
+    long long int funcTime(F func, Args&&... args){
+        std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+        func(std::forward<Args>(args)...);
+        return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now()-t1).count();
+    }
 
 }
 #endif //TRACE_Q_BENCHMARK_HPP

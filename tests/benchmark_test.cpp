@@ -1,5 +1,4 @@
 #include "../src/benchmark/benchmark.hpp"
-#include "../src/benchmark/benchmark.cpp"
 #include <doctest/doctest.h>
 
 void time_func(int t) {
