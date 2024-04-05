@@ -6,6 +6,7 @@
 #include <tuple>
 #include "../data/trajectory_structure.hpp"
 #include "sqlite_querying.hpp"
+#include "../querying/Range_Query.hpp"
 
 
 namespace trajectory_data_handling {

@@ -83,6 +83,14 @@ namespace trajectory_data_handling {
     void trajectory_manager::spatial_range_query_on_rtree_table(query_purpose purpose, std::tuple<float, float> longitudeRange, std::tuple<float, float> latitudeRange, std::tuple<float, float> timestampRange) {
         std::string table_name{};
         std::stringstream query{};
+        int index{};
+        auto original_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
+        trajectory_data_handling::query_handler::original_trajectories = original_trajectories;
+
+        auto simplified_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
+        trajectory_data_handling::query_handler::simplified_trajectories = simplified_trajectories;
+
+        spatial_queries::Range_Query::Window window{get<0>(longitudeRange), get<1>(longitudeRange), get<0>(latitudeRange), get<1>(latitudeRange), get<0>(timestampRange), get<1>(timestampRange)};
 
         switch(purpose) {
             case query_purpose::load_original_rtree_into_datastructure:
@@ -99,13 +107,31 @@ namespace trajectory_data_handling {
         query << "SELECT id FROM " << table_name << " WHERE minLongitude<=" << get<1>(longitudeRange) << " AND maxLongitude>=" << get<0>(longitudeRange) << " AND minLatitude<=" << get<1>(latitudeRange) << " AND maxLatitude>=" << get<0>(latitudeRange) << " AND minTimestamp<=" << get<1>(timestampRange) << " AND maxTimestamp>=" << get<0>(timestampRange) << ";";
         trajectory_data_handling::query_handler::run_sql(query.str().c_str(), purpose);
 
+        for(const auto &id : trajectory_data_handling::query_handler::trajectory_ids_in_range) {
+            std::cout << id << std::endl;
+        }
+
         if (!trajectory_data_handling::query_handler::trajectory_ids_in_range.empty()){
             switch(purpose) {
                 case query_purpose::load_original_rtree_into_datastructure:
                     load_database_into_datastructure(query_purpose::load_original_trajectory_information_into_datastructure,trajectory_data_handling::query_handler::trajectory_ids_in_range);
+                    for(const auto &trajectory : *original_trajectories) {
+                        index + 1;
+                        auto keep_trajectory = spatial_queries::Range_Query::in_range(trajectory, window);
+                        if (!keep_trajectory){
+                            original_trajectories->erase(original_trajectories->begin() + index);
+                        }
+                    }
                     break;
                 case query_purpose::load_simplified_rtree_into_datastructure:
                     load_database_into_datastructure(query_purpose::load_simplified_trajectory_information_into_datastructure,  trajectory_data_handling::query_handler::trajectory_ids_in_range);
+                    for(const auto &trajectory : *original_trajectories) {
+                        index + 1;
+                        auto keep_trajectory = spatial_queries::Range_Query::in_range(trajectory, window);
+                        if (!keep_trajectory){
+                            original_trajectories->erase(original_trajectories->begin() + index);
+                        }
+                    }
                     break;
             }
         }
