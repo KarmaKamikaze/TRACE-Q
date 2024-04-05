@@ -19,7 +19,6 @@ TEST_CASE("test see if benchmark time is above a specified time") {
         int s;
         auto s = 1000;
         auto durs = analytics::funcTime(time_func, s);
-    //    std::cout<<"expect 1000: "<<analytics::funcTime(time_func,s)<<"\n";
         CHECK(s <= durs);
 
 }
