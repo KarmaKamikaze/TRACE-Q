@@ -1,5 +1,3 @@
-
-
 #ifndef TRACE_Q_BENCHMARK_HPP
 #define TRACE_Q_BENCHMARK_HPP
 
