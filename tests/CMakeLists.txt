@@ -18,7 +18,11 @@ add_executable(query_test
 )
 target_link_libraries(query_test PRIVATE doctest::doctest_with_main)
 
-add_executable(benchmark_test benchmark_test.cpp)
+add_executable(benchmark_test
+        benchmark_test.cpp
+  //     ../src/benchmark/benchmark.hpp
+ //       ../src/benchmark/benchmark.cpp
+)
 target_link_libraries(benchmark_test PRIVATE doctest::doctest_with_main)
 
 add_test(NAME mrpa_test COMMAND mrpa_test)

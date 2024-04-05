@@ -1,52 +1,26 @@
 #include "../src/benchmark/benchmark.hpp"
+#include "../src/benchmark/benchmark.cpp"
 #include <doctest/doctest.h>
 
-void time_func(auto t) {
+void time_func(int t) {
     _sleep(t);
 }
 
 
-TEST_CASE("test see how far benchmark time is from 600 ms") {
-    auto t = 600;
+TEST_CASE("test see if benchmark time is above a specified time") {
 
-    std::cout << "testing " << t << " ms : \n";
-    {
-        benchmark benchmark;
-        time_func(t);
-    }
+    SUBCASE("600 ms")
+        int t;
+        auto t = 600;
+        auto duration = analytics::funcTime(time_func, t);
+        CHECK(t <= duration);
 
-
-}
-
-TEST_CASE("test see how far benchmark time is from 1000 ms") {
-    auto t = 1000;
-
-    std::cout << "testing " << t << " ms : \n";
-    {
-        benchmark benchmark;
-        time_func(t);
-    }
+    SUBCASE("1000 ms")
+        int s;
+        auto s = 1000;
+        auto durs = analytics::funcTime(time_func, s);
+    //    std::cout<<"expect 1000: "<<analytics::funcTime(time_func,s)<<"\n";
+        CHECK(s <= durs);
 
 }
 
-TEST_CASE("test see how far benchmark time is from 10000 ms") {
-    auto t = 10000;
-
-    std::cout << "testing " << t << " ms : \n";
-    {
-        benchmark benchmark;
-        time_func(t);
-    }
-
-}
-
-TEST_CASE("test see how far benchmark time is from 100000 ms") {
-    auto t = 100000;
-
-    std::cout << "testing " << t << " ms : \n";
-    {
-        benchmark benchmark;
-        time_func(t);
-    }
-
-}
