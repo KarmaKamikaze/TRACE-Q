@@ -107,9 +107,7 @@ namespace trajectory_data_handling {
         query << "SELECT id FROM " << table_name << " WHERE minLongitude<=" << get<1>(longitudeRange) << " AND maxLongitude>=" << get<0>(longitudeRange) << " AND minLatitude<=" << get<1>(latitudeRange) << " AND maxLatitude>=" << get<0>(latitudeRange) << " AND minTimestamp<=" << get<1>(timestampRange) << " AND maxTimestamp>=" << get<0>(timestampRange) << ";";
         trajectory_data_handling::query_handler::run_sql(query.str().c_str(), purpose);
 
-        for(const auto &id : trajectory_data_handling::query_handler::trajectory_ids_in_range) {
-            std::cout << id << std::endl;
-        }
+
 
         if (!trajectory_data_handling::query_handler::trajectory_ids_in_range.empty()){
             switch(purpose) {
