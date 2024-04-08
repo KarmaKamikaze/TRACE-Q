@@ -1,7 +1,5 @@
 #include "endpoint_handlers.hpp"
-#include <utility>
 #include <nlohmann/json.hpp>
-#include <../trajectory_data_handling/trajectory_sql.cpp>
 
 using json = nlohmann::json;
 
