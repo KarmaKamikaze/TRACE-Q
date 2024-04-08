@@ -4,7 +4,6 @@ external_dir="./external"
 dataset_dir="./external/datasets"
 t_drive_dir="./external/datasets/t-drive"
 geolife_dir="./external/datasets/geolife"
-sqlite_db_name="trajectory.db"
 
 echo "Checking that folder structure exists"
 
@@ -73,8 +72,5 @@ then
   unzip -d "$geolife_dir" "$tmpfile"
   rm "$tmpfile"
 fi
-
-echo "Creating $sqlite_db_name file"
-touch "$sqlite_db_name"
 
 echo "Finished setup!"

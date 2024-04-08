@@ -2,7 +2,6 @@ $external_dir = ".\external"
 $dataset_dir = ".\external\datasets"
 $t_drive_dir = ".\external\datasets\t-drive"
 $geolife_dir = ".\external\datasets\geolife"
-$sqlite_db_name = "trajectory.db"
 
 Write-Host "Checking that folder structure exists"
 
@@ -69,8 +68,5 @@ if (-not (Test-Path $geolife_dir -PathType Container)) {
     Expand-Archive -Path $outputPath -DestinationPath $geolife_dir
     Remove-Item -Path $outputPath
 }
-
-Write-Host "Creating $sqlite_db_name file"
-New-Item -Path $sqlite_db_name -ItemType File | Out-Null
 
 Write-Host "Finished setup!"
