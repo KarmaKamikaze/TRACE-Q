@@ -3,7 +3,6 @@
 
 #include <vector>
 #include <sqlite3.h>
-#include <tuple>
 #include "../data/trajectory_structure.hpp"
 #include "sqlite_querying.hpp"
 #include "../querying/Range_Query.hpp"
@@ -26,6 +25,7 @@ namespace trajectory_data_handling {
         static void create_database();
         static void create_rtree_table();
         static void reset_all_data();
+        static void replace_trajectory(data_structures::Trajectory const& trajectory);
     };
 }
 

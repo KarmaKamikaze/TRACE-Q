@@ -4,6 +4,14 @@ find_package(Boost REQUIRED COMPONENTS filesystem)
 include_directories(${Boost_INCLUDE_DIRS})
 target_link_libraries(boost-api PRIVATE ${Boost_LIBRARIES} Ws2_32.lib trajectory_data_handling)
 
+# Check if the platform is Windows
+if(WIN32)
+    # Link against Ws2_32.lib on Windows
+    target_link_libraries(boost-api PRIVATE ${Boost_LIBRARIES} Ws2_32.lib)
+else()
+    target_link_libraries(boost-api PRIVATE ${Boost_LIBRARIES})
+endif()
+
 target_sources(boost-api
         PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/endpoint_handlers.cpp

@@ -25,7 +25,7 @@ namespace trajectory_data_handling {
 
 
 
-    void trajectory_manager::insert_trajectories_into_trajectory_table(std::vector<data_structures::Trajectory> &all_trajectories, db_table table) {
+    void trajectory_manager::insert_trajectories_into_trajectory_table(std::vector<data_structures::Trajectory> const& all_trajectories, db_table table) {
         std::string table_name{};
         switch(table) {
             case original_trajectories:
@@ -43,12 +43,12 @@ namespace trajectory_data_handling {
                 query << "INSERT INTO " << table_name << " VALUES(NULL,"  << trajectory.id << ", '"
                     << location.timestamp << "', " << location.longitude << ", " << location.latitude << ")";
 
-                trajectory_data_handling::query_handler::run_sql(query.str().c_str(), query_purpose::insert_into_trajectory_table);
+                trajectory_data_handling::query_handler::run_sql(query.str(), query_purpose::insert_into_trajectory_table);
             }
         }
     }
 
-    void trajectory_manager::load_database_into_datastructure(query_purpose purpose, std::vector<std::string> const& id = {}) {
+    void trajectory_manager::load_database_into_datastructure(query_purpose purpose, std::vector<std::string> const& id) {
         std::string table_name{};
         std::stringstream query{};
 
@@ -117,6 +117,7 @@ namespace trajectory_data_handling {
         query << "SELECT id FROM " << table_name << " WHERE minLongitude<=" << window.x_high << " AND maxLongitude>=" << window.x_low << " AND minLatitude<=" << window.y_high << " AND maxLatitude>=" << window.y_low << " AND minTimestamp<=" << window.t_high << " AND maxTimestamp>=" << window.t_low << ";";
         trajectory_data_handling::query_handler::run_sql(query.str().c_str(), purpose);
 
+
         if (!trajectory_data_handling::query_handler::trajectory_ids_in_range.empty()){
             switch(purpose) {
                 case query_purpose::load_original_rtree_into_datastructure:
@@ -143,7 +144,7 @@ namespace trajectory_data_handling {
     }
 
     void trajectory_manager::create_database() {
-        auto query = std::string{"CREATE TABLE trajectory_information(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, trajectory_id INTEGER NOT NULL, timestamp REAL NOT NULL, longitude REAL NOT NULL, latitude REAL NOT NULL)"};
+        auto query = std::string{"CREATE TABLE trajectory_information(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, trajectory_id INTEGER NOT NULL, timestamp DOUBLE NOT NULL, longitude DECIMAL(10,7) NOT NULL, latitude DECIMAL(10,7) NOT NULL)"};
         trajectory_data_handling::query_handler::run_sql(query, query_purpose::create_table);
         query = std::string{"CREATE TABLE simplified_trajectory_information(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, trajectory_id INTEGER NOT NULL, timestamp REAL NOT NULL, longitude REAL NOT NULL, latitude REAL NOT NULL)"};
         trajectory_data_handling::query_handler::run_sql(query, query_purpose::create_table);
@@ -164,6 +165,10 @@ namespace trajectory_data_handling {
 
         create_database();
         create_rtree_table();
+    }
+
+    void trajectory_manager::replace_trajectory(data_structures::Trajectory const& trajectory) {
+
     }
 }
 
