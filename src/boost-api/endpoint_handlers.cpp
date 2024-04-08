@@ -40,7 +40,7 @@ namespace api {
 
         for (const auto& table : jsonData.items()) {
             const auto &table_value = table.value();
-            db_table = table.key() == "original_trajectories" ? trajectory_data_handling::db_table::original_trajectories : trajectory_data_handling::db_table::simplified_trajectories;
+            db_table = table.key() == "original" ? trajectory_data_handling::db_table::original_trajectories : trajectory_data_handling::db_table::simplified_trajectories;
 
             for(const auto &trajectory_iteration: table_value.items()) {
                 const auto &trajectoryData = trajectory_iteration.value();
@@ -64,6 +64,34 @@ namespace api {
             }
         }
         trajectory_manager::insert_trajectories_into_trajectory_table(all_trajectories, db_table);
+    }
+
+    void handle_load_trajectories_into_rtree(const request<string_body> &req, response<string_body> &res) {
+        std::string requestBody = req.body();
+
+        json jsonData;
+        try {
+            jsonData = json::parse(requestBody);
+        } catch (const std::exception& e) {
+            res.result(status::bad_request);
+            res.set(field::content_type, "text/plain");
+            res.body() = "Failed to parse JSON: " + std::string(e.what());
+            return;
+        }
+
+        std::string db_table;
+        try {
+            db_table = jsonData.at("db_table").get<std::string>();
+        } catch (const std::exception& e) {
+            res.result(status::bad_request);
+            res.set(field::content_type, "text/plain");
+            res.body() = "Failed to read 'db_table' value from JSON: " + std::string(e.what());
+            return;
+        }
+
+        trajectory_data_handling::query_purpose purpose = db_table == "original" ? trajectory_data_handling::query_purpose::insert_into_original_rtree_table : trajectory_data_handling::query_purpose::insert_into_simplified_rtree_table;
+
+        trajectory_data_handling::trajectory_manager::load_trajectories_into_rtree(purpose);
     }
 
     void handle_spatial_range_query_on_rtree_table(const request<string_body> &req, response<string_body> &res) {
@@ -112,6 +140,10 @@ namespace api {
         window.t_high = t_high;
 
         trajectory_data_handling::trajectory_manager::spatial_range_query_on_rtree_table(purpose, window);
+    }
+
+    void handle_reset_all_data(const request<string_body> &req, response<string_body> &res) {
+        trajectory_data_handling::trajectory_manager::reset_all_data();
     }
 
     void handle_not_found(const request<string_body> &req, response<string_body> &res) {
