@@ -63,15 +63,17 @@ int main() {
     auto trace_q = trace_q::TRACE_Q{2, 0.1, 3, 1.3, 0.2};
     auto result = trace_q.simplify(t, 0.99);
 
-    for (int i = 0; i < result.locations.size(); ++i) {
-        std::cout << "loc" << i + 1 << ", longitude: " << result.locations[i].longitude
-        << ", latitude: " << result.locations[i].latitude << ", t: " << result.locations[i].timestamp << '\n';
-    }
+//    for (int i = 0; i < result.locations.size(); ++i) {
+//        std::cout << "loc" << i + 1 << ", longitude: " << result.locations[i].longitude
+//        << ", latitude: " << result.locations[i].latitude << ", t: " << result.locations[i].timestamp << '\n';
+//    }
 
     // Define and populate endpoints map
     std::map<std::string, api::RequestHandler> endpoints;
+
     endpoints["/"] = api::handle_root;
     endpoints["/hello"] = api::handle_hello;
+    endpoints["/insert"] = api::handle_insert_trajectories_into_trajectory_table;
 
     // Set up the io_context
     boost::asio::io_context io_context{};
