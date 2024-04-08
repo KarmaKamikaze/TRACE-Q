@@ -1,7 +1,6 @@
 #include "endpoint_handlers.hpp"
 #include <utility>
 #include <nlohmann/json.hpp>
-#include <../data/trajectory_structure.hpp>
 #include <../trajectory_data_handling/trajectory_sql.cpp>
 
 using json = nlohmann::json;
@@ -65,6 +64,33 @@ namespace api {
             }
         }
         trajectory_manager::insert_trajectories_into_trajectory_table(all_trajectories, db_table);
+    }
+
+    void handle_spatial_range_query_on_rtree_table(const request<string_body> &req, response<string_body> &res) {
+        std::string requestBody = req.body();
+
+        json jsonData;
+        try {
+            jsonData = json::parse(requestBody);
+        } catch (const std::exception& e) {
+            res.result(status::bad_request);
+            res.set(field::content_type, "text/plain");
+            res.body() = "Failed to parse JSON: " + std::string(e.what());
+            return;
+        }
+
+        trajectory_data_handling::query_purpose purpose{};
+
+        for (const auto& item : jsonData["original"].items()) {
+            purpose = item.key() == "original_trajectories" ? trajectory_data_handling::query_purpose::load_original_rtree_into_datastructure : trajectory_data_handling::query_purpose::load_simplified_rtree_into_datastructure;
+            const auto& value = item.value();
+
+            if (value.is_object() && value.contains("min") && value.contains("max")) {
+                const auto& minValue = value["min"];
+                const auto& maxValue = value["max"];
+                trajectory_manager::spatial_range_query_on_rtree_table()
+            }
+        }
     }
 
     void handle_not_found(const request<string_body> &req, response<string_body> &res) {

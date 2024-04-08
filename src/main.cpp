@@ -74,6 +74,7 @@ int main() {
     endpoints["/"] = api::handle_root;
     endpoints["/hello"] = api::handle_hello;
     endpoints["/insert"] = api::handle_insert_trajectories_into_trajectory_table;
+    endpoints["/query"] = api::handle_spatial_range_query_on_rtree_table;
 
     // Set up the io_context
     boost::asio::io_context io_context{};
