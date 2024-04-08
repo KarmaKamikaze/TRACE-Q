@@ -80,12 +80,26 @@ namespace trajectory_data_handling {
         trajectory_data_handling::query_handler::run_sql(query.str().c_str(), purpose);
     }
 
+    void trajectory_manager::remove_from_trajectories(std::shared_ptr<std::vector<data_structures::Trajectory>>& trajectories, spatial_queries::Range_Query::Window window) {
+        for(int i = 0; i < trajectories->size(); ) {
+            auto &trajectory = (*trajectories)[i];
+            if (trajectory.id != 0) {
+                auto keep_trajectory = spatial_queries::Range_Query::in_range(trajectory, window);
+                if (!keep_trajectory) {
+                    trajectories->erase(trajectories->begin() + i);
+                } else {
+                    ++i;
+                }
+            } else {
+                ++i;
+            }
+        }
+    }
+
     void trajectory_manager::spatial_range_query_on_rtree_table(query_purpose purpose, spatial_queries::Range_Query::Window window) {
         std::string table_name{};
         std::stringstream query{};
-        int index{};
         trajectory_data_handling::query_handler::original_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
-
         trajectory_data_handling::query_handler::simplified_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
 
         switch(purpose) {
@@ -108,35 +122,11 @@ namespace trajectory_data_handling {
             switch(purpose) {
                 case query_purpose::load_original_rtree_into_datastructure:
                     load_database_into_datastructure(query_purpose::load_original_trajectory_information_into_datastructure,trajectory_data_handling::query_handler::trajectory_ids_in_range);
-                    for(int i = 0; i < trajectory_data_handling::query_handler::original_trajectories->size(); ) {
-                        auto &trajectory = (*trajectory_data_handling::query_handler::original_trajectories)[i];
-                        if (trajectory.id != 0) {
-                            auto keep_trajectory = spatial_queries::Range_Query::in_range(trajectory, window);
-                            if (!keep_trajectory) {
-                                trajectory_data_handling::query_handler::original_trajectories->erase(trajectory_data_handling::query_handler::original_trajectories->begin() + i);
-                            } else {
-                                ++i;
-                            }
-                        } else {
-                            ++i;
-                        }
-                    }
+                    remove_from_trajectories(trajectory_data_handling::query_handler::original_trajectories, window);
                     break;
                 case query_purpose::load_simplified_rtree_into_datastructure:
                     load_database_into_datastructure(query_purpose::load_simplified_trajectory_information_into_datastructure,  trajectory_data_handling::query_handler::trajectory_ids_in_range);
-                    for(int i = 0; i < trajectory_data_handling::query_handler::simplified_trajectories->size(); ) {
-                        auto &trajectory = (*trajectory_data_handling::query_handler::simplified_trajectories)[i];
-                        if (trajectory.id != 0) {
-                            auto keep_trajectory = spatial_queries::Range_Query::in_range(trajectory, window);
-                            if (!keep_trajectory) {
-                                trajectory_data_handling::query_handler::simplified_trajectories->erase(trajectory_data_handling::query_handler::simplified_trajectories->begin() + i);
-                            } else {
-                                ++i;
-                            }
-                        } else {
-                            ++i;
-                        }
-                    }
+                    remove_from_trajectories(trajectory_data_handling::query_handler::simplified_trajectories, window);
                     break;
             }
         }
