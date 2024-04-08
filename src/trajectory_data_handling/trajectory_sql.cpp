@@ -25,7 +25,7 @@ namespace trajectory_data_handling {
 
 
 
-    void trajectory_manager::insert_trajectories_into_trajectory_table(std::vector<data_structures::Trajectory> &all_trajectories, db_table table) {
+    void trajectory_manager::insert_trajectories_into_trajectory_table(std::vector<data_structures::Trajectory> const& all_trajectories, db_table table) {
         std::string table_name{};
         switch(table) {
             case original_trajectories:
@@ -43,7 +43,7 @@ namespace trajectory_data_handling {
                 query << "INSERT INTO " << table_name << " VALUES(NULL,"  << trajectory.id << ", '"
                     << location.timestamp << "', " << location.longitude << ", " << location.latitude << ")";
 
-                trajectory_data_handling::query_handler::run_sql(query.str().c_str(), query_purpose::insert_into_trajectory_table);
+                trajectory_data_handling::query_handler::run_sql(query.str(), query_purpose::insert_into_trajectory_table);
             }
         }
     }
@@ -164,6 +164,10 @@ namespace trajectory_data_handling {
         trajectory_data_handling::query_handler::run_sql("DROP TABLE trajectory_rtree_rowid", query_purpose::reset_database);
         trajectory_data_handling::query_handler::run_sql("DROP TABLE trajectory_rtree_parent", query_purpose::reset_database);
         trajectory_data_handling::query_handler::run_sql("DROP TABLE trajectory_rtree_node", query_purpose::reset_database);
+    }
+
+    void trajectory_manager::replace_trajectory(data_structures::Trajectory const& trajectory) {
+
     }
 }
 
