@@ -80,9 +80,27 @@ namespace trajectory_data_handling {
         trajectory_data_handling::query_handler::run_sql(query.str().c_str(), purpose);
     }
 
-    void trajectory_manager::spatial_range_query_on_rtree_table(query_purpose purpose, std::tuple<float, float> longitudeRange, std::tuple<float, float> latitudeRange, std::tuple<float, float> timestampRange) {
+    void trajectory_manager::remove_from_trajectories(std::shared_ptr<std::vector<data_structures::Trajectory>>& trajectories, spatial_queries::Range_Query::Window window) {
+        for(int i = 0; i < trajectories->size(); ) {
+            auto &trajectory = (*trajectories)[i];
+            if (trajectory.id != 0) {
+                auto keep_trajectory = spatial_queries::Range_Query::in_range(trajectory, window);
+                if (!keep_trajectory) {
+                    trajectories->erase(trajectories->begin() + i);
+                } else {
+                    ++i;
+                }
+            } else {
+                ++i;
+            }
+        }
+    }
+
+    void trajectory_manager::spatial_range_query_on_rtree_table(query_purpose purpose, spatial_queries::Range_Query::Window window) {
         std::string table_name{};
         std::stringstream query{};
+        trajectory_data_handling::query_handler::original_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
+        trajectory_data_handling::query_handler::simplified_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
 
         switch(purpose) {
             case query_purpose::load_original_rtree_into_datastructure:
@@ -96,16 +114,18 @@ namespace trajectory_data_handling {
                 std::cout << "Error in switch statement in spatial_query_on_rtree_table." << '\n';
         }
 
-        query << "SELECT id FROM " << table_name << " WHERE minLongitude<=" << get<1>(longitudeRange) << " AND maxLongitude>=" << get<0>(longitudeRange) << " AND minLatitude<=" << get<1>(latitudeRange) << " AND maxLatitude>=" << get<0>(latitudeRange) << " AND minTimestamp<=" << get<1>(timestampRange) << " AND maxTimestamp>=" << get<0>(timestampRange) << ";";
+        query << "SELECT id FROM " << table_name << " WHERE minLongitude<=" << window.x_high << " AND maxLongitude>=" << window.x_low << " AND minLatitude<=" << window.y_high << " AND maxLatitude>=" << window.y_low << " AND minTimestamp<=" << window.t_high << " AND maxTimestamp>=" << window.t_low << ";";
         trajectory_data_handling::query_handler::run_sql(query.str().c_str(), purpose);
 
         if (!trajectory_data_handling::query_handler::trajectory_ids_in_range.empty()){
             switch(purpose) {
                 case query_purpose::load_original_rtree_into_datastructure:
                     load_database_into_datastructure(query_purpose::load_original_trajectory_information_into_datastructure,trajectory_data_handling::query_handler::trajectory_ids_in_range);
+                    remove_from_trajectories(trajectory_data_handling::query_handler::original_trajectories, window);
                     break;
                 case query_purpose::load_simplified_rtree_into_datastructure:
                     load_database_into_datastructure(query_purpose::load_simplified_trajectory_information_into_datastructure,  trajectory_data_handling::query_handler::trajectory_ids_in_range);
+                    remove_from_trajectories(trajectory_data_handling::query_handler::simplified_trajectories, window);
                     break;
             }
         }

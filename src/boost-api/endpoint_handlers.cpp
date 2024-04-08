@@ -79,18 +79,39 @@ namespace api {
             return;
         }
 
-        trajectory_data_handling::query_purpose purpose{};
-
-        for (const auto& item : jsonData["original"].items()) {
-            purpose = item.key() == "original_trajectories" ? trajectory_data_handling::query_purpose::load_original_rtree_into_datastructure : trajectory_data_handling::query_purpose::load_simplified_rtree_into_datastructure;
-            const auto& value = item.value();
-
-            if (value.is_object() && value.contains("min") && value.contains("max")) {
-                const auto& minValue = value["min"];
-                const auto& maxValue = value["max"];
-                trajectory_manager::spatial_range_query_on_rtree_table()
-            }
+        trajectory_data_handling::query_purpose purpose;
+        if (jsonData.contains("original")) {
+            purpose = trajectory_data_handling::query_purpose::load_original_rtree_into_datastructure;
+        } else if (jsonData.contains("simplified")) {
+            purpose = trajectory_data_handling::query_purpose::load_simplified_rtree_into_datastructure;
+        } else {
+            res.result(status::bad_request);
+            res.set(field::content_type, "text/plain");
+            res.body() = "Invalid JSON format: missing 'original' or 'simplified' key";
+            return;
         }
+
+        auto& longitudeRange = jsonData["original"]["longitudeRange"];
+        double x_low = longitudeRange["min"];
+        double x_high = longitudeRange["max"];
+
+        auto& latitudeRange = jsonData["original"]["latitudeRange"];
+        double y_low = latitudeRange["min"];
+        double y_high = latitudeRange["max"];
+
+        auto& timestampRange = jsonData["original"]["timestampRange"];
+        long double t_low = timestampRange["min"];
+        long double t_high = timestampRange["max"];
+
+        spatial_queries::Range_Query::Window window{};
+        window.x_low = x_low;
+        window.x_high = x_high;
+        window.y_low = y_low;
+        window.y_high = y_high;
+        window.t_low = t_low;
+        window.t_high = t_high;
+
+        trajectory_data_handling::trajectory_manager::spatial_range_query_on_rtree_table(purpose, window);
     }
 
     void handle_not_found(const request<string_body> &req, response<string_body> &res) {
