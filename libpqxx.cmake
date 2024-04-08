@@ -3,7 +3,7 @@ include(FetchContent)
 set(FETCHCONTENT_QUIET ON)
 set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
 
-set(DSKIP_BUILD_TEST OFF CACHE BOOL "Skips compiling libpqxx's tests")
+set(DSKIP_BUILD_TEST ON CACHE BOOL "Skips compiling libpqxx's tests")
 # On Windows we generally recommend building libpqxx as a shared
 # library.  On other platforms, we recommend a static library.
 IF (WIN32)
