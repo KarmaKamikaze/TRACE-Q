@@ -48,7 +48,7 @@ namespace trajectory_data_handling {
         }
     }
 
-    void trajectory_manager::load_database_into_datastructure(query_purpose purpose, std::vector<std::string> const& id = {}) {
+    void trajectory_manager::load_database_into_datastructure(query_purpose purpose, std::vector<std::string> const& id) {
         std::string table_name{};
         std::stringstream query{};
 
@@ -80,17 +80,13 @@ namespace trajectory_data_handling {
         trajectory_data_handling::query_handler::run_sql(query.str().c_str(), purpose);
     }
 
-    void trajectory_manager::spatial_range_query_on_rtree_table(query_purpose purpose, std::tuple<float, float> longitudeRange, std::tuple<float, float> latitudeRange, std::tuple<float, float> timestampRange) {
+    void trajectory_manager::spatial_range_query_on_rtree_table(query_purpose purpose, spatial_queries::Range_Query::Window window) {
         std::string table_name{};
         std::stringstream query{};
         int index{};
-        auto original_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
-        trajectory_data_handling::query_handler::original_trajectories = original_trajectories;
+        trajectory_data_handling::query_handler::original_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
 
-        auto simplified_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
-        trajectory_data_handling::query_handler::simplified_trajectories = simplified_trajectories;
-
-        spatial_queries::Range_Query::Window window{get<0>(longitudeRange), get<1>(longitudeRange), get<0>(latitudeRange), get<1>(latitudeRange), get<0>(timestampRange), get<1>(timestampRange)};
+        trajectory_data_handling::query_handler::simplified_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
 
         switch(purpose) {
             case query_purpose::load_original_rtree_into_datastructure:
@@ -104,30 +100,41 @@ namespace trajectory_data_handling {
                 std::cout << "Error in switch statement in spatial_query_on_rtree_table." << '\n';
         }
 
-        query << "SELECT id FROM " << table_name << " WHERE minLongitude<=" << get<1>(longitudeRange) << " AND maxLongitude>=" << get<0>(longitudeRange) << " AND minLatitude<=" << get<1>(latitudeRange) << " AND maxLatitude>=" << get<0>(latitudeRange) << " AND minTimestamp<=" << get<1>(timestampRange) << " AND maxTimestamp>=" << get<0>(timestampRange) << ";";
+        query << "SELECT id FROM " << table_name << " WHERE minLongitude<=" << window.x_high << " AND maxLongitude>=" << window.x_low << " AND minLatitude<=" << window.y_high << " AND maxLatitude>=" << window.y_low << " AND minTimestamp<=" << window.t_high << " AND maxTimestamp>=" << window.t_low << ";";
         trajectory_data_handling::query_handler::run_sql(query.str().c_str(), purpose);
-
 
 
         if (!trajectory_data_handling::query_handler::trajectory_ids_in_range.empty()){
             switch(purpose) {
                 case query_purpose::load_original_rtree_into_datastructure:
                     load_database_into_datastructure(query_purpose::load_original_trajectory_information_into_datastructure,trajectory_data_handling::query_handler::trajectory_ids_in_range);
-                    for(const auto &trajectory : *original_trajectories) {
-                        index + 1;
-                        auto keep_trajectory = spatial_queries::Range_Query::in_range(trajectory, window);
-                        if (!keep_trajectory){
-                            original_trajectories->erase(original_trajectories->begin() + index);
+                    for(int i = 0; i < trajectory_data_handling::query_handler::original_trajectories->size(); ) {
+                        auto &trajectory = (*trajectory_data_handling::query_handler::original_trajectories)[i];
+                        if (trajectory.id != 0) {
+                            auto keep_trajectory = spatial_queries::Range_Query::in_range(trajectory, window);
+                            if (!keep_trajectory) {
+                                trajectory_data_handling::query_handler::original_trajectories->erase(trajectory_data_handling::query_handler::original_trajectories->begin() + i);
+                            } else {
+                                ++i;
+                            }
+                        } else {
+                            ++i;
                         }
                     }
                     break;
                 case query_purpose::load_simplified_rtree_into_datastructure:
                     load_database_into_datastructure(query_purpose::load_simplified_trajectory_information_into_datastructure,  trajectory_data_handling::query_handler::trajectory_ids_in_range);
-                    for(const auto &trajectory : *original_trajectories) {
-                        index + 1;
-                        auto keep_trajectory = spatial_queries::Range_Query::in_range(trajectory, window);
-                        if (!keep_trajectory){
-                            original_trajectories->erase(original_trajectories->begin() + index);
+                    for(int i = 0; i < trajectory_data_handling::query_handler::simplified_trajectories->size(); ) {
+                        auto &trajectory = (*trajectory_data_handling::query_handler::simplified_trajectories)[i];
+                        if (trajectory.id != 0) {
+                            auto keep_trajectory = spatial_queries::Range_Query::in_range(trajectory, window);
+                            if (!keep_trajectory) {
+                                trajectory_data_handling::query_handler::simplified_trajectories->erase(trajectory_data_handling::query_handler::simplified_trajectories->begin() + i);
+                            } else {
+                                ++i;
+                            }
+                        } else {
+                            ++i;
                         }
                     }
                     break;
@@ -147,7 +154,7 @@ namespace trajectory_data_handling {
     }
 
     void trajectory_manager::create_database() {
-        auto query = std::string{"CREATE TABLE trajectory_information(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, trajectory_id INTEGER NOT NULL, timestamp REAL NOT NULL, longitude REAL NOT NULL, latitude REAL NOT NULL)"};
+        auto query = std::string{"CREATE TABLE trajectory_information(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, trajectory_id INTEGER NOT NULL, timestamp DOUBLE NOT NULL, longitude DECIMAL(10,7) NOT NULL, latitude DECIMAL(10,7) NOT NULL)"};
         trajectory_data_handling::query_handler::run_sql(query, query_purpose::create_table);
         query = std::string{"CREATE TABLE simplified_trajectory_information(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, trajectory_id INTEGER NOT NULL, timestamp REAL NOT NULL, longitude REAL NOT NULL, latitude REAL NOT NULL)"};
         trajectory_data_handling::query_handler::run_sql(query, query_purpose::create_table);
