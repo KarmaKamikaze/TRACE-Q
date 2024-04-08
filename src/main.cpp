@@ -72,7 +72,6 @@ int main() {
     std::map<std::string, api::RequestHandler> endpoints;
 
     endpoints["/"] = api::handle_root;
-    endpoints["/hello"] = api::handle_hello;
     endpoints["/insert"] = api::handle_insert_trajectories_into_trajectory_table;
     endpoints["/query"] = api::handle_spatial_range_query_on_rtree_table;
     endpoints["/rtree"] = api::handle_load_trajectories_into_rtree;

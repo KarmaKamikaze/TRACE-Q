@@ -8,6 +8,7 @@ using json = nlohmann::json;
 namespace api {
     using namespace boost::beast::http;
     using namespace trajectory_data_handling;
+
     void handle_root(const request<string_body> &req, response<string_body> &res) {
         res.body() = "Welcome to the root endpoint!";
         res.prepare_payload();
@@ -15,25 +16,25 @@ namespace api {
         res.result(status::ok);
     }
 
-    void handle_hello(const request<string_body> &req, response<string_body> &res) {
-        res.body() = "Hello, world!";
-        res.prepare_payload();
-        res.set(field::content_type, "text/plain");
-        res.result(status::ok);
-    }
-
-    void handle_insert_trajectories_into_trajectory_table(const request<string_body> &req, response<string_body> &res) {
+    json get_json_from_request_body(const request<string_body> &req,  response<string_body> &res) {
         std::string requestBody = req.body();
 
-        json jsonData;
+        json jsonData{};
         try {
             jsonData = json::parse(requestBody);
         } catch (const std::exception& e) {
             res.result(status::bad_request);
             res.set(field::content_type, "text/plain");
             res.body() = "Failed to parse JSON: " + std::string(e.what());
-            return;
         }
+
+        return jsonData;
+    }
+
+    void handle_insert_trajectories_into_trajectory_table(const request<string_body> &req, response<string_body> &res) {
+        json jsonData = get_json_from_request_body(req, res);
+        if (jsonData.empty())
+            return;
 
         std::vector<data_structures::Trajectory> all_trajectories{};
         trajectory_data_handling::db_table db_table{};
@@ -67,17 +68,9 @@ namespace api {
     }
 
     void handle_load_trajectories_into_rtree(const request<string_body> &req, response<string_body> &res) {
-        std::string requestBody = req.body();
-
-        json jsonData;
-        try {
-            jsonData = json::parse(requestBody);
-        } catch (const std::exception& e) {
-            res.result(status::bad_request);
-            res.set(field::content_type, "text/plain");
-            res.body() = "Failed to parse JSON: " + std::string(e.what());
+        json jsonData = get_json_from_request_body(req, res);
+        if (jsonData.empty())
             return;
-        }
 
         std::string db_table;
         try {
@@ -95,17 +88,9 @@ namespace api {
     }
 
     void handle_spatial_range_query_on_rtree_table(const request<string_body> &req, response<string_body> &res) {
-        std::string requestBody = req.body();
-
-        json jsonData;
-        try {
-            jsonData = json::parse(requestBody);
-        } catch (const std::exception& e) {
-            res.result(status::bad_request);
-            res.set(field::content_type, "text/plain");
-            res.body() = "Failed to parse JSON: " + std::string(e.what());
+        json jsonData = get_json_from_request_body(req, res);
+        if (jsonData.empty())
             return;
-        }
 
         trajectory_data_handling::query_purpose purpose;
         if (jsonData.contains("original")) {
