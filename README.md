@@ -1,7 +1,7 @@
 # P8-Project
 
 ## Prerequisites
-Before running the application, ensure that you have downloaded the necessary project dependencies.
+Before running the application, ensure that you have downloaded the necessary project dependencies. Specifically ensure that [PostgreSQL](https://www.postgresql.org/) is installed.
 ### Windows
 If you are on Windows, run the PowerShell script to install the project dependencies:
 ```sh
@@ -15,8 +15,8 @@ If you are on Linux, run the bash script to install the project dependencies:
 ### Manual dependency installation
 
 #### Step1: Get datasets:
-1. T-Drive: https://www.kaggle.com/datasets/arashnic/tdriver
-2. Geolife: https://www.microsoft.com/en-us/download/details.aspx?id=52367
+1. [T-Drive](https://www.kaggle.com/datasets/arashnic/tdriver)
+2. [Geolife](https://www.microsoft.com/en-us/download/details.aspx?id=52367)
 
 #### Step 2: Create folders:
 1. `TRACE-Q/external/datasets`

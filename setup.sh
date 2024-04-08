@@ -4,6 +4,8 @@ external_dir="./external"
 dataset_dir="./external/datasets"
 t_drive_dir="./external/datasets/t-drive"
 geolife_dir="./external/datasets/geolife"
+SQL_CREATE=$(<"$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd -P)"/sql/create_table.sql)
+SQL_INDEX=$(<"$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd -P)"/sql/create_index.sql)
 
 echo "Checking that folder structure exists"
 
@@ -72,5 +74,10 @@ then
   unzip -d "$geolife_dir" "$tmpfile"
   rm "$tmpfile"
 fi
+
+echo "Setting up PostgreSQL database"
+createdb traceq -U postgres
+psql -U postgres -d traceq -c "$SQL_CREATE"
+psql -U postgres -d traceq -c "$SQL_INDEX"
 
 echo "Finished setup!"
