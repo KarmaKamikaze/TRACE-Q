@@ -72,7 +72,7 @@ if (-not (Test-Path $geolife_dir -PathType Container)) {
 }
 
 Write-Host "Setting up PostgreSQL database"
-createdb traceq -U postgres
+createdb -U postgres traceq
 psql -U postgres -d traceq -c $SQL_CREATE
 psql -U postgres -d traceq -c $SQL_INDEX
 
