@@ -112,8 +112,6 @@ namespace simp_algorithms {
         MRPA() = default;
         explicit MRPA(double c) : resolution_scale{c} {};
 
-        Trajectory simplify(Trajectory const&, double const&, double); // Yeet later https://tinyurl.com/tapvp9ch
-
         /**
          * Simplifies the input trajectory utilizing the MRPA algorithm.
          * @param trajectory The trajectory to be simplified.

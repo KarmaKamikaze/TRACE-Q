@@ -1,6 +1,6 @@
 CREATE TABLE original_trajectories (
-                              id             SERIAL PRIMARY KEY,
+                              id             BIGSERIAL PRIMARY KEY,
                               trajectory_id  INTEGER NOT NULL,
                               coordinates    POINT NOT NULL,
-                              time           DECIMAL(10,7)
+                              time           BIGINT
 );

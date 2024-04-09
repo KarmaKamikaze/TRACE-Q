@@ -18,4 +18,5 @@ FetchContent_Declare(libpqxx
         GIT_SHALLOW TRUE  # download specific revision only (git clone --depth 1)
         GIT_PROGRESS TRUE # show download progress in Ninja
         USES_TERMINAL_DOWNLOAD TRUE)
+set(PQXX_LIBRARIES pqxx)
 FetchContent_MakeAvailable(libpqxx)

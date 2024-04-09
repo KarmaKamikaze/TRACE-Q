@@ -5,7 +5,7 @@
 #include <stdexcept>
 
 namespace trajectory_data_handling {
-    long double file_manager::stringToTime(const std::string& timeString) {
+    long file_manager::stringToTime(const std::string& timeString) {
         try {
             struct tm timeStruct = {};
             std::istringstream ss(timeString);
@@ -18,7 +18,8 @@ namespace trajectory_data_handling {
 
             // Parse the month, day, hour, minute, and second
             char dash, colon;
-            if (!(ss >> dash >> timeStruct.tm_mon >> dash >> timeStruct.tm_mday >> timeStruct.tm_hour >> colon >> timeStruct.tm_min >> colon >> timeStruct.tm_sec)) {
+            if (!(ss >> dash >> timeStruct.tm_mon >> dash >> timeStruct.tm_mday >> timeStruct.tm_hour >> colon
+            >> timeStruct.tm_min >> colon >> timeStruct.tm_sec)) {
                 throw std::invalid_argument("Error: Invalid date and time format.");
             }
             timeStruct.tm_mon--; // Adjust for tm_mon starting from 0
@@ -31,7 +32,7 @@ namespace trajectory_data_handling {
 
             // Convert to seconds since epoch
             auto duration = std::chrono::duration_cast<std::chrono::seconds>(timePoint.time_since_epoch());
-            long double secondsSinceEpoch = duration.count();
+            long secondsSinceEpoch = duration.count();
 
             return secondsSinceEpoch;
         } catch (const std::invalid_argument& e) {

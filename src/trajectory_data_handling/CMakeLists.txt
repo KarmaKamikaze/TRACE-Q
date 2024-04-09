@@ -11,6 +11,8 @@ target_sources(trajectory_data_handling
             ${CMAKE_CURRENT_LIST_DIR}/trajectory_sql.hpp
 )
 
+target_link_libraries(trajectory_data_handling "${PQXX_LIBRARIES}")
+
 find_package (SQLite3 REQUIRED)
 if (SQLITE3_FOUND)
     target_include_directories(trajectory_data_handling PRIVATE ${SQLite3_INCLUDE_DIRS})

@@ -97,12 +97,12 @@ namespace simp_algorithms {
 
         for (int k = i + 1; k < j; ++k) {
             auto x = trajectory[i].longitude +
-                     ((trajectory[k].timestamp - trajectory[i].timestamp) /
-                      (trajectory[j].timestamp - trajectory[i].timestamp)) *
+                     (static_cast<double>(trajectory[k].timestamp - trajectory[i].timestamp) /
+                     static_cast<double>((trajectory[j].timestamp - trajectory[i].timestamp))) *
                      (trajectory[j].longitude - trajectory[i].longitude);
             auto y = trajectory[i].latitude +
-                     ((trajectory[k].timestamp - trajectory[i].timestamp) /
-                      (trajectory[j].timestamp - trajectory[i].timestamp)) *
+                     (static_cast<double>(trajectory[k].timestamp - trajectory[i].timestamp) /
+                     static_cast<double>((trajectory[j].timestamp - trajectory[i].timestamp))) *
                      (trajectory[j].latitude - trajectory[i].latitude);
             auto point = Location (trajectory[k].order, trajectory[k].timestamp, x, y);
             res.locations.emplace_back(point);
@@ -237,15 +237,6 @@ namespace simp_algorithms {
         else {
             return init_tree(trajectory, error_tolerances[index], error_tolerances[index + 1]);
         }
-    }
-
-
-    data_structures::Trajectory MRPA::simplify(Trajectory const& trajectory, double const& query_error, double simplification_error) {
-
-        auto mrpa = simp_algorithms::MRPA{};
-        auto approximations = mrpa(trajectory);;
-
-        return approximations.front();
     }
 
 } // simp_algorithms

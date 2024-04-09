@@ -145,11 +145,11 @@ namespace trajectory_data_handling {
         }
 
         switch(callback_type) {
-            case query_purpose::load_original_trajectory_information_into_datastructure:
+            case query_purpose::load_original_trajectory_information_into_data_structure:
                 rc = sqlite3_exec(m_db, query.c_str(), callback_original_datastructure, 0, &zErrMsg);
                 original_trajectories->push_back(m_trajectory);
                 break;
-            case query_purpose::load_simplified_trajectory_information_into_datastructure:
+            case query_purpose::load_simplified_trajectory_information_into_data_structure:
                 rc = sqlite3_exec(m_db, query.c_str(), callback_simplified_datastructure, 0, &zErrMsg);
                 simplified_trajectories->push_back(m_trajectory);
                 break;
