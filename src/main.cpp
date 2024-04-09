@@ -8,13 +8,19 @@
 #include "endpoint_handlers.hpp"
 
 int main(int argc, char* argv[]) {
+    for(int i = 1; i < argc; i++) {
+        std::string arg = argv[i];
+        if(arg == "--reset") {
+            trajectory_data_handling::trajectory_manager::reset_all_data();
+        }
+    }
+
     trajectory_data_handling::file_manager file_manager{};
     auto original_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
     trajectory_data_handling::query_handler::original_trajectories = original_trajectories;
 
     auto simplified_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
     trajectory_data_handling::query_handler::simplified_trajectories = simplified_trajectories;
-
 
 //    trajectory_data_handling::trajectory_manager.reset_all_data();
 //    trajectory_data_handling::trajectory_managercreate_database();
