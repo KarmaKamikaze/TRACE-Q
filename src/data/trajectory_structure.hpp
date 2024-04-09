@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+
 namespace data_structures {
 
     struct Location {

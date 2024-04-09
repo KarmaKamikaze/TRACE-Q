@@ -161,9 +161,10 @@ namespace trajectory_data_handling {
         trajectory_data_handling::query_handler::run_sql("DROP TABLE trajectory_information", query_purpose::reset_database);
         trajectory_data_handling::query_handler::run_sql("DROP TABLE simplified_trajectory_information", query_purpose::reset_database);
         trajectory_data_handling::query_handler::run_sql("DROP TABLE trajectory_rtree", query_purpose::reset_database);
-        trajectory_data_handling::query_handler::run_sql("DROP TABLE trajectory_rtree_rowid", query_purpose::reset_database);
-        trajectory_data_handling::query_handler::run_sql("DROP TABLE trajectory_rtree_parent", query_purpose::reset_database);
-        trajectory_data_handling::query_handler::run_sql("DROP TABLE trajectory_rtree_node", query_purpose::reset_database);
+        trajectory_data_handling::query_handler::run_sql("DROP TABLE simplified_trajectory_rtree", query_purpose::reset_database);
+
+        create_database();
+        create_rtree_table();
     }
 
     void trajectory_manager::replace_trajectory(data_structures::Trajectory const& trajectory) {

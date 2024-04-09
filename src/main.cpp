@@ -7,14 +7,19 @@
 #include "start-api.hpp"
 #include "endpoint_handlers.hpp"
 
-int main() {
+int main(int argc, char* argv[]) {
+    for(int i = 1; i < argc; i++) {
+        if(argv[i] == "--reset") {
+            trajectory_data_handling::trajectory_manager::reset_all_data();
+        }
+    }
+
     trajectory_data_handling::file_manager file_manager{};
     auto original_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
     trajectory_data_handling::query_handler::original_trajectories = original_trajectories;
 
     auto simplified_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
     trajectory_data_handling::query_handler::simplified_trajectories = simplified_trajectories;
-
 
 //    trajectory_data_handling::trajectory_manager.reset_all_data();
 //    trajectory_data_handling::trajectory_managercreate_database();
@@ -57,15 +62,17 @@ int main() {
     auto trace_q = trace_q::TRACE_Q{2, 0.1, 3, 1.3, 0.2};
     auto result = trace_q.simplify(t, 0.99);
 
-    for (int i = 0; i < result.locations.size(); ++i) {
-        std::cout << "loc" << i + 1 << ", longitude: " << result.locations[i].longitude
-        << ", latitude: " << result.locations[i].latitude << ", t: " << result.locations[i].timestamp << '\n';
-    }
+//    for (int i = 0; i < result.locations.size(); ++i) {
+//        std::cout << "loc" << i + 1 << ", longitude: " << result.locations[i].longitude
+//        << ", latitude: " << result.locations[i].latitude << ", t: " << result.locations[i].timestamp << '\n';
+//    }
 
     // Define and populate endpoints map
     std::map<std::string, api::RequestHandler> endpoints;
+
     endpoints["/"] = api::handle_root;
-    endpoints["/hello"] = api::handle_hello;
+    endpoints["/insert"] = api::handle_insert_trajectories_into_trajectory_table;
+    endpoints["/query"] = api::handle_spatial_range_query_on_rtree_table;
 
     // Set up the io_context
     boost::asio::io_context io_context{};
