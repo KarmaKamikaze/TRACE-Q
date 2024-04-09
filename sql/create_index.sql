@@ -1,1 +1,0 @@
-CREATE INDEX trajectories_index ON trajectories USING GIST (coordinates);

@@ -4,8 +4,10 @@ external_dir="./external"
 dataset_dir="./external/datasets"
 t_drive_dir="./external/datasets/t-drive"
 geolife_dir="./external/datasets/geolife"
-SQL_CREATE=$(<"$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd -P)"/sql/create_table.sql)
-SQL_INDEX=$(<"$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd -P)"/sql/create_index.sql)
+SQL_CREATE_ORIGINAL=$(<"$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd -P)"/sql/create_table_original.sql)
+SQL_INDEX_ORIGINAL=$(<"$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd -P)"/sql/create_index_original.sql)
+SQL_CREATE_SIMPLIFIED=$(<"$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd -P)"/sql/create_table_simplified.sql)
+SQL_INDEX_SIMPLIFIED=$(<"$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd -P)"/sql/create_index_simplified.sql)
 
 echo "Checking that folder structure exists"
 
@@ -77,7 +79,9 @@ fi
 
 echo "Setting up PostgreSQL database"
 createdb traceq -U postgres
-psql -U postgres -d traceq -c "$SQL_CREATE"
-psql -U postgres -d traceq -c "$SQL_INDEX"
+psql -U postgres -d traceq -c "$SQL_CREATE_ORIGINAL"
+psql -U postgres -d traceq -c "$SQL_INDEX_ORIGINAL"
+psql -U postgres -d traceq -c "$SQL_CREATE_SIMPLIFIED"
+psql -U postgres -d traceq -c "$SQL_INDEX_SIMPLIFIED"
 
 echo "Finished setup!"

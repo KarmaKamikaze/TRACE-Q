@@ -1,0 +1,1 @@
+CREATE INDEX original_trajectories_index ON original_trajectories USING GIST (coordinates);

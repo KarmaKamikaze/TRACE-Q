@@ -1,4 +1,4 @@
-CREATE TABLE trajectories (
+CREATE TABLE original_trajectories (
                               id             SERIAL PRIMARY KEY,
                               trajectory_id  INTEGER NOT NULL,
                               coordinates    POINT NOT NULL,
