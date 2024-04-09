@@ -9,8 +9,7 @@
 
 int main(int argc, char* argv[]) {
     for(int i = 1; i < argc; i++) {
-        std::string arg = argv[i];
-        if(arg == "--reset") {
+        if(argv[i] == "--reset") {
             trajectory_data_handling::trajectory_manager::reset_all_data();
         }
     }
