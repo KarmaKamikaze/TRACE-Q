@@ -39,15 +39,15 @@ namespace api {
             return;
 
         std::vector<data_structures::Trajectory> all_trajectories{};
-        trajectory_data_handling::db_table db_table{};
+        db_table db_table{};
 
         try {
             auto jsonObject = jsonData.as_object();
             for (auto & it : jsonObject) {
                 const auto &table_key = it.key();
                 const auto &table_value = it.value().as_object();
-                db_table = table_key == "original" ? trajectory_data_handling::db_table::original_trajectories
-                                                   : trajectory_data_handling::db_table::simplified_trajectories;
+                db_table = table_key == "original" ? db_table::original_trajectories
+                                                   : db_table::simplified_trajectories;
 
                 for (const auto & jt : table_value) {
                     const auto &trajectory_id = jt.key();
@@ -87,11 +87,11 @@ namespace api {
         try {
             std::string db_table = jsonData.as_object().at("db_table").as_string().c_str();
 
-            trajectory_data_handling::query_purpose purpose = (db_table == "original") ?
-                                                              trajectory_data_handling::query_purpose::insert_into_original_rtree_table :
-                                                              trajectory_data_handling::query_purpose::insert_into_simplified_rtree_table;
+            query_purpose purpose = (db_table == "original") ?
+                                                              query_purpose::insert_into_original_rtree_table :
+                                                              query_purpose::insert_into_simplified_rtree_table;
 
-            trajectory_data_handling::trajectory_manager::load_trajectories_into_rtree(purpose);
+            trajectory_manager::load_trajectories_into_rtree(purpose);
         } catch (const std::exception& e) {
             res.result(status::bad_request);
             res.set(field::content_type, "text/plain");
@@ -105,12 +105,12 @@ namespace api {
             return;
 
         try {
-            trajectory_data_handling::query_purpose purpose;
+            query_purpose purpose;
 
             if (jsonData.as_object().contains("original")) {
-                purpose = trajectory_data_handling::query_purpose::load_original_rtree_into_datastructure;
+                purpose = query_purpose::load_original_rtree_into_datastructure;
             } else if (jsonData.as_object().contains("simplified")) {
-                purpose = trajectory_data_handling::query_purpose::load_simplified_rtree_into_datastructure;
+                purpose = query_purpose::load_simplified_rtree_into_datastructure;
             } else {
                 res.result(status::bad_request);
                 res.set(field::content_type, "text/plain");
@@ -137,7 +137,7 @@ namespace api {
             window.t_low = t_low;
             window.t_high = t_high;
 
-            trajectory_data_handling::trajectory_manager::spatial_range_query_on_rtree_table(purpose, window);
+            trajectory_manager::spatial_range_query_on_rtree_table(purpose, window);
         } catch (const std::exception &e) {
             res.result(status::bad_request);
             res.set(field::content_type, "text/plain");
@@ -146,7 +146,7 @@ namespace api {
     }
 
     void handle_reset_all_data(const request<string_body> &req, response<string_body> &res) {
-        trajectory_data_handling::trajectory_manager::reset_all_data();
+        trajectory_manager::reset_all_data();
     }
 
     void handle_not_found(const request<string_body> &req, response<string_body> &res) {
