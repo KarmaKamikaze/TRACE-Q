@@ -1,7 +1,7 @@
 #include "endpoint_handlers.hpp"
 #include "boost/json/src.hpp"
 #include "boost/json/stream_parser.hpp"
-#include "boost/json/monotonic_resource.hpp"
+#include "../trajectory_data_handling/trajectory_sql.hpp"
 
 namespace api {
     using namespace boost::beast::http;
