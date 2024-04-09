@@ -15,7 +15,7 @@ namespace api {
     }
 
     boost::json::value get_json_from_request_body(const request<string_body> &req, response<string_body> &res) {
-        std::string requestBody = req.body();
+        const std::string& requestBody = req.body();
 
         boost::json::value jsonData;
         try {
@@ -43,22 +43,22 @@ namespace api {
 
         try {
             auto jsonObject = jsonData.as_object();
-            for (auto it = jsonObject.begin(); it != jsonObject.end(); ++it) {
-                const auto &table_key = it->key();
-                const auto &table_value = it->value().as_object();
+            for (auto & it : jsonObject) {
+                const auto &table_key = it.key();
+                const auto &table_value = it.value().as_object();
                 db_table = table_key == "original" ? trajectory_data_handling::db_table::original_trajectories
                                                    : trajectory_data_handling::db_table::simplified_trajectories;
 
-                for (auto jt = table_value.begin(); jt != table_value.end(); ++jt) {
-                    const auto &trajectory_id = jt->key();
-                    const auto &trajectoryData = jt->value().as_object();
+                for (const auto & jt : table_value) {
+                    const auto &trajectory_id = jt.key();
+                    const auto &trajectoryData = jt.value().as_object();
 
                     data_structures::Trajectory trajectory;
                     trajectory.id = std::stoi(trajectory_id);
 
-                    for (auto kt = trajectoryData.begin(); kt != trajectoryData.end(); ++kt) {
-                        const auto &location_order = kt->key();
-                        const auto &location_data = kt->value().as_object();
+                    for (const auto & kt : trajectoryData) {
+                        const auto &location_order = kt.key();
+                        const auto &location_data = kt.value().as_object();
 
                         data_structures::Location location{};
                         location.order = std::stoi(location_order);
@@ -66,7 +66,7 @@ namespace api {
                         location.longitude = location_data.at("longitude").as_double();
                         location.latitude = location_data.at("latitude").as_double();
 
-                        trajectory.locations.emplace_back(std::move(location));
+                        trajectory.locations.emplace_back(location);
                     }
                     all_trajectories.emplace_back(std::move(trajectory));
                 }
