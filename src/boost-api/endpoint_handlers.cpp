@@ -15,12 +15,10 @@ namespace api {
     }
 
     boost::json::value get_json_from_request_body(const request<string_body> &req, response<string_body> &res) {
-        const std::string& requestBody = req.body();
-
-        boost::json::value jsonData;
+        boost::json::value jsonData{};
         try {
-            boost::json::error_code ec;
-            jsonData = boost::json::parse(requestBody, ec);
+            boost::json::error_code ec{};
+            jsonData = boost::json::parse{req.body(), ec};
             if (ec)
                 throw std::runtime_error("Failed to parse JSON: " + ec.message());
         } catch (const std::exception& e) {
