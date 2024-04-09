@@ -7,7 +7,7 @@
 #include "start-api.hpp"
 #include "endpoint_handlers.hpp"
 
-int main() {
+int main(int argc, char* argv[]) {
     trajectory_data_handling::file_manager file_manager{};
     auto original_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
     trajectory_data_handling::query_handler::original_trajectories = original_trajectories;
@@ -68,8 +68,6 @@ int main() {
     endpoints["/"] = api::handle_root;
     endpoints["/insert"] = api::handle_insert_trajectories_into_trajectory_table;
     endpoints["/query"] = api::handle_spatial_range_query_on_rtree_table;
-    endpoints["/rtree"] = api::handle_load_trajectories_into_rtree;
-    endpoints["/reset"] = api::handle_reset_all_data;
 
     // Set up the io_context
     boost::asio::io_context io_context{};

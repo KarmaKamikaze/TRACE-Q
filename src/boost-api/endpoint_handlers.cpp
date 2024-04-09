@@ -18,7 +18,7 @@ namespace api {
         boost::json::value jsonData{};
         try {
             boost::json::error_code ec{};
-            jsonData = boost::json::parse{req.body(), ec};
+            jsonData = boost::json::parse(req.body(), ec);
             if (ec)
                 throw std::runtime_error("Failed to parse JSON: " + ec.message());
         } catch (const std::exception& e) {
@@ -51,10 +51,9 @@ namespace api {
                     const auto &trajectory_id = jt.key();
                     const auto &trajectoryData = jt.value().as_object();
 
-                    data_structures::Trajectory trajectory;
-                    trajectory.id = std::stoi(trajectory_id);
+                    std::vector<data_structures::Location> locations{};
 
-                    for (const auto & kt : trajectoryData) {
+                    for (const auto &kt : trajectoryData) {
                         const auto &location_order = kt.key();
                         const auto &location_data = kt.value().as_object();
 
@@ -63,9 +62,12 @@ namespace api {
                         location.timestamp = location_data.at("timestamp").as_double();
                         location.longitude = location_data.at("longitude").as_double();
                         location.latitude = location_data.at("latitude").as_double();
-
-                        trajectory.locations.emplace_back(location);
+                        locations.emplace_back(location);
                     }
+
+                    unsigned int id = static_cast<unsigned int>(std::stoi(trajectory_id));
+                    data_structures::Trajectory trajectory{id, std::move(locations)};
+
                     all_trajectories.emplace_back(std::move(trajectory));
                 }
             }
@@ -74,26 +76,6 @@ namespace api {
             res.result(status::bad_request);
             res.set(field::content_type, "text/plain");
             res.body() = "Error processing JSON data: " + std::string(e.what());
-        }
-    }
-
-    void handle_load_trajectories_into_rtree(const request<string_body> &req, response<string_body> &res) {
-        boost::json::value jsonData = get_json_from_request_body(req, res);
-        if (jsonData.is_null())
-            return;
-
-        try {
-            std::string db_table = jsonData.as_object().at("db_table").as_string().c_str();
-
-            query_purpose purpose = (db_table == "original") ?
-                                                              query_purpose::insert_into_original_rtree_table :
-                                                              query_purpose::insert_into_simplified_rtree_table;
-
-            trajectory_manager::load_trajectories_into_rtree(purpose);
-        } catch (const std::exception& e) {
-            res.result(status::bad_request);
-            res.set(field::content_type, "text/plain");
-            res.body() = "Failed to read 'db_table' value from JSON: " + std::string(e.what());
         }
     }
 
@@ -141,10 +123,6 @@ namespace api {
             res.set(field::content_type, "text/plain");
             res.body() = "Error processing JSON data: " + std::string(e.what());
         }
-    }
-
-    void handle_reset_all_data(const request<string_body> &req, response<string_body> &res) {
-        trajectory_manager::reset_all_data();
     }
 
     void handle_not_found(const request<string_body> &req, response<string_body> &res) {
