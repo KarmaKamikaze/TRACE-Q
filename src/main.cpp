@@ -8,8 +8,7 @@
 #include "Endpoint_Handlers.hpp"
 
 int main(int argc, char* argv[]) {
-
-    std::cout << "ass";
+    
     for(int i = 1; i < argc; i++) {
         if(argv[i] == std::string{"--reset"}) {
             trajectory_data_handling::Trajectory_Manager::reset_all_data();
