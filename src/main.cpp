@@ -1,34 +1,34 @@
 #include <iostream>
-#include "trajectory_data_handling/trajectory_sql.hpp"
-#include "trajectory_data_handling/sqlite_querying.hpp"
-#include "trajectory_data_handling/trajectory_file_manager.hpp"
+#include "trajectory_data_handling/Trajectory_Manager.hpp"
+#include "trajectory_data_handling/Query_Handler.hpp"
+#include "trajectory_data_handling/File_Manager.hpp"
 #include "TRACE_Q.hpp"
 #include <boost/asio.hpp>
-#include "start-api.hpp"
-#include "endpoint_handlers.hpp"
+#include "Start_API.hpp"
+#include "Endpoint_Handlers.hpp"
 
 int main(int argc, char* argv[]) {
     for(int i = 1; i < argc; i++) {
         if(argv[i] == std::string{"--reset"}) {
-            trajectory_data_handling::trajectory_manager::reset_all_data();
+            trajectory_data_handling::Trajectory_Manager::reset_all_data();
         }
     }
 
-    trajectory_data_handling::file_manager file_manager{};
-    trajectory_data_handling::trajectory_manager trajectory_manager{};
-    trajectory_data_handling::query_handler::original_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
+    trajectory_data_handling::File_Manager file_manager{};
+    trajectory_data_handling::Query_Handler::original_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
 
-    trajectory_data_handling::query_handler::simplified_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
+    trajectory_data_handling::Query_Handler::simplified_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
 
-    trajectory_manager.reset_all_data();
+    trajectory_data_handling::Trajectory_Manager::reset_all_data();
 
 //    trajectory_data_handling::trajectory_manager.reset_all_data();
 //    trajectory_data_handling::trajectory_managercreate_database();
 //    trajectory_data_handling::trajectory_manager.create_rtree_table();
-    file_manager.load_tdrive_dataset(*trajectory_data_handling::query_handler::original_trajectories);
+    trajectory_data_handling::File_Manager::load_tdrive_dataset();
 //  file_manager.load_geolife_dataset(*trajectory_data_handling::query_handler::original_trajectories);
 
-    trajectory_manager.insert_trajectories(*trajectory_data_handling::query_handler::original_trajectories, trajectory_data_handling::db_table::original_trajectories);
+  //  trajectory_manager.insert_trajectory(*trajectory_data_handling::Query_Handler::original_trajectories,
+  //                                       trajectory_data_handling::db_table::original_trajectories);
 //    trajectory_data_handling::trajectory_manager.load_database_into_datastructure(trajectory_data_handling::query_purpose::load_original_trajectory_information_into_datastructure);
 //    trajectory_data_handling::trajectory_manager.insert_trajectories_into_trajectory_table(*original_trajectories, trajectory_data_handling::db_table::simplified_trajectories);
 

@@ -2,7 +2,7 @@
 #define TRACE_Q_TRACE_Q_HPP
 
 #include <future>
-#include "../data/trajectory_structure.hpp"
+#include "../data/Trajectory.hpp"
 #include "../querying/Query.hpp"
 #include "../querying/Range_Query_Test.hpp"
 #include "../querying/KNN_Query_Test.hpp"

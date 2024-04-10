@@ -1,23 +1,23 @@
 #include <iostream>
 #include <cstdlib>
-#include "sqlite_querying.hpp"
+#include "Query_Handler.hpp"
 
 namespace trajectory_data_handling {
-    sqlite3* query_handler::m_db{};
-    data_structures::Trajectory query_handler::m_trajectory{};
-    unsigned long query_handler::m_currentTrajectory = 1;
-    int query_handler::m_order{};
-    std::shared_ptr<std::vector<data_structures::Trajectory>> trajectory_data_handling::query_handler::original_trajectories;
-    std::shared_ptr<std::vector<data_structures::Trajectory>> trajectory_data_handling::query_handler::simplified_trajectories;
-    std::vector<std::string> query_handler::trajectory_ids_in_range{};
+    sqlite3* Query_Handler::m_db{};
+    data_structures::Trajectory Query_Handler::m_trajectory{};
+    unsigned long Query_Handler::m_currentTrajectory = 1;
+    int Query_Handler::m_order{};
+    std::shared_ptr<std::vector<data_structures::Trajectory>> trajectory_data_handling::Query_Handler::original_trajectories;
+    std::shared_ptr<std::vector<data_structures::Trajectory>> trajectory_data_handling::Query_Handler::simplified_trajectories;
+    std::vector<std::string> Query_Handler::trajectory_ids_in_range{};
 
 
 
-    const std::filesystem::path query_handler::m_sqlite_db_filesystem_path = std::filesystem::current_path().parent_path().parent_path() / "trajectory.db";
-    const std::string query_handler::m_sqlite_db_path_string = m_sqlite_db_filesystem_path.generic_string();
-    const char* query_handler::m_sqlite_db_path = m_sqlite_db_path_string.c_str();
+    const std::filesystem::path Query_Handler::m_sqlite_db_filesystem_path = std::filesystem::current_path().parent_path().parent_path() / "trajectory.db";
+    const std::string Query_Handler::m_sqlite_db_path_string = m_sqlite_db_filesystem_path.generic_string();
+    const char* Query_Handler::m_sqlite_db_path = m_sqlite_db_path_string.c_str();
 
-    int query_handler::callback(void *query_success_history, int argc, char **argv, char **azColName) {
+    int Query_Handler::callback(void *query_success_history, int argc, char **argv, char **azColName) {
         int i;
         for(i = 0; i<argc; i++) {
             std::cout << azColName[i] << argv[i] << std::endl;
@@ -25,7 +25,7 @@ namespace trajectory_data_handling {
         return 0;
     }
 
-    int query_handler::callback_original_datastructure(void *query_success_history, int argc, char **argv, char **azColName) {
+    int Query_Handler::callback_original_datastructure(void *query_success_history, int argc, char **argv, char **azColName) {
         char* endptr;
 
         auto traj_id = std::strtoul(argv[0], &endptr, 10);
@@ -50,7 +50,7 @@ namespace trajectory_data_handling {
         return 0;
     }
 
-    int query_handler::callback_simplified_datastructure(void *query_success_history, int argc, char **argv, char **azColName) {
+    int Query_Handler::callback_simplified_datastructure(void *query_success_history, int argc, char **argv, char **azColName) {
         char* endptr;
 
         auto traj_id = std::strtoul(argv[0], &endptr, 10);
@@ -75,13 +75,13 @@ namespace trajectory_data_handling {
         return 0;
     }
 
-    int query_handler::callback_rtree_datastructure(void *query_success_history, int argc, char **argv,
+    int Query_Handler::callback_rtree_datastructure(void *query_success_history, int argc, char **argv,
                                                     char **azColName) {
-        query_handler::trajectory_ids_in_range.emplace_back(argv[0]);
+        Query_Handler::trajectory_ids_in_range.emplace_back(argv[0]);
         return 0;
     }
 
-    int query_handler::callback_original_rtree_insert(void *query_success_history, int argc, char **argv, char **azColName) {
+    int Query_Handler::callback_original_rtree_insert(void *query_success_history, int argc, char **argv, char **azColName) {
         char *zErrMsg = nullptr;
         std::string id = argv[0];
         std::string minLongitude = argv[1];
@@ -108,7 +108,7 @@ namespace trajectory_data_handling {
         return 0;
     }
 
-    int query_handler::callback_simplified_rtree_insert(void *query_success_history, int argc, char **argv, char **azColName) {
+    int Query_Handler::callback_simplified_rtree_insert(void *query_success_history, int argc, char **argv, char **azColName) {
         char *zErrMsg = nullptr;
         std::string id = argv[0];
         std::string minLongitude = argv[1];
@@ -135,7 +135,7 @@ namespace trajectory_data_handling {
         return 0;
     }
 
-    void query_handler::run_sql(const std::string& query, query_purpose callback_type) {
+    void Query_Handler::run_sql(const std::string& query, query_purpose callback_type) {
         char *zErrMsg = 0;
         int rc = sqlite3_open(m_sqlite_db_path, &m_db);
 

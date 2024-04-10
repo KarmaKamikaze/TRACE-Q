@@ -4,8 +4,8 @@
 #include <vector>
 #include <sqlite3.h>
 #include <pqxx/pqxx>
-#include "../data/trajectory_structure.hpp"
-#include "sqlite_querying.hpp"
+#include "../data/Trajectory.hpp"
+#include "Query_Handler.hpp"
 #include "../querying/Range_Query.hpp"
 
 
@@ -15,10 +15,10 @@ namespace trajectory_data_handling {
         simplified_trajectories
     };
 
-    class trajectory_manager {
+    class Trajectory_Manager {
     public:
-        static void insert_trajectories(std::vector<data_structures::Trajectory> const& all_trajectories, db_table table);
-        static void remove_from_trajectories(std::shared_ptr<std::vector<data_structures::Trajectory>> &trajectories,
+        static void insert_trajectory(data_structures::Trajectory const& trajectory, db_table table);
+        static void remove_from_trajectories(std::shared_ptr<std::vector<data_structures::Trajectory>> const& trajectories,
                                              spatial_queries::Range_Query::Window const& window);
         static void spatial_range_query_on_rtree_table(query_purpose purpose, spatial_queries::Range_Query::Window const& window);
         static void load_into_data_structure(query_purpose purpose, std::vector<std::string> const& id);

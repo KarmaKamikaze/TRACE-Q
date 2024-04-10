@@ -1,7 +1,7 @@
-#include "endpoint_handlers.hpp"
+#include "Endpoint_Handlers.hpp"
 #include "boost/json/src.hpp"
 #include "boost/json/stream_parser.hpp"
-#include "../trajectory_data_handling/trajectory_sql.hpp"
+#include "../trajectory_data_handling/Trajectory_Manager.hpp"
 
 namespace api {
     using namespace boost::beast::http;
@@ -71,7 +71,7 @@ namespace api {
                     all_trajectories.emplace_back(std::move(trajectory));
                 }
             }
-            trajectory_manager::insert_trajectories(all_trajectories, db_table);
+            //Trajectory_Manager::insert_trajectory(all_trajectories, db_table); // TODO: MARTIN OG PETER FIX
         } catch (const std::exception &e) {
             res.result(status::bad_request);
             res.set(field::content_type, "text/plain");
@@ -117,7 +117,7 @@ namespace api {
             window.t_low = t_low;
             window.t_high = t_high;
 
-            trajectory_manager::spatial_range_query_on_rtree_table(purpose, window);
+            Trajectory_Manager::spatial_range_query_on_rtree_table(purpose, window);
         } catch (const std::exception &e) {
             res.result(status::bad_request);
             res.set(field::content_type, "text/plain");

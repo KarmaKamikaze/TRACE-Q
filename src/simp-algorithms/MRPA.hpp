@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <queue>
-#include "../data/trajectory_structure.hpp"
+#include "../data/Trajectory.hpp"
 #include "../data/Node.hpp"
 
 namespace simp_algorithms {

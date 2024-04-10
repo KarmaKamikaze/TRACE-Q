@@ -1,5 +1,5 @@
-#ifndef TRACE_Q_SQLITE_QUERYING_HPP
-#define TRACE_Q_SQLITE_QUERYING_HPP
+#ifndef TRACE_Q_QUERY_HANDLER_HPP
+#define TRACE_Q_QUERY_HANDLER_HPP
 
 #include <iostream>
 #include <string>
@@ -10,7 +10,7 @@
 #include <filesystem>
 #include <sqlite3.h>
 
-#include "../data/trajectory_structure.hpp"
+#include "../data/Trajectory.hpp"
 
 namespace trajectory_data_handling {
     enum class query_purpose {
@@ -24,7 +24,7 @@ namespace trajectory_data_handling {
         create_table,
         reset_database};
 
-    class query_handler {
+    class Query_Handler {
     private:
         static sqlite3 *m_db;
         using recursive_directory_iterator = std::filesystem::recursive_directory_iterator;

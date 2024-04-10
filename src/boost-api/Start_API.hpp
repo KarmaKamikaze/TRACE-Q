@@ -4,7 +4,7 @@
 #include <boost/beast/http.hpp>
 #include <boost/asio.hpp>
 #include <string>
-#include "endpoint_handlers.hpp"
+#include "Endpoint_Handlers.hpp"
 
 namespace api {
 // Function to run the server

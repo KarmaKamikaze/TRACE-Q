@@ -1,6 +1,6 @@
 #include <doctest/doctest.h>
 #include <sstream>
-#include "../src/data/trajectory_structure.hpp"
+#include "../src/data/Trajectory.hpp"
 
 TEST_CASE("Trajectory - Size method returns correct size for location container") {
 
