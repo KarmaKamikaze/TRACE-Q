@@ -18,10 +18,11 @@ namespace trajectory_data_handling {
     class trajectory_manager {
     public:
         static void insert_trajectories(std::vector<data_structures::Trajectory> const& all_trajectories, db_table table);
-        static void remove_from_trajectories(std::shared_ptr<std::vector<data_structures::Trajectory>>& trajectories, spatial_queries::Range_Query::Window window);
+        static void remove_from_trajectories(std::shared_ptr<std::vector<data_structures::Trajectory>> &trajectories,
+                                             spatial_queries::Range_Query::Window const& window);
         static void spatial_range_query_on_rtree_table(query_purpose purpose, spatial_queries::Range_Query::Window const& window);
         static void load_into_data_structure(query_purpose purpose, std::vector<std::string> const& id);
-        static void print_trajectories(std::vector<data_structures::Trajectory> &all_trajectories);
+        static void print_trajectories(std::vector<data_structures::Trajectory> const& all_trajectories);
         static void create_database();
         static void reset_all_data();
         static void replace_trajectory(data_structures::Trajectory const& trajectory);

@@ -78,9 +78,9 @@ namespace trajectory_data_handling {
 
     void trajectory_manager::remove_from_trajectories(
             std::shared_ptr<std::vector<data_structures::Trajectory>> &trajectories,
-            spatial_queries::Range_Query::Window window) {
+            spatial_queries::Range_Query::Window const& window) {
         for(int i = 0; i < trajectories->size(); ) {
-            auto &trajectory = (*trajectories)[i];
+            auto const& trajectory = (*trajectories)[i];
             if (trajectory.id != 0) {
                 auto keep_trajectory = spatial_queries::Range_Query::in_range(trajectory, window);
                 if (!keep_trajectory) {
@@ -134,7 +134,7 @@ namespace trajectory_data_handling {
         }
     }
 
-    void trajectory_manager::print_trajectories(std::vector<data_structures::Trajectory> &all_trajectories) {
+    void trajectory_manager::print_trajectories(std::vector<data_structures::Trajectory> const& all_trajectories) {
         for (const auto & trajectory : all_trajectories) {
             std::cout << "id: " << trajectory.id << std::endl;
             for (const auto &location: trajectory.locations) {
