@@ -17,16 +17,6 @@ namespace trace_q {
         simp_algorithms::MRPA mrpa{};
 
         /**
-         * Total amount of range queries to perform when checking query accuracy
-         */
-        int range_query_amount{};
-
-        /**
-         * Total amount of knn queries to perform when checking query accuracy
-         */
-        int knn_query_amount{};
-
-        /**
          * The factor with which we will scale the grid. Calculated based on the grid_density_multiplier.
          * The grid is defined by the highest and lowest values of latitude and longitude for a given trajectory.
          * Possible values: 0.2, 0.43
@@ -63,14 +53,7 @@ namespace trace_q {
          */
         double time_interval_multiplier{};
 
-        /**
-         * Calculates the amount of queries to be performed for a particular trajectory to determine the query error.
-         * The amount is calculated by determining the amount of points in the query grid. The grid is then used
-         * to decide the amount of queries based on the time interval multiplier in both the range and KNN query cases.
-         * Additionally, in range queries, the windows-per-grid-point is taken into account.
-         * @return The total amount of queries to be performed.
-         */
-        [[nodiscard]] std::pair<int, int> calculate_query_amount() const;
+     
 
         /**
          * Calculates the query error of a simplified trajectory on a set of query objects.
@@ -163,11 +146,7 @@ namespace trace_q {
                   grid_density(grid_density_multiplier),
                   windows_per_grid_point(windows_per_grid_point),
                   window_expansion_rate(window_expansion_rate),
-                  time_interval_multiplier(time_interval_multiplier) {
-            auto [rq_amount, knn_amount] = calculate_query_amount();
-            range_query_amount = rq_amount;
-            knn_query_amount = knn_amount;
-        }
+                  time_interval_multiplier(time_interval_multiplier) {}
 
 
         [[nodiscard]] data_structures::Trajectory simplify(const data_structures::Trajectory& original_trajectory,
