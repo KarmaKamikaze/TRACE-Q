@@ -71,7 +71,14 @@ namespace api {
                     all_trajectories.emplace_back(std::move(trajectory));
                 }
             }
-            //Trajectory_Manager::insert_trajectory(all_trajectories, db_table); // TODO: MARTIN OG PETER FIX
+
+            for (const auto &trajectory : all_trajectories) {
+                Trajectory_Manager::insert_trajectory(trajectory, db_table);
+            }
+            res.result(status::ok);
+            res.set(field::content_type, "text/plain");
+            res.body() = "Trajectories successfully inserted into the database.";
+
         } catch (const std::exception &e) {
             res.result(status::bad_request);
             res.set(field::content_type, "text/plain");

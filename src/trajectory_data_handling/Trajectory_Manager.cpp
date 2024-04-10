@@ -7,8 +7,7 @@ namespace trajectory_data_handling {
 
     std::string Trajectory_Manager::connection_string{"user=postgres password=postgres host=localhost dbname=traceq port=5432"};
 
-    void Trajectory_Manager::insert_trajectory(
-            data_structures::Trajectory const& trajectory, db_table table) {
+    void Trajectory_Manager::insert_trajectory(data_structures::Trajectory const& trajectory, db_table table) {
         std::string table_name{};
         switch(table) {
             case db_table::original_trajectories:
