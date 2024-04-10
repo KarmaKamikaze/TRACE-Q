@@ -16,6 +16,6 @@ namespace trajectory_data_handling {
        static long stringToTime(const std::string& timeString);
    public:
        static void load_tdrive_dataset();
-       static void load_geolife_dataset(std::vector<data_structures::Trajectory> &all_trajectories);
+       static void load_geolife_dataset();
    };
 }

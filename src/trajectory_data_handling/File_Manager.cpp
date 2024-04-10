@@ -9,7 +9,7 @@ namespace trajectory_data_handling {
     std::filesystem::path File_Manager::TDRIVE_PATH = std::filesystem::current_path().parent_path().parent_path()
             / "external" / "datasets" /  "t-drive";
     std::filesystem::path File_Manager::GEOLIFE_PATH = std::filesystem::current_path().parent_path().parent_path()
-            / "external" / "datasets" / "geolife" "Geolife Trajectory 1.3" / "Data";
+            / "external" / "datasets" / "geolife" / "Geolife Trajectories 1.3" / "Data";
     char File_Manager::delimiter = ',';
 
     long File_Manager::stringToTime(const std::string& timeString) {
@@ -93,16 +93,20 @@ namespace trajectory_data_handling {
         }
     }
 
-    void File_Manager::load_geolife_dataset(std::vector<data_structures::Trajectory> &all_trajectories) {
-        unsigned trajectory_id = 0;
-
+    void File_Manager::load_geolife_dataset() {
+        unsigned trajectory_id = 1;
         for (const auto &dirEntry: recursive_directory_iterator(GEOLIFE_PATH)) {
             std::ifstream file(dirEntry.path());
 
             if (file.is_open()) {
+                if (!(dirEntry.path().extension() == std::string{".plt"})) {
+                    continue;
+                }
+
                 std::string line{};
-                data_structures::Location location{};
                 data_structures::Trajectory trajectory{};
+                trajectory.id = trajectory_id;
+                trajectory_id++;
 
                 // ignores the first 6 lines as they are irrelevant
                 for(int i = 0; i < 6; i++) {
@@ -110,29 +114,41 @@ namespace trajectory_data_handling {
                 }
 
                 while (std::getline(file, line)) {
+
                     std::istringstream lineStream(line);
-                    std::string latitude, longitude, id, altitude, datedays, date, time;
+
+                    data_structures::Location location{};
+                    std::string latitude{};
+                    std::string longitude{};
+                    std::string id{};
+                    std::string altitude{};
+                    std::string date_days{};
+                    std::string date{};
+                    std::string time{};
+
                     if (std::getline(lineStream, latitude, delimiter) &&
                         std::getline(lineStream, longitude, delimiter) &&
                         std::getline(lineStream, id, delimiter) &&
                         std::getline(lineStream, altitude, delimiter) &&
-                        std::getline(lineStream, datedays, delimiter) &&
+                        std::getline(lineStream, date_days, delimiter) &&
                         std::getline(lineStream, date, delimiter) &&
                         std::getline(lineStream, time, delimiter)) {
-                        if(location.longitude == 0.0 or location.latitude == 0.0)
-                            continue;
                         location.timestamp = File_Manager::stringToTime(date + " " + time);
                         location.longitude = std::stod(longitude);
                         location.latitude = std::stod(latitude);
-                        trajectory.id = std::stod(id);
+                        if (location.longitude == 0.0 || location.latitude == 0.0)
+                            continue;
                         trajectory.locations.push_back(location);
                     } else {
                         std::cerr << "Error reading line: " << line << std::endl;
                     }
                 }
-                all_trajectories.push_back(trajectory);
                 file.close();
-                trajectory_id++;
+
+                if (!trajectory.locations.empty()) {
+                    trajectory_data_handling::Trajectory_Manager::insert_trajectory(
+                            trajectory, trajectory_data_handling::db_table::original_trajectories);
+                }
             } else {
                 throw std::runtime_error("Error opening file: " + dirEntry.path().string());
             }
