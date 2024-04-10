@@ -5,8 +5,10 @@
 
 namespace trajectory_data_handling {
 
+    std::string trajectory_manager::connection_string{"user=postgres password=postgres host=localhost dbname=traceq port=5432"};
+
     void trajectory_manager::insert_trajectories(
-            std::vector<data_structures::Trajectory> const& all_trajectories, db_table table) const {
+            std::vector<data_structures::Trajectory> const& all_trajectories, db_table table) {
         std::string table_name{};
         switch(table) {
             case db_table::original_trajectories:
@@ -92,7 +94,7 @@ namespace trajectory_data_handling {
         }
     }
 
-    void trajectory_manager::spatial_range_query_on_rtree_table(query_purpose purpose, spatial_queries::Range_Query::Window window) {
+    void trajectory_manager::spatial_range_query_on_rtree_table(query_purpose purpose, spatial_queries::Range_Query::Window const& window) {
         std::string table_name{};
         std::stringstream query{};
         trajectory_data_handling::query_handler::original_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
@@ -144,7 +146,7 @@ namespace trajectory_data_handling {
     }
 
 
-    void trajectory_manager::create_database() const {
+    void trajectory_manager::create_database() {
         pqxx::connection c{connection_string};
         pqxx::work txn{c};
 
@@ -156,7 +158,7 @@ namespace trajectory_data_handling {
         txn.commit();
     }
 
-    void trajectory_manager::reset_all_data() const {
+    void trajectory_manager::reset_all_data() {
         pqxx::connection c{connection_string};
         pqxx::work txn{c};
         txn.exec0("DROP INDEX original_trajectories_index;");

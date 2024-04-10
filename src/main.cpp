@@ -7,7 +7,13 @@
 #include "start-api.hpp"
 #include "endpoint_handlers.hpp"
 
-int main() {
+int main(int argc, char* argv[]) {
+    for(int i = 1; i < argc; i++) {
+        if(argv[i] == std::string{"--reset"}) {
+            trajectory_data_handling::trajectory_manager::reset_all_data();
+        }
+    }
+
     trajectory_data_handling::file_manager file_manager{};
     trajectory_data_handling::trajectory_manager trajectory_manager{};
     trajectory_data_handling::query_handler::original_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
@@ -65,8 +71,10 @@ int main() {
 
     // Define and populate endpoints map
     std::map<std::string, api::RequestHandler> endpoints;
+
     endpoints["/"] = api::handle_root;
-    endpoints["/hello"] = api::handle_hello;
+    endpoints["/insert"] = api::handle_insert_trajectories_into_trajectory_table;
+    endpoints["/query"] = api::handle_spatial_range_query_on_rtree_table;
 
     // Set up the io_context
     boost::asio::io_context io_context{};

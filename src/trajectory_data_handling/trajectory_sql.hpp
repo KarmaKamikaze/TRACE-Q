@@ -17,17 +17,17 @@ namespace trajectory_data_handling {
 
     class trajectory_manager {
     public:
-        void insert_trajectories(std::vector<data_structures::Trajectory> const& all_trajectories, db_table table) const;
+        static void insert_trajectories(std::vector<data_structures::Trajectory> const& all_trajectories, db_table table);
         static void remove_from_trajectories(std::shared_ptr<std::vector<data_structures::Trajectory>>& trajectories, spatial_queries::Range_Query::Window window);
-        static void spatial_range_query_on_rtree_table(query_purpose purpose, spatial_queries::Range_Query::Window window);
+        static void spatial_range_query_on_rtree_table(query_purpose purpose, spatial_queries::Range_Query::Window const& window);
         static void load_into_data_structure(query_purpose purpose, std::vector<std::string> const& id);
         static void print_trajectories(std::vector<data_structures::Trajectory> &all_trajectories);
-        void create_database() const;
-        void reset_all_data() const;
+        static void create_database();
+        static void reset_all_data();
         static void replace_trajectory(data_structures::Trajectory const& trajectory);
     private:
         static void add_query_file_to_transaction(std::string const& query_file_path, pqxx::work &transaction);
-        const std::string connection_string{"user=postgres password=postgres host=localhost dbname=traceq port=5432"};
+        static std::string connection_string;
     };
 }
 
