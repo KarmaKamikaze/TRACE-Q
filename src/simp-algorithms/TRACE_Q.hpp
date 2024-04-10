@@ -1,6 +1,7 @@
 #ifndef TRACE_Q_TRACE_Q_HPP
 #define TRACE_Q_TRACE_Q_HPP
 
+#include <future>
 #include "../data/trajectory_structure.hpp"
 #include "../querying/Query.hpp"
 #include "../querying/Range_Query_Test.hpp"
@@ -16,9 +17,14 @@ namespace trace_q {
         simp_algorithms::MRPA mrpa{};
 
         /**
-         * Total amount of queries to perform when checking query accuracy
+         * Total amount of range queries to perform when checking query accuracy
          */
-        int query_amount{};
+        int range_query_amount{};
+
+        /**
+         * Total amount of knn queries to perform when checking query accuracy
+         */
+        int knn_query_amount{};
 
         /**
          * The factor with which we will scale the grid. Calculated based on the grid_density_multiplier.
@@ -64,7 +70,7 @@ namespace trace_q {
          * Additionally, in range queries, the windows-per-grid-point is taken into account.
          * @return The total amount of queries to be performed.
          */
-        [[nodiscard]] int calculate_query_amount() const;
+        [[nodiscard]] std::pair<int, int> calculate_query_amount() const;
 
         /**
          * Calculates the query error of a simplified trajectory on a set of query objects.
@@ -138,6 +144,8 @@ namespace trace_q {
         [[nodiscard]] std::vector<std::shared_ptr<spatial_queries::Query>> initialize_query_tests(
                 data_structures::Trajectory const& original_trajectory) const;
 
+        static int process_futures(std::vector<std::future<bool>>& futures);
+
     public:
         /**
          * The TRACE_Q constructor that determines the query_amount based on the given parameters.
@@ -156,7 +164,9 @@ namespace trace_q {
                   windows_per_grid_point(windows_per_grid_point),
                   window_expansion_rate(window_expansion_rate),
                   time_interval_multiplier(time_interval_multiplier) {
-            query_amount = calculate_query_amount();
+            auto [rq_amount, knn_amount] = calculate_query_amount();
+            range_query_amount = rq_amount;
+            knn_query_amount = knn_amount;
         }
 
 
