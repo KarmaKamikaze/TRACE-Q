@@ -16,17 +16,17 @@ int main(int argc, char* argv[]) {
     }
 
 
-    trajectory_data_handling::Query_Handler::original_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
+    //trajectory_data_handling::Query_Handler::original_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
 
-    trajectory_data_handling::Query_Handler::simplified_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
+    //trajectory_data_handling::Query_Handler::simplified_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
 
-    trajectory_data_handling::Trajectory_Manager::reset_all_data();
+    //trajectory_data_handling::Trajectory_Manager::reset_all_data();
 
 //    trajectory_data_handling::trajectory_manager.reset_all_data();
 //    trajectory_data_handling::trajectory_managercreate_database();
 //    trajectory_data_handling::trajectory_manager.create_rtree_table();
    // trajectory_data_handling::File_Manager::load_tdrive_dataset();
-    trajectory_data_handling::File_Manager::load_geolife_dataset();
+ //   trajectory_data_handling::File_Manager::load_geolife_dataset();
 //  file_manager.load_geolife_dataset(*trajectory_data_handling::query_handler::original_trajectories);
 
   //  trajectory_manager.insert_trajectory(*trajectory_data_handling::Query_Handler::original_trajectories,

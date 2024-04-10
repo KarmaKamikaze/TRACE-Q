@@ -9,6 +9,8 @@ target_sources(simp-algorithms
             ${CMAKE_CURRENT_LIST_DIR}/TRACE_Q.hpp
 )
 
+target_link_libraries(simp-algorithms querying)
+
 target_include_directories(simp-algorithms
         PUBLIC
             ${CMAKE_CURRENT_LIST_DIR}

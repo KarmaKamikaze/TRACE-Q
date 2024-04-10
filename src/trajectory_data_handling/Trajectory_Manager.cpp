@@ -70,7 +70,7 @@ namespace trajectory_data_handling {
             }
             query << ");";
         }
-        trajectory_data_handling::Query_Handler::run_sql(query.str(), purpose);
+//        trajectory_data_handling::Query_Handler::run_sql(query.str(), purpose);
     }
 
     void Trajectory_Manager::remove_from_trajectories(
@@ -94,8 +94,8 @@ namespace trajectory_data_handling {
     void Trajectory_Manager::spatial_range_query_on_rtree_table(query_purpose purpose, spatial_queries::Range_Query::Window const& window) {
         std::string table_name{};
         std::stringstream query{};
-        trajectory_data_handling::Query_Handler::original_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
-        trajectory_data_handling::Query_Handler::simplified_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
+       // trajectory_data_handling::Query_Handler::original_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
+        //trajectory_data_handling::Query_Handler::simplified_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
 
         switch(purpose) {
             case query_purpose::load_original_rtree_into_datastructure:
@@ -112,9 +112,9 @@ namespace trajectory_data_handling {
         query << "SELECT id FROM " << table_name << " WHERE minLongitude<=" << window.x_high << " AND maxLongitude>="
         << window.x_low << " AND minLatitude<=" << window.y_high << " AND maxLatitude>=" << window.y_low
         << " AND minTimestamp<=" << window.t_high << " AND maxTimestamp>=" << window.t_low << ";";
-        trajectory_data_handling::Query_Handler::run_sql(query.str(), purpose);
+//        trajectory_data_handling::Query_Handler::run_sql(query.str(), purpose);
 
-
+/*
         if (!trajectory_data_handling::Query_Handler::trajectory_ids_in_range.empty()){
             switch(purpose) {
                 using enum trajectory_data_handling::query_purpose;
@@ -131,7 +131,7 @@ namespace trajectory_data_handling {
                 default:
                     throw std::invalid_argument("Unsupported query purpose");
             }
-        }
+        }*/
     }
 
     void Trajectory_Manager::print_trajectories(std::vector<data_structures::Trajectory> const& all_trajectories) {
