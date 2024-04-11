@@ -41,20 +41,20 @@ namespace trajectory_data_handling {
         txn.commit();
     }
 
-    void Trajectory_Manager::load_into_data_structure(query_purpose purpose, std::vector<std::string> const& id) {
+     std::vector<data_structures::Trajectory> Trajectory_Manager::load_into_data_structure(
+             db_table table, std::vector<int> const& id) {
         std::string table_name{};
         std::stringstream query{};
 
-        switch(purpose) {
-            case query_purpose::load_original_trajectory_information_into_data_structure:
-                table_name = "trajectory_information";
+        switch(table) {
+            case db_table::original_trajectories:
+                table_name = "original_trajectories";
                 break;
-            case query_purpose::load_simplified_trajectory_information_into_data_structure:
-                table_name = "simplified_trajectory_information";
+            case db_table::simplified_trajectories:
+                table_name = "simplified_trajectories";
                 break;
-
             default:
-                std::cout << "Error in switch statement in load_into_data_structure." << '\n';
+                std::cout << "Error in switch statement in load_into_data_structure." << std::endl;
         }
 
         if(id.empty()) {
@@ -62,7 +62,7 @@ namespace trajectory_data_handling {
         }
         else {
             query << "SELECT trajectory_id, coordinates, time FROM " << table_name << " WHERE trajectory_id IN (";
-            for(auto i = id.begin(); i != id.end(); ++i) {
+            for(auto i = id.cbegin(); i != id.cend(); ++i) {
                 query << *i;
                 if (std::next(i) != id.end()) {
                     query << ",";
@@ -70,7 +70,52 @@ namespace trajectory_data_handling {
             }
             query << ");";
         }
-//        trajectory_data_handling::Query_Handler::run_sql(query.str(), purpose);
+
+        pqxx::connection c{connection_string};
+        pqxx::work txn{c};
+        pqxx::result query_res{txn.exec(query.str())};
+        std::vector<data_structures::Trajectory> res{};
+
+        data_structures::Trajectory working_trajectory{};
+        auto current_trajectory_id = query_res.front()["trajectory_id"].as<int>();
+        working_trajectory.id = current_trajectory_id;
+        auto next_order = 1;
+
+        for (auto const& row : query_res) {
+            auto trajectory_id = row["trajectory_id"].as<int>();
+            auto coords = row["coordinates"].c_str();
+            auto time = row["time"].as<long>();
+
+            if(current_trajectory_id != trajectory_id) {
+                res.push_back(working_trajectory);
+                working_trajectory = data_structures::Trajectory{};
+                working_trajectory.id = trajectory_id;
+                current_trajectory_id = trajectory_id;
+                next_order = 1;
+            }
+
+            auto location = parse_location(next_order, time, coords);
+            working_trajectory.locations.push_back(location);
+            next_order++;
+        }
+
+        res.push_back(working_trajectory);
+        return res;
+    }
+
+    data_structures::Location Trajectory_Manager::parse_location(int order, long time, std::string const& coordinates) {
+        auto coords = std::string{coordinates};
+
+        std::erase(coords, '(');
+        std::erase(coords, ')');
+
+        std::istringstream iss(coords);
+        std::string lat_str{};
+        std::string lon_str{};
+        getline(iss, lon_str, ',');
+        getline(iss, lat_str, ',');
+
+        return data_structures::Location{order, time, std::stod(lon_str), std::stod(lat_str)};
     }
 
     void Trajectory_Manager::remove_from_trajectories(
