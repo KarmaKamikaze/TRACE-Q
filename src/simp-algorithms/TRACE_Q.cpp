@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cmath>
 #include <algorithm>
+#include <numeric>
 #include "TRACE_Q.hpp"
 #include "MRPA.hpp"
 
@@ -58,7 +59,7 @@ namespace trace_q {
     }
 
     double TRACE_Q::query_accuracy(data_structures::Trajectory const& trajectory,
-                                   std::vector<std::shared_ptr<spatial_queries::Query>> const& query_objects) const {
+                                   std::vector<std::shared_ptr<spatial_queries::Query>> const& query_objects) {
 
         std::vector<std::future<bool>> range_futures{};
         std::vector<std::future<bool>> knn_futures{};
@@ -77,7 +78,7 @@ namespace trace_q {
 
         auto range_query_accuracy = static_cast<double>(correct_range_queries) / static_cast<double>(range_futures.size());
         auto knn_accuracy = static_cast<double>(correct_knn_queries) / static_cast<double>(knn_futures.size());
-        return (range_query_accuracy + knn_accuracy) / 2;
+        return std::midpoint(range_query_accuracy, knn_accuracy);
     }
 
     TRACE_Q::MBR TRACE_Q::calculate_MBR(data_structures::Trajectory const& trajectory) {

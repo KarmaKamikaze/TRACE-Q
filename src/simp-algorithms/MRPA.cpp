@@ -97,12 +97,12 @@ namespace simp_algorithms {
 
         for (int k = i + 1; k < j; ++k) {
             auto x = trajectory[i].longitude +
-                     (static_cast<double>(trajectory[k].timestamp - trajectory[i].timestamp) /
-                     static_cast<double>((trajectory[j].timestamp - trajectory[i].timestamp))) *
+                     (static_cast<long double>(trajectory[k].timestamp - trajectory[i].timestamp) /
+                     static_cast<long double>((trajectory[j].timestamp - trajectory[i].timestamp))) *
                      (trajectory[j].longitude - trajectory[i].longitude);
             auto y = trajectory[i].latitude +
-                     (static_cast<double>(trajectory[k].timestamp - trajectory[i].timestamp) /
-                     static_cast<double>((trajectory[j].timestamp - trajectory[i].timestamp))) *
+                     (static_cast<long double>(trajectory[k].timestamp - trajectory[i].timestamp) /
+                     static_cast<long double>((trajectory[j].timestamp - trajectory[i].timestamp))) *
                      (trajectory[j].latitude - trajectory[i].latitude);
             auto point = Location (trajectory[k].order, trajectory[k].timestamp, x, y);
             res.locations.emplace_back(point);

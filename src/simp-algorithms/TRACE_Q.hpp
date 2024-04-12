@@ -62,8 +62,8 @@ namespace trace_q {
          * @param query_objects Vector of query objects that define a query and contain the original trajectory's result
          * @return Query accuracy
          */
-        [[nodiscard]] double query_accuracy(data_structures::Trajectory const& trajectory,
-                                            std::vector<std::shared_ptr<spatial_queries::Query>> const& query_objects) const;
+        static double query_accuracy(data_structures::Trajectory const& trajectory,
+                                            std::vector<std::shared_ptr<spatial_queries::Query>> const& query_objects);
 
         /**
          * A Minimum Bounding Rectangle for trajectory data.
