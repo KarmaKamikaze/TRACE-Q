@@ -5,10 +5,10 @@ $geolife_dir = ".\external\datasets\geolife"
 $SQL_CREATE_ORIGINAL = Get-Content -Raw -Path "$(Get-Location)\sql\create_table_original.sql"
 $SQL_CREATE_SIMPLIFIED = Get-Content -Raw -Path "$(Get-Location)\sql\create_table_simplified.sql"
 param (
-    [switch]$nodb
+    [switch]$skipdatasets
 )
 
-if (-not $nodb) {
+if (-not $skipdatasets) {
     Write-Host "Checking that folder structure exists"
 
     if (-not (Test-Path $external_dir -PathType Container)) {

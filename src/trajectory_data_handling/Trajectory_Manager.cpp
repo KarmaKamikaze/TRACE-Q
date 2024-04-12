@@ -219,19 +219,14 @@ namespace trajectory_data_handling {
      * @return A string corresponding to the selected table.
      */
     std::string Trajectory_Manager::get_table_name(db_table table) {
-        std::string table_name{};
         switch(table) {
             case db_table::original_trajectories:
-                table_name = "original_trajectories";
-                break;
+                return "original_trajectories";
             case db_table::simplified_trajectories:
-                table_name = "simplified_trajectories";
-                break;
+                return "simplified_trajectories";
             default:
                 std::cout << "Error in switch statement in get_table_name" << std::endl;
         }
-
-        return table_name;
     }
 }
 
