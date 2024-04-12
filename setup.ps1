@@ -3,9 +3,7 @@ $dataset_dir = ".\external\datasets"
 $t_drive_dir = ".\external\datasets\t-drive"
 $geolife_dir = ".\external\datasets\geolife"
 $SQL_CREATE_ORIGINAL = Get-Content -Raw -Path "$(Get-Location)\sql\create_table_original.sql"
-$SQL_INDEX_ORIGINAL = Get-Content -Raw -Path "$(Get-Location)\sql\create_index_original.sql"
 $SQL_CREATE_SIMPLIFIED = Get-Content -Raw -Path "$(Get-Location)\sql\create_table_simplified.sql"
-$SQL_INDEX_SIMPLIFIED = Get-Content -Raw -Path "$(Get-Location)\sql\create_index_simplified.sql"
 
 Write-Host "Checking that folder structure exists"
 
@@ -76,8 +74,6 @@ if (-not (Test-Path $geolife_dir -PathType Container)) {
 Write-Host "Setting up PostgreSQL database"
 createdb -U postgres traceq
 psql -U postgres -d traceq -c $SQL_CREATE_ORIGINAL
-psql -U postgres -d traceq -c $SQL_INDEX_ORIGINAL
 psql -U postgres -d traceq -c $SQL_CREATE_SIMPLIFIED
-psql -U postgres -d traceq -c $SQL_INDEX_SIMPLIFIED
 
 Write-Host "Finished setup!"

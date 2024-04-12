@@ -5,9 +5,7 @@ dataset_dir="./external/datasets"
 t_drive_dir="./external/datasets/t-drive"
 geolife_dir="./external/datasets/geolife"
 SQL_CREATE_ORIGINAL=$(<"$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd -P)"/sql/create_table_original.sql)
-SQL_INDEX_ORIGINAL=$(<"$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd -P)"/sql/create_index_original.sql)
 SQL_CREATE_SIMPLIFIED=$(<"$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd -P)"/sql/create_table_simplified.sql)
-SQL_INDEX_SIMPLIFIED=$(<"$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd -P)"/sql/create_index_simplified.sql)
 
 echo "Checking that folder structure exists"
 

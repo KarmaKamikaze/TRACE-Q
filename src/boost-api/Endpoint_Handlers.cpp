@@ -92,12 +92,12 @@ namespace api {
             return;
 
         try {
-            query_purpose purpose;
+            trajectory_data_handling::db_table table;
 
             if (jsonData.as_object().contains("original")) {
-                purpose = query_purpose::load_original_rtree_into_datastructure;
+                table = trajectory_data_handling::db_table::original_trajectories;
             } else if (jsonData.as_object().contains("simplified")) {
-                purpose = query_purpose::load_simplified_rtree_into_datastructure;
+                table = trajectory_data_handling::db_table::simplified_trajectories;;
             } else {
                 res.result(status::bad_request);
                 res.set(field::content_type, "text/plain");
@@ -124,7 +124,7 @@ namespace api {
             window.t_low = t_low;
             window.t_high = t_high;
 
-            Trajectory_Manager::spatial_range_query_on_rtree_table(purpose, window);
+            Trajectory_Manager::db_range_query(table, window);
         } catch (const std::exception &e) {
             res.result(status::bad_request);
             res.set(field::content_type, "text/plain");

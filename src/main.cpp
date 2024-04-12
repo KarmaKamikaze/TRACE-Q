@@ -42,6 +42,8 @@ int main(int argc, char* argv[]) {
 //    trajectory_manager.load_trajectories_into_simplified_rtree();
 //    trajectory_manager.reset_all_data();
 
+    trajectory_data_handling::Trajectory_Manager::db_range_query(trajectory_data_handling::db_table::original_trajectories, spatial_queries::Range_Query::Window{10.0, 50.0, 80.0, 100.0, 1.0, 10000000000.0});
+
     auto all_trajectories = trajectory_data_handling::Trajectory_Manager::load_into_data_structure(trajectory_data_handling::db_table::original_trajectories);
 
 

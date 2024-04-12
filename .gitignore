@@ -110,5 +110,3 @@ project.lock.json
 #####
 
 external/
-trajectory.db
-trajectory.db-journal

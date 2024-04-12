@@ -74,6 +74,7 @@ namespace trajectory_data_handling {
         pqxx::connection c{connection_string};
         pqxx::work txn{c};
         pqxx::result query_res{txn.exec(query.str())};
+        txn.commit();
         std::vector<data_structures::Trajectory> res{};
 
         data_structures::Trajectory working_trajectory{};
@@ -136,28 +137,40 @@ namespace trajectory_data_handling {
         }
     }
 
-    void Trajectory_Manager::spatial_range_query_on_rtree_table(query_purpose purpose, spatial_queries::Range_Query::Window const& window) {
+    std::vector<data_structures::Trajectory> Trajectory_Manager::db_range_query(db_table table, spatial_queries::Range_Query::Window const& window) {
         std::string table_name{};
         std::stringstream query{};
-       // trajectory_data_handling::Query_Handler::original_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
-        //trajectory_data_handling::Query_Handler::simplified_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
 
-        switch(purpose) {
-            case query_purpose::load_original_rtree_into_datastructure:
-                table_name = "trajectory_rtree";
+        switch(table) {
+            case db_table::original_trajectories:
+                table_name = "original_trajectories";
                 break;
-            case query_purpose::load_simplified_rtree_into_datastructure:
-                table_name = "simplified_trajectory_rtree";
+            case db_table::simplified_trajectories:
+                table_name = "simplified_trajectories";
                 break;
 
             default:
-                std::cout << "Error in switch statement in spatial_query_on_rtree_table." << '\n';
+                std::cout << "Error in switch statement in db_range_query." << std::endl;
         }
 
-        query << "SELECT id FROM " << table_name << " WHERE minLongitude<=" << window.x_high << " AND maxLongitude>="
-        << window.x_low << " AND minLatitude<=" << window.y_high << " AND maxLatitude>=" << window.y_low
-        << " AND minTimestamp<=" << window.t_high << " AND maxTimestamp>=" << window.t_low << ";";
-//        trajectory_data_handling::Query_Handler::run_sql(query.str(), purpose);
+        query << "SELECT DISTINCT trajectory_id FROM " << table_name
+        << " WHERE coordinates[0]<=" << window.x_high << " AND coordinates[0]>=" << window.x_low
+        << " AND coordinates[1]<=" << window.y_high << " AND coordinates[1]>=" << window.y_low
+        << " AND time <=" << window.t_high << " AND time>=" << window.t_low << ";";
+
+        pqxx::connection c{connection_string};
+        pqxx::work txn{c};
+
+        auto ids = txn.query<int>(query.str());
+
+        txn.commit();
+        std::vector<int> v_ids{};
+        for (const auto& id : ids) {
+            //v_ids.push_back(id);
+        }
+
+        //auto res = load_into_data_structure(table, );
+
 
 /*
         if (!trajectory_data_handling::Query_Handler::trajectory_ids_in_range.empty()){
@@ -196,9 +209,7 @@ namespace trajectory_data_handling {
         pqxx::work txn{c};
 
         add_query_file_to_transaction("../../sql/create_table_original.sql", txn);
-        add_query_file_to_transaction("../../sql/create_index_original.sql", txn);
         add_query_file_to_transaction("../../sql/create_table_simplified.sql", txn);
-        add_query_file_to_transaction("../../sql/create_index_simplified.sql", txn);
 
         txn.commit();
     }
@@ -206,10 +217,10 @@ namespace trajectory_data_handling {
     void Trajectory_Manager::reset_all_data() {
         pqxx::connection c{connection_string};
         pqxx::work txn{c};
-        txn.exec0("DROP INDEX original_trajectories_index;");
-        txn.exec0("DROP TABLE original_trajectories;");
-        txn.exec0("DROP INDEX simplified_trajectories_index;");
-        txn.exec0("DROP TABLE simplified_trajectories;");
+        txn.exec0("DROP INDEX IF EXISTS original_trajectories_index;");
+        txn.exec0("DROP TABLE IF EXISTS original_trajectories;");
+        txn.exec0("DROP INDEX IF EXISTS simplified_trajectories_index;");
+        txn.exec0("DROP TABLE IF EXISTS simplified_trajectories;");
 
         txn.commit();
         create_database();

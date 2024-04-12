@@ -1,1 +1,0 @@
-CREATE INDEX simplified_trajectories_index ON simplified_trajectories USING GIST (coordinates);
