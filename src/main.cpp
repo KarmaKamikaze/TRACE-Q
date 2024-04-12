@@ -15,28 +15,6 @@ int main(int argc, char* argv[]) {
     }
 
 
-    //trajectory_data_handling::Trajectory_Manager::reset_all_data();
-
-//    trajectory_data_handling::trajectory_manager.reset_all_data();
-//    trajectory_data_handling::trajectory_managercreate_database();
-//    trajectory_data_handling::trajectory_manager.create_rtree_table();
-    //trajectory_data_handling::File_Manager::load_tdrive_dataset();
- //   trajectory_data_handling::File_Manager::load_geolife_dataset();
-//  file_manager.load_geolife_dataset(*trajectory_data_handling::query_handler::original_trajectories);
-
-  //  trajectory_manager.insert_trajectory(*trajectory_data_handling::Query_Handler::original_trajectories,
-  //                                       trajectory_data_handling::db_table::original_trajectories);
-//    trajectory_data_handling::trajectory_manager.load_database_into_datastructure(trajectory_data_handling::query_purpose::load_original_trajectory_information_into_datastructure);
-//    trajectory_data_handling::trajectory_manager.insert_trajectories_into_trajectory_table(*original_trajectories, trajectory_data_handling::db_table::simplified_trajectories);
-
-//    spatial_queries::Range_Query::Window window {115, 116.65901184082031, 39, 40, 0 , 1201970048};
-//    trajectory_manager.spatial_range_query_on_rtree_table(trajectory_data_handling::query_purpose::load_original_rtree_into_datastructure, window);
-
-//    trajectory_manager.print_trajectories(*trajectory_data_handling::query_handler::original_trajectories);
-//    trajectory_manager.load_trajectories_into_rtree(trajectory_data_handling::query_purpose::insert_into_original_rtree_table);
-//    trajectory_manager.load_trajectories_into_simplified_rtree();
-//    trajectory_manager.reset_all_data();
-
     data_structures::Trajectory t {};
     t.locations.emplace_back(data_structures::Location(1, 0, 1, 2));
     t.locations.emplace_back(data_structures::Location(2, 1, 4, 2));
