@@ -179,6 +179,25 @@ namespace trajectory_data_handling {
         }*/
     }
 
+    std::vector<data_structures::Trajectory> db_knn_query(db_table table) {
+        std::string table_name{};
+        std::stringstream query{};
+
+        switch(table) {
+            case db_table::original_trajectories :
+                table_name = "original_trajectories";
+                break;
+            case db_table::simplified_trajectories:
+                table_name = "simplified_trajectories";
+                break;
+
+            default:
+                std::cout << "Error in switch statement in db_knn_query." << '\n';
+        }
+    }
+
+
+
     void Trajectory_Manager::print_trajectories(std::vector<data_structures::Trajectory> const& all_trajectories) {
         for (const auto & trajectory : all_trajectories) {
             std::cout << "id: " << trajectory.id << std::endl;
