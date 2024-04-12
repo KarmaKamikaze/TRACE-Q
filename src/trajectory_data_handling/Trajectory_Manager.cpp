@@ -119,24 +119,6 @@ namespace trajectory_data_handling {
         return data_structures::Location{order, time, std::stod(lon_str), std::stod(lat_str)};
     }
 
-    void Trajectory_Manager::remove_from_trajectories(
-            std::shared_ptr<std::vector<data_structures::Trajectory>> const& trajectories,
-            spatial_queries::Range_Query::Window const& window) {
-        for(int i = 0; i < trajectories->size(); ) {
-            auto const& trajectory = (*trajectories)[i];
-            if (trajectory.id != 0) {
-                auto keep_trajectory = spatial_queries::Range_Query::in_range(trajectory, window);
-                if (!keep_trajectory) {
-                    trajectories->erase(trajectories->begin() + i);
-                } else {
-                    ++i;
-                }
-            } else {
-                ++i;
-            }
-        }
-    }
-
     std::vector<data_structures::Trajectory> Trajectory_Manager::db_range_query(db_table table, spatial_queries::Range_Query::Window const& window) {
         std::string table_name{};
         std::stringstream query{};
@@ -165,31 +147,11 @@ namespace trajectory_data_handling {
 
         txn.commit();
         std::vector<int> v_ids{};
-        for (const auto& id : ids) {
-            //v_ids.push_back(id);
+        for (const auto& [id] : ids) {
+            v_ids.push_back(id);
         }
 
-        //auto res = load_into_data_structure(table, );
-
-
-/*
-        if (!trajectory_data_handling::Query_Handler::trajectory_ids_in_range.empty()){
-            switch(purpose) {
-                using enum trajectory_data_handling::query_purpose;
-                case load_original_rtree_into_datastructure:
-                    load_into_data_structure(load_original_trajectory_information_into_data_structure,
-                                             trajectory_data_handling::Query_Handler::trajectory_ids_in_range);
-                    remove_from_trajectories(trajectory_data_handling::Query_Handler::original_trajectories, window);
-                    break;
-                case load_simplified_rtree_into_datastructure:
-                    load_into_data_structure(load_simplified_trajectory_information_into_data_structure,
-                                             trajectory_data_handling::Query_Handler::trajectory_ids_in_range);
-                    remove_from_trajectories(trajectory_data_handling::Query_Handler::simplified_trajectories, window);
-                    break;
-                default:
-                    throw std::invalid_argument("Unsupported query purpose");
-            }
-        }*/
+        return load_into_data_structure(table, v_ids);
     }
 
     std::vector<data_structures::Trajectory> db_knn_query(db_table table) {
