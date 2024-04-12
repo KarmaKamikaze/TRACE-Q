@@ -1,42 +1,18 @@
 #include <iostream>
-#include "trajectory_data_handling/trajectory_sql.hpp"
-#include "trajectory_data_handling/sqlite_querying.hpp"
-#include "trajectory_data_handling/trajectory_file_manager.hpp"
+#include "trajectory_data_handling/Trajectory_Manager.hpp"
+#include "trajectory_data_handling/File_Manager.hpp"
 #include "TRACE_Q.hpp"
 #include <boost/asio.hpp>
-#include "start-api.hpp"
-#include "endpoint_handlers.hpp"
+#include "Start_API.hpp"
+#include "Endpoint_Handlers.hpp"
 
 int main(int argc, char* argv[]) {
+    
     for(int i = 1; i < argc; i++) {
-        if(argv[i] == "--reset") {
-            trajectory_data_handling::trajectory_manager::reset_all_data();
+        if(argv[i] == std::string{"--reset"}) {
+            trajectory_data_handling::Trajectory_Manager::reset_all_data();
         }
     }
-
-    trajectory_data_handling::file_manager file_manager{};
-    auto original_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
-    trajectory_data_handling::query_handler::original_trajectories = original_trajectories;
-
-    auto simplified_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
-    trajectory_data_handling::query_handler::simplified_trajectories = simplified_trajectories;
-
-//    trajectory_data_handling::trajectory_manager.reset_all_data();
-//    trajectory_data_handling::trajectory_managercreate_database();
-//    trajectory_data_handling::trajectory_manager.create_rtree_table();
-//    file_manager.load_tdrive_dataset(*original_trajectories);
-//    file_manager.load_geolife_dataset(*original_trajectories);
-//    trajectory_data_handling::trajectory_manager.insert_trajectories_into_trajectory_table(*original_trajectories, trajectory_data_handling::db_table::original_trajectories);
-//    trajectory_data_handling::trajectory_manager.load_database_into_datastructure(trajectory_data_handling::query_purpose::load_original_trajectory_information_into_datastructure);
-//    trajectory_data_handling::trajectory_manager.insert_trajectories_into_trajectory_table(*original_trajectories, trajectory_data_handling::db_table::simplified_trajectories);
-
-//    spatial_queries::Range_Query::Window window {115, 116.65901184082031, 39, 40, 0 , 1201970048};
-//    trajectory_manager.spatial_range_query_on_rtree_table(trajectory_data_handling::query_purpose::load_original_rtree_into_datastructure, window);
-
-//    trajectory_manager.print_trajectories(*trajectory_data_handling::query_handler::original_trajectories);
-//    trajectory_manager.load_trajectories_into_rtree(trajectory_data_handling::query_purpose::insert_into_original_rtree_table);
-//    trajectory_manager.load_trajectories_into_simplified_rtree();
-//    trajectory_manager.reset_all_data();
 
 
     data_structures::Trajectory t {};
@@ -62,16 +38,16 @@ int main(int argc, char* argv[]) {
     auto trace_q = trace_q::TRACE_Q{2, 0.1, 3, 1.3, 0.2};
     auto result = trace_q.simplify(t, 0.99);
 
-//    for (int i = 0; i < result.locations.size(); ++i) {
-//        std::cout << "loc" << i + 1 << ", longitude: " << result.locations[i].longitude
-//        << ", latitude: " << result.locations[i].latitude << ", t: " << result.locations[i].timestamp << '\n';
-//    }
+    for (int i = 0; i < result.locations.size(); ++i) {
+        std::cout << "loc" << i + 1 << ", longitude: " << result.locations[i].longitude
+        << ", latitude: " << result.locations[i].latitude << ", t: " << result.locations[i].timestamp << '\n';
+    }
 
     // Define and populate endpoints map
     std::map<std::string, api::RequestHandler> endpoints;
 
     endpoints["/"] = api::handle_root;
-    endpoints["/insert"] = api::handle_insert_trajectories_into_trajectory_table;
+    endpoints["/insert"] = api::handle_insert_trajectory_into_trajectory_table;
     endpoints["/query"] = api::handle_spatial_range_query_on_rtree_table;
 
     // Set up the io_context

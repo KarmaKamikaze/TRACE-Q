@@ -11,5 +11,4 @@ target_link_libraries(TRACE_Q
             trajectory_data_handling
             querying
             boost-api
-            sqlite3
 )

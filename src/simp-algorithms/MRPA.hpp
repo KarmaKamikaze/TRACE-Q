@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <queue>
-#include "../data/trajectory_structure.hpp"
+#include "../data/Trajectory.hpp"
 #include "../data/Node.hpp"
 
 namespace simp_algorithms {
@@ -111,8 +111,6 @@ namespace simp_algorithms {
 
         MRPA() = default;
         explicit MRPA(double c) : resolution_scale{c} {};
-
-        Trajectory simplify(Trajectory const&, double const&, double); // Yeet later https://tinyurl.com/tapvp9ch
 
         /**
          * Simplifies the input trajectory utilizing the MRPA algorithm.

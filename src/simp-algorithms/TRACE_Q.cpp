@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cmath>
 #include <algorithm>
+#include <numeric>
 #include "TRACE_Q.hpp"
 #include "MRPA.hpp"
 
@@ -58,36 +59,26 @@ namespace trace_q {
     }
 
     double TRACE_Q::query_accuracy(data_structures::Trajectory const& trajectory,
-                                   std::vector<std::shared_ptr<spatial_queries::Query>> const& query_objects) const {
+                                   std::vector<std::shared_ptr<spatial_queries::Query>> const& query_objects) {
 
-        std::vector<std::future<bool>> futures{};
+        std::vector<std::future<bool>> range_futures{};
+        std::vector<std::future<bool>> knn_futures{};
+
         for (auto const& query_object : query_objects) {
             if (auto range_query = std::dynamic_pointer_cast<spatial_queries::Range_Query_Test>(query_object)) {
-                futures.emplace_back(std::async(std::launch::async, *range_query, std::ref(trajectory)));
+                range_futures.emplace_back(std::async(std::launch::async, *range_query, std::ref(trajectory)));
             }
-            //if (auto knn_query = std::dynamic_pointer_cast<spatial_queries::KNN_Query>(query_object)) {
-            //    futures.emplace_back(std::async(std::launch::async, *knn_query, std::ref(trajectory)));
+            //if (auto knn_query = std::dynamic_pointer_cast<spatial_queries::KNN_Query_Test>(query_object)) {
+                //knn_futures.emplace_back(std::async(std::launch::async, *knn_query, std::ref(trajectory)));
             //}
         }
 
-        int correct_queries = 0;
-        for (auto & fut : futures) {
-            if (fut.get()) {
-                correct_queries++;
-            }
-        }
+        int correct_range_queries = process_futures(range_futures);
+        int correct_knn_queries = process_futures(knn_futures);
 
-        return static_cast<double>(correct_queries) / query_amount;
-    }
-
-    int TRACE_Q::calculate_query_amount() const {
-        auto points_in_net = static_cast<int>(std::pow(std::ceil(1.0 / grid_density) + 1, 2));
-
-        auto range_queries = static_cast<int>(points_in_net * windows_per_grid_point
-                                              * (std::ceil(1 / time_interval_multiplier) + 1));
-        //auto knn_queries = static_cast<int>(points_in_net * (std::ceil(1 / time_interval_multiplier) + 1));
-
-        return range_queries; //TODO: Add variable above
+        auto range_query_accuracy = static_cast<double>(correct_range_queries) / static_cast<double>(range_futures.size());
+        auto knn_accuracy = static_cast<double>(correct_knn_queries) / static_cast<double>(knn_futures.size());
+        return std::midpoint(range_query_accuracy, knn_accuracy);
     }
 
     TRACE_Q::MBR TRACE_Q::calculate_MBR(data_structures::Trajectory const& trajectory) {
@@ -164,6 +155,16 @@ namespace trace_q {
             w_high = mbr_high;
         }
         return {w_low, w_high};
+    }
+
+    int TRACE_Q::process_futures(std::vector<std::future<bool>>& futures){
+        int correct_queries = 0;
+        for (auto & fut : futures) {
+            if (fut.get()) {
+                correct_queries++;
+            }
+        }
+        return correct_queries;
     }
 
 } // trace_q

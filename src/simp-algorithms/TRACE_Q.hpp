@@ -1,7 +1,8 @@
 #ifndef TRACE_Q_TRACE_Q_HPP
 #define TRACE_Q_TRACE_Q_HPP
 
-#include "../data/trajectory_structure.hpp"
+#include <future>
+#include "../data/Trajectory.hpp"
 #include "../querying/Query.hpp"
 #include "../querying/Range_Query_Test.hpp"
 #include "../querying/KNN_Query_Test.hpp"
@@ -14,11 +15,6 @@ namespace trace_q {
          * The MRPA algorithm as a function object.
          */
         simp_algorithms::MRPA mrpa{};
-
-        /**
-         * Total amount of queries to perform when checking query accuracy
-         */
-        int query_amount{};
 
         /**
          * The factor with which we will scale the grid. Calculated based on the grid_density_multiplier.
@@ -57,14 +53,7 @@ namespace trace_q {
          */
         double time_interval_multiplier{};
 
-        /**
-         * Calculates the amount of queries to be performed for a particular trajectory to determine the query error.
-         * The amount is calculated by determining the amount of points in the query grid. The grid is then used
-         * to decide the amount of queries based on the time interval multiplier in both the range and KNN query cases.
-         * Additionally, in range queries, the windows-per-grid-point is taken into account.
-         * @return The total amount of queries to be performed.
-         */
-        [[nodiscard]] int calculate_query_amount() const;
+     
 
         /**
          * Calculates the query error of a simplified trajectory on a set of query objects.
@@ -73,8 +62,8 @@ namespace trace_q {
          * @param query_objects Vector of query objects that define a query and contain the original trajectory's result
          * @return Query accuracy
          */
-        [[nodiscard]] double query_accuracy(data_structures::Trajectory const& trajectory,
-                                            std::vector<std::shared_ptr<spatial_queries::Query>> const& query_objects) const;
+        static double query_accuracy(data_structures::Trajectory const& trajectory,
+                                            std::vector<std::shared_ptr<spatial_queries::Query>> const& query_objects);
 
         /**
          * A Minimum Bounding Rectangle for trajectory data.
@@ -138,6 +127,8 @@ namespace trace_q {
         [[nodiscard]] std::vector<std::shared_ptr<spatial_queries::Query>> initialize_query_tests(
                 data_structures::Trajectory const& original_trajectory) const;
 
+        static int process_futures(std::vector<std::future<bool>>& futures);
+
     public:
         /**
          * The TRACE_Q constructor that determines the query_amount based on the given parameters.
@@ -155,9 +146,7 @@ namespace trace_q {
                   grid_density(grid_density_multiplier),
                   windows_per_grid_point(windows_per_grid_point),
                   window_expansion_rate(window_expansion_rate),
-                  time_interval_multiplier(time_interval_multiplier) {
-            query_amount = calculate_query_amount();
-        }
+                  time_interval_multiplier(time_interval_multiplier) {}
 
 
         [[nodiscard]] data_structures::Trajectory simplify(const data_structures::Trajectory& original_trajectory,

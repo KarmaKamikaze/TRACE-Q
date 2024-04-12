@@ -2,7 +2,7 @@
 #define TRACE_Q_RANGE_QUERY_HPP
 
 
-#include "../data/trajectory_structure.hpp"
+#include "../data/Trajectory.hpp"
 
 namespace spatial_queries {
 

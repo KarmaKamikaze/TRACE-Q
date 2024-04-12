@@ -1,7 +1,7 @@
-#include "endpoint_handlers.hpp"
+#include "Endpoint_Handlers.hpp"
 #include "boost/json/src.hpp"
 #include "boost/json/stream_parser.hpp"
-#include "../trajectory_data_handling/trajectory_sql.hpp"
+#include "../trajectory_data_handling/Trajectory_Manager.hpp"
 
 namespace api {
     using namespace boost::beast::http;
@@ -31,47 +31,55 @@ namespace api {
         return jsonData;
     }
 
-    void handle_insert_trajectories_into_trajectory_table(const request<string_body> &req, response<string_body> &res) {
+    void handle_insert_trajectory_into_trajectory_table(const request<string_body> &req, response<string_body> &res) {
         boost::json::value jsonData = get_json_from_request_body(req, res);
-        if (jsonData.is_null())
+        if (jsonData.is_null()) {
             return;
-
-        std::vector<data_structures::Trajectory> all_trajectories{};
-        db_table db_table{};
+        }
 
         try {
             auto jsonObject = jsonData.as_object();
-            for (auto & it : jsonObject) {
-                const auto &table_key = it.key();
-                const auto &table_value = it.value().as_object();
-                db_table = table_key == "original" ? db_table::original_trajectories
-                                                   : db_table::simplified_trajectories;
 
-                for (const auto & jt : table_value) {
-                    const auto &trajectory_id = jt.key();
-                    const auto &trajectoryData = jt.value().as_object();
-
-                    std::vector<data_structures::Location> locations{};
-
-                    for (const auto &kt : trajectoryData) {
-                        const auto &location_order = kt.key();
-                        const auto &location_data = kt.value().as_object();
-
-                        data_structures::Location location{};
-                        location.order = std::stoi(location_order);
-                        location.timestamp = location_data.at("timestamp").as_double();
-                        location.longitude = location_data.at("longitude").as_double();
-                        location.latitude = location_data.at("latitude").as_double();
-                        locations.emplace_back(location);
-                    }
-
-                    unsigned int id = static_cast<unsigned int>(std::stoi(trajectory_id));
-                    data_structures::Trajectory trajectory{id, std::move(locations)};
-
-                    all_trajectories.emplace_back(std::move(trajectory));
-                }
+            if (jsonObject.size() != 1) {
+                throw std::runtime_error("JSON must contain exactly one trajectory object.");
             }
-            trajectory_manager::insert_trajectories_into_trajectory_table(all_trajectories, db_table);
+
+            const auto &table_key = jsonObject.begin()->key();
+            const auto &table_value = jsonObject.begin()->value().as_object();
+
+            db_table db_table = (table_key == "original") ? db_table::original_trajectories
+                                                          : db_table::simplified_trajectories;
+
+            if (table_value.size() != 1) {
+                throw std::runtime_error("JSON must contain exactly one trajectory under the specified key.");
+            }
+
+            const auto &trajectory_id = table_value.begin()->key();
+            const auto &trajectoryData = table_value.begin()->value().as_object();
+
+            std::vector<data_structures::Location> locations{};
+
+            for (const auto &kt : trajectoryData) {
+                const auto &location_order = kt.key();
+                const auto &location_data = kt.value().as_object();
+
+                data_structures::Location location{};
+                location.order = std::stoi(location_order);
+                location.timestamp = location_data.at("timestamp").as_int64();
+                location.longitude = location_data.at("longitude").as_double();
+                location.latitude = location_data.at("latitude").as_double();
+                locations.emplace_back(location);
+            }
+
+            unsigned int id = static_cast<unsigned int>(std::stoi(trajectory_id));
+            data_structures::Trajectory trajectory{id, std::move(locations)};
+
+            Trajectory_Manager::insert_trajectory(trajectory, db_table);
+
+            res.result(status::ok);
+            res.set(field::content_type, "text/plain");
+            res.body() = "Trajectory successfully inserted into the database.";
+
         } catch (const std::exception &e) {
             res.result(status::bad_request);
             res.set(field::content_type, "text/plain");
@@ -85,12 +93,12 @@ namespace api {
             return;
 
         try {
-            query_purpose purpose;
+            trajectory_data_handling::db_table table;
 
             if (jsonData.as_object().contains("original")) {
-                purpose = query_purpose::load_original_rtree_into_datastructure;
+                table = trajectory_data_handling::db_table::original_trajectories;
             } else if (jsonData.as_object().contains("simplified")) {
-                purpose = query_purpose::load_simplified_rtree_into_datastructure;
+                table = trajectory_data_handling::db_table::simplified_trajectories;;
             } else {
                 res.result(status::bad_request);
                 res.set(field::content_type, "text/plain");
@@ -117,7 +125,7 @@ namespace api {
             window.t_low = t_low;
             window.t_high = t_high;
 
-            trajectory_manager::spatial_range_query_on_rtree_table(purpose, window);
+            Trajectory_Manager::db_range_query(table, window);
         } catch (const std::exception &e) {
             res.result(status::bad_request);
             res.set(field::content_type, "text/plain");

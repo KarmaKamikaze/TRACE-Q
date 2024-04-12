@@ -13,11 +13,11 @@ endif()
 
 target_sources(boost-api
         PRIVATE
-        ${CMAKE_CURRENT_LIST_DIR}/endpoint_handlers.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/start-api.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/Endpoint_Handlers.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/Start_API.cpp
         PUBLIC
-        ${CMAKE_CURRENT_LIST_DIR}/endpoint_handlers.hpp
-        ${CMAKE_CURRENT_LIST_DIR}/start-api.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/Endpoint_Handlers.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/Start_API.hpp
 )
 
 target_include_directories(boost-api
