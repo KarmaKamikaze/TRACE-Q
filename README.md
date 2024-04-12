@@ -1,7 +1,7 @@
 # P8-Project
 
 ## Prerequisites
-Before running the application, ensure that you have downloaded the necessary project dependencies. Specifically ensure that [PostgreSQL](https://www.postgresql.org/) is installed.
+Before running the application, ensure that you have downloaded the necessary project dependencies. Specifically ensure that [PostgreSQL](https://www.postgresql.org/) is installed and added to your PATH variables.
 ### Windows
 If you are on Windows, run the PowerShell script to install the project dependencies:
 ```sh
