@@ -169,6 +169,8 @@ namespace trajectory_data_handling {
             default:
                 std::cout << "Error in switch statement in db_knn_query." << '\n';
         }
+
+        return std::vector<data_structures::Trajectory>{};
     }
 
 
