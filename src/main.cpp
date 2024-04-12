@@ -37,11 +37,6 @@ int main(int argc, char* argv[]) {
 //    trajectory_manager.load_trajectories_into_simplified_rtree();
 //    trajectory_manager.reset_all_data();
 
-    auto range_query_results = trajectory_data_handling::Trajectory_Manager::db_range_query(trajectory_data_handling::db_table::original_trajectories, spatial_queries::Range_Query::Window{10.0, 12.0, 20.0, 100.0, 1.0, 100000000000.0});
-
-    auto all_trajectories = trajectory_data_handling::Trajectory_Manager::load_into_data_structure(trajectory_data_handling::db_table::original_trajectories);
-
-
     data_structures::Trajectory t {};
     t.locations.emplace_back(data_structures::Location(1, 0, 1, 2));
     t.locations.emplace_back(data_structures::Location(2, 1, 4, 2));

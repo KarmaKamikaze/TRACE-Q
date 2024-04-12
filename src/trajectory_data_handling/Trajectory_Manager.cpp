@@ -7,16 +7,13 @@ namespace trajectory_data_handling {
 
     std::string Trajectory_Manager::connection_string{"user=postgres password=postgres host=localhost dbname=traceq port=5432"};
 
+    /**
+     * Inserts a given trajectory into either the original or simplified database. Also removes duplicate points before inserting.
+     * @param trajectory The trajectory to insert
+     * @param table The table to insert into
+     */
     void Trajectory_Manager::insert_trajectory(data_structures::Trajectory const& trajectory, db_table table) {
-        std::string table_name{};
-        switch(table) {
-            case db_table::original_trajectories:
-                table_name = "original_trajectories";
-                break;
-            case db_table::simplified_trajectories:
-                table_name = "simplified_trajectories";
-                break;
-        }
+        auto table_name = get_table_name(table);
 
         pqxx::connection c{connection_string};
         pqxx::work txn{c};
@@ -41,30 +38,25 @@ namespace trajectory_data_handling {
         txn.commit();
     }
 
+    /**
+     * Loads a vector of trajectories from the database. If a list of ids are not given, all trajectories are loaded.
+     * @param table The table to load trajectories from.
+     * @param ids Vector of the ids of trajectories to load from the given table.
+     * @return A vector containing the trajectories loaded from the database with the given ids.
+     */
      std::vector<data_structures::Trajectory> Trajectory_Manager::load_into_data_structure(
-             db_table table, std::vector<int> const& id) {
-        std::string table_name{};
+             db_table table, std::vector<int> const& ids) {
+        auto table_name = get_table_name(table);
         std::stringstream query{};
 
-        switch(table) {
-            case db_table::original_trajectories:
-                table_name = "original_trajectories";
-                break;
-            case db_table::simplified_trajectories:
-                table_name = "simplified_trajectories";
-                break;
-            default:
-                std::cout << "Error in switch statement in load_into_data_structure." << std::endl;
-        }
-
-        if(id.empty()) {
+        if(ids.empty()) {
             query << "SELECT trajectory_id, coordinates, time FROM " << table_name << ";";
         }
         else {
             query << "SELECT trajectory_id, coordinates, time FROM " << table_name << " WHERE trajectory_id IN (";
-            for(auto i = id.cbegin(); i != id.cend(); ++i) {
+            for(auto i = ids.cbegin(); i != ids.cend(); ++i) {
                 query << *i;
-                if (std::next(i) != id.end()) {
+                if (std::next(i) != ids.end()) {
                     query << ",";
                 }
             }
@@ -104,6 +96,13 @@ namespace trajectory_data_handling {
         return res;
     }
 
+    /**
+     * Helper function that constructs a Location object given order, time and coordinates.
+     * @param order The order of the location.
+     * @param time The location's time.
+     * @param coordinates A string representing the coordinates. Is parsed to two doubles.
+     * @return
+     */
     data_structures::Location Trajectory_Manager::parse_location(int order, long time, std::string const& coordinates) {
         auto coords = std::string{coordinates};
 
@@ -119,21 +118,15 @@ namespace trajectory_data_handling {
         return data_structures::Location{order, time, std::stod(lon_str), std::stod(lat_str)};
     }
 
+    /**
+     * Performs a range query on the given database given a window.
+     * @param table The table to query.
+     * @param window The window of the query.
+     * @return A vector of trajectories that are contained i
+     */
     std::vector<data_structures::Trajectory> Trajectory_Manager::db_range_query(db_table table, spatial_queries::Range_Query::Window const& window) {
-        std::string table_name{};
+        auto table_name = get_table_name(table);
         std::stringstream query{};
-
-        switch(table) {
-            case db_table::original_trajectories:
-                table_name = "original_trajectories";
-                break;
-            case db_table::simplified_trajectories:
-                table_name = "simplified_trajectories";
-                break;
-
-            default:
-                std::cout << "Error in switch statement in db_range_query." << std::endl;
-        }
 
         query << "SELECT DISTINCT trajectory_id FROM " << table_name
         << " WHERE coordinates[0]<=" << window.x_high << " AND coordinates[0]>=" << window.x_low
@@ -154,26 +147,17 @@ namespace trajectory_data_handling {
         return load_into_data_structure(table, v_ids);
     }
 
-    std::vector<data_structures::Trajectory> db_knn_query(db_table table) {
-        std::string table_name{};
+    std::vector<data_structures::Trajectory> Trajectory_Manager::db_knn_query(db_table table) {
+        auto table_name = get_table_name(table);
         std::stringstream query{};
-
-        switch(table) {
-            case db_table::original_trajectories :
-                table_name = "original_trajectories";
-                break;
-            case db_table::simplified_trajectories:
-                table_name = "simplified_trajectories";
-                break;
-
-            default:
-                std::cout << "Error in switch statement in db_knn_query." << '\n';
-        }
 
         return std::vector<data_structures::Trajectory>{};
     }
 
-
+    /**
+     * Helper function that prints a list of trajectories.
+     * @param all_trajectories
+     */
     void Trajectory_Manager::print_trajectories(std::vector<data_structures::Trajectory> const& all_trajectories) {
         for (const auto & trajectory : all_trajectories) {
             std::cout << "id: " << trajectory.id << std::endl;
@@ -185,7 +169,9 @@ namespace trajectory_data_handling {
         }
     }
 
-
+    /**
+     * Constructs the database tables and indexes.
+     */
     void Trajectory_Manager::create_database() {
         pqxx::connection c{connection_string};
         pqxx::work txn{c};
@@ -196,6 +182,9 @@ namespace trajectory_data_handling {
         txn.commit();
     }
 
+    /**
+     * Drops all tables and indexes, whereafter it calls create_database to reconstruct the tables.
+     */
     void Trajectory_Manager::reset_all_data() {
         pqxx::connection c{connection_string};
         pqxx::work txn{c};
@@ -212,11 +201,37 @@ namespace trajectory_data_handling {
 
     }
 
+    /**
+     * Reads a file and executes it in a given transaction on the database.
+     * @param query_file_path Path to the file to execute.
+     * @param transaction The transaction to execute the query on.
+     */
     void Trajectory_Manager::add_query_file_to_transaction(std::string const& query_file_path,
                                                            pqxx::work &transaction) {
         std::ifstream ifs{query_file_path};
         std::string query(std::istreambuf_iterator<char>{ifs}, {});
         transaction.exec0(query);
+    }
+
+    /**
+     * Converts an enum descriptor of a table into a string representation.
+     * @param table The enum descriptor of the selected table.
+     * @return A string corresponding to the selected table.
+     */
+    std::string Trajectory_Manager::get_table_name(db_table table) {
+        std::string table_name{};
+        switch(table) {
+            case db_table::original_trajectories:
+                table_name = "original_trajectories";
+                break;
+            case db_table::simplified_trajectories:
+                table_name = "simplified_trajectories";
+                break;
+            default:
+                std::cout << "Error in switch statement in get_table_name" << std::endl;
+        }
+
+        return table_name;
     }
 }
 
