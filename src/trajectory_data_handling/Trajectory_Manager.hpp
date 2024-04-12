@@ -2,10 +2,8 @@
 #define P8_PROJECT_TRAJECTORY_H
 
 #include <vector>
-#include <sqlite3.h>
 #include <pqxx/pqxx>
 #include "../data/Trajectory.hpp"
-#include "Query_Handler.hpp"
 #include "../querying/Range_Query.hpp"
 
 

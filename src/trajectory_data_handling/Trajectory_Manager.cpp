@@ -172,7 +172,6 @@ namespace trajectory_data_handling {
     }
 
 
-
     void Trajectory_Manager::print_trajectories(std::vector<data_structures::Trajectory> const& all_trajectories) {
         for (const auto & trajectory : all_trajectories) {
             std::cout << "id: " << trajectory.id << std::endl;

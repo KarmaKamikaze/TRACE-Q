@@ -1,6 +1,5 @@
 #include <iostream>
 #include "trajectory_data_handling/Trajectory_Manager.hpp"
-#include "trajectory_data_handling/Query_Handler.hpp"
 #include "trajectory_data_handling/File_Manager.hpp"
 #include "TRACE_Q.hpp"
 #include <boost/asio.hpp>
@@ -15,10 +14,6 @@ int main(int argc, char* argv[]) {
         }
     }
 
-
-    //trajectory_data_handling::Query_Handler::original_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
-
-    //trajectory_data_handling::Query_Handler::simplified_trajectories = std::make_shared<std::vector<data_structures::Trajectory>>();
 
     //trajectory_data_handling::Trajectory_Manager::reset_all_data();
 
