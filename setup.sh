@@ -7,7 +7,7 @@ geolife_dir="./external/datasets/geolife"
 SQL_CREATE_ORIGINAL=$(<"$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd -P)"/sql/create_table_original.sql)
 SQL_CREATE_SIMPLIFIED=$(<"$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd -P)"/sql/create_table_simplified.sql)
 
-if [[ ! "$1" == "--skipdatasets" ]]; then
+if [[ ! "$1" == "-skipdatasets" ]]; then
     echo "Checking that folder structure exists"
 
     if [ ! -d "$external_dir" ]

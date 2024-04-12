@@ -1,12 +1,13 @@
+param (
+    [switch]$skipdatasets
+)
+
 $external_dir = ".\external"
 $dataset_dir = ".\external\datasets"
 $t_drive_dir = ".\external\datasets\t-drive"
 $geolife_dir = ".\external\datasets\geolife"
 $SQL_CREATE_ORIGINAL = Get-Content -Raw -Path "$(Get-Location)\sql\create_table_original.sql"
 $SQL_CREATE_SIMPLIFIED = Get-Content -Raw -Path "$(Get-Location)\sql\create_table_simplified.sql"
-param (
-    [switch]$skipdatasets
-)
 
 if (-not $skipdatasets) {
     Write-Host "Checking that folder structure exists"
