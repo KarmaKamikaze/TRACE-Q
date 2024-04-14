@@ -114,8 +114,8 @@ namespace api {
             double y_low = originalData.at("latitudeRange").as_object().at("min").as_double();
             double y_high = originalData.at("latitudeRange").as_object().at("max").as_double();
 
-            long double t_low = originalData.at("timestampRange").as_object().at("min").as_double();
-            long double t_high = originalData.at("timestampRange").as_object().at("max").as_double();
+            long t_low = originalData.at("timestampRange").as_object().at("min").as_int64();
+            long t_high = originalData.at("timestampRange").as_object().at("max").as_int64();
 
             spatial_queries::Range_Query::Window window{};
             window.x_low = x_low;
@@ -132,6 +132,59 @@ namespace api {
             res.body() = "Error processing JSON data: " + std::string(e.what());
         }
     }
+
+    void handle_db_range_query(const request<string_body> &req, response<string_body> &res) {
+        try {
+            boost::json::value jsonData = get_json_from_request_body(req, res);
+
+            // Check if the JSON data is an object
+            if (!jsonData.is_object()) {
+                throw std::runtime_error("Invalid JSON data: expected an object");
+            }
+
+            const boost::json::object &jsonObject = jsonData.as_object();
+
+            // Extract db_table value
+            std::string table_key;
+            if (jsonObject.contains("db_table")) {
+                table_key = jsonObject.at("db_table").as_string().c_str();
+            } else {
+                throw std::runtime_error("JSON object does not contain 'db_table'");
+            }
+
+            // Determine the db_table enum based on the table_key
+            db_table db_table_type = (table_key == "original") ? db_table::original_trajectories
+                                                               : db_table::simplified_trajectories;
+
+            // Extract window object or use defaults
+            spatial_queries::Range_Query::Window window;
+            const boost::json::object &windowObj = jsonObject.contains("window") ?
+                                                   jsonObject.at("window").as_object() :
+                                                   boost::json::object(); // Empty object if not present
+
+            // Assign values from JSON or use defaults
+            window.x_low = windowObj.contains("x_low") ? windowObj.at("x_low").as_double() : std::numeric_limits<double>::lowest();
+            window.x_high = windowObj.contains("x_high") ? windowObj.at("x_high").as_double() : std::numeric_limits<double>::max();
+            window.y_low = windowObj.contains("y_low") ? windowObj.at("y_low").as_double() : std::numeric_limits<double>::lowest();
+            window.y_high = windowObj.contains("y_high") ? windowObj.at("y_high").as_double() : std::numeric_limits<double>::max();
+            window.t_low = windowObj.contains("t_low") ? windowObj.at("t_low").as_int64() : std::numeric_limits<long>::lowest();
+            window.t_high = windowObj.contains("t_high") ? windowObj.at("t_high").as_int64() : std::numeric_limits<long>::max();
+
+            // Perform the db_range_query with extracted values
+            trajectory_data_handling::Trajectory_Manager::db_range_query(db_table_type, window);
+
+            // Respond with success if no exceptions were thrown
+            res.result(status::ok);
+            res.set(field::content_type, "text/plain");
+            res.body() = "Query executed successfully";
+        }
+        catch (const std::exception &e) {
+            res.result(status::bad_request);
+            res.set(field::content_type, "text/plain");
+            res.body() = "Error processing JSON data: " + std::string(e.what());
+        }
+    }
+
 
     void handle_not_found(const request<string_body> &req, response<string_body> &res) {
         res.result(status::not_found);

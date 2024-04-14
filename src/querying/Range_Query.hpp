@@ -3,17 +3,18 @@
 
 
 #include "../data/Trajectory.hpp"
+#include <limits>
 
 namespace spatial_queries {
 
     struct Range_Query {
         struct Window {
-            double x_low{};
-            double x_high{};
-            double y_low{};
-            double y_high{};
-            long double t_low{};
-            long double t_high{};
+            double x_low{ std::numeric_limits<double>::lowest() };
+            double x_high{ std::numeric_limits<double>::max() };
+            double y_low{ std::numeric_limits<double>::lowest() };
+            double y_high{ std::numeric_limits<double>::max() };
+            long t_low{ std::numeric_limits<long>::lowest() };
+            long t_high{ std::numeric_limits<long>::max() };
         };
 
         /**
