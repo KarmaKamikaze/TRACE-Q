@@ -8,11 +8,6 @@ namespace trajectory_data_handling {
 
     std::string Trajectory_Manager::connection_string{"user=postgres password=postgres host=localhost dbname=traceq port=5432"};
 
-    /**
-     * Inserts a given trajectory into either the original or simplified database. Also removes duplicate points before inserting.
-     * @param trajectory The trajectory to insert
-     * @param table The table to insert into
-     */
     void Trajectory_Manager::insert_trajectory(data_structures::Trajectory const& trajectory, db_table table) {
         auto table_name = get_table_name(table);
 
@@ -39,12 +34,6 @@ namespace trajectory_data_handling {
         txn.commit();
     }
 
-    /**
-     * Loads a vector of trajectories from the database. If a list of ids are not given, all trajectories are loaded.
-     * @param table The table to load trajectories from.
-     * @param ids Vector of the ids of trajectories to load from the given table.
-     * @return A vector containing the trajectories loaded from the database with the given ids.
-     */
      std::vector<data_structures::Trajectory> Trajectory_Manager::load_into_data_structure(
              db_table table, std::vector<int> const& ids) {
         auto table_name = get_table_name(table);
@@ -97,13 +86,6 @@ namespace trajectory_data_handling {
         return res;
     }
 
-    /**
-     * Helper function that constructs a Location object given order, time and coordinates.
-     * @param order The order of the location.
-     * @param time The location's time.
-     * @param coordinates A string representing the coordinates. Is parsed to two doubles.
-     * @return
-     */
     data_structures::Location Trajectory_Manager::parse_location(int order, unsigned long time, std::string const& coordinates) {
         auto coords = std::string{coordinates};
 
@@ -119,40 +101,32 @@ namespace trajectory_data_handling {
         return data_structures::Location{order, time, std::stod(lon_str), std::stod(lat_str)};
     }
 
-    /**
-     * Performs a range query on the given database given a window.
-     * @param table The table to query.
-     * @param window The window of the query.
-     * @return A vector of trajectories that are contained i
-     */
+
     std::vector<data_structures::Trajectory> Trajectory_Manager::db_range_query(db_table table, spatial_queries::Range_Query::Window const& window) {
         auto table_name = get_table_name(table);
         std::stringstream query{};
 
-        query << "SELECT DISTINCT trajectory_id FROM " << table_name << " WHERE 1=1";
+        query << "SELECT DISTINCT trajectory_id FROM " << table_name << " WHERE 1=1 ";
 
         if (window.x_high != std::numeric_limits<double>::max()) {
-            query << "AND coordinates[0]<=" << window.x_high;
+            query << " AND coordinates[0]<=" << window.x_high;
         }
         if (window.x_low != std::numeric_limits<double>::min()) {
-            query << "AND coordinates[0]>=" << window.x_low;
+            query << " AND coordinates[0]>=" << window.x_low;
         }
         if (window.y_high != std::numeric_limits<double>::max()) {
-            query << "AND coordinates[1]<=" << window.y_high;
+            query << " AND coordinates[1]<=" << window.y_high;
         }
         if (window.y_low != std::numeric_limits<double>::min()) {
-            query << "AND coordinates[1]>=" << window.y_low;
+            query << " AND coordinates[1]>=" << window.y_low;
         }
         if (window.t_high != std::numeric_limits<unsigned long>::max()) {
-            query << "AND time<=" << window.t_high;
+            query << " AND time<=" << window.t_high;
         }
         if (window.t_low != std::numeric_limits<unsigned long>::min()) {
-            query << "AND time>=" << window.t_low;
+            query << " AND time>=" << window.t_low;
         }
-        /*
-        << " WHERE coordinates[0]<=" << window.x_high << " AND coordinates[0]>=" << window.x_low
-        << " AND coordinates[1]<=" << window.y_high << " AND coordinates[1]>=" << window.y_low
-        << " AND time <=" << window.t_high << " AND time>=" << window.t_low << ";";*/
+        query << ";";
 
         pqxx::connection c{connection_string};
         pqxx::work txn{c};
@@ -169,42 +143,18 @@ namespace trajectory_data_handling {
     }
 
     std::vector<data_structures::Trajectory> Trajectory_Manager::db_knn_query(
-            db_table table, int k, std::tuple<double, double, unsigned long, unsigned long> query_origin) {
+            db_table table, int k, spatial_queries::KNN_Query::KNN_Origin const& query_origin) {
         auto table_name = get_table_name(table);
-        pqxx::connection c{connection_string};
-        pqxx::work txn{c};
-        std::stringstream query{};
 
-        auto x_origin = std::get<0>(query_origin);
-        auto y_origin = std::get<1>(query_origin);
-        auto t_low_origin = std::get<2>(query_origin);
-        auto t_high_origin = std::get<3>(query_origin);
+        auto query_results = spatial_queries::KNN_Query::knn(table_name, k, query_origin);
 
-        query << "SELECT trajectory_id, MIN(coordinates <-> POINT("
-        << std::to_string(x_origin) << "," << std::to_string(y_origin)
-        << ")) AS dist FROM " << table_name;
-        if (t_low_origin != std::numeric_limits<unsigned long>::min()
-            && t_high_origin != std::numeric_limits<unsigned long>::max()) {
-            query << " WHERE time >= " << t_low_origin << " AND time <= " << t_high_origin;
-        }
-        else if (t_low_origin != std::numeric_limits<unsigned long>::min()) {
-            query << " WHERE time >= " << t_low_origin;
-        }
-        else if (t_high_origin != std::numeric_limits<unsigned long>::max()) {
-            query << " WHERE time <= " << t_high_origin;
-        }
-        query << " GROUP BY trajectory_id ORDER BY MIN(coordinates <-> POINT("
-        << std::to_string(x_origin) << "," << std::to_string(y_origin) << ")) LIMIT " << k << ";";
+        std::vector<int> result_ids{};
 
-        auto ids = txn.query<int, double>(query.str());
-
-        txn.commit();
-        std::vector<int> v_ids{};
-        for (const auto& [id, dist] : ids) {
-            v_ids.push_back(id);
+        for(const auto& query_result : query_results) {
+            result_ids.push_back(query_result.id);
         }
 
-        return load_into_data_structure(table, v_ids);
+        return load_into_data_structure(table, result_ids);
     }
 
     /**
@@ -222,9 +172,6 @@ namespace trajectory_data_handling {
         }
     }
 
-    /**
-     * Constructs the database tables and indexes.
-     */
     void Trajectory_Manager::create_database() {
         pqxx::connection c{connection_string};
         pqxx::work txn{c};
@@ -235,9 +182,6 @@ namespace trajectory_data_handling {
         txn.commit();
     }
 
-    /**
-     * Drops all tables and indexes, whereafter it calls create_database to reconstruct the tables.
-     */
     void Trajectory_Manager::reset_all_data() {
         pqxx::connection c{connection_string};
         pqxx::work txn{c};
@@ -250,15 +194,6 @@ namespace trajectory_data_handling {
         create_database();
     }
 
-    void Trajectory_Manager::replace_trajectory(data_structures::Trajectory const& trajectory) {
-
-    }
-
-    /**
-     * Reads a file and executes it in a given transaction on the database.
-     * @param query_file_path Path to the file to execute.
-     * @param transaction The transaction to execute the query on.
-     */
     void Trajectory_Manager::add_query_file_to_transaction(std::string const& query_file_path,
                                                            pqxx::work &transaction) {
         std::ifstream ifs{query_file_path};
@@ -266,11 +201,6 @@ namespace trajectory_data_handling {
         transaction.exec0(query);
     }
 
-    /**
-     * Converts an enum descriptor of a table into a string representation.
-     * @param table The enum descriptor of the selected table.
-     * @return A string corresponding to the selected table.
-     */
     std::string Trajectory_Manager::get_table_name(db_table table) {
         switch(table) {
             case db_table::original_trajectories:

@@ -14,11 +14,11 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    trajectory_data_handling::Trajectory_Manager::reset_all_data();
-    trajectory_data_handling::File_Manager::load_tdrive_dataset();
+    //trajectory_data_handling::Trajectory_Manager::reset_all_data();
+    //trajectory_data_handling::File_Manager::load_tdrive_dataset();
 
-    trajectory_data_handling::Trajectory_Manager::db_knn_query(trajectory_data_handling::db_table::original_trajectories, 2, std::tuple{200, 200, trajectory_data_handling::File_Manager::string_to_time("2008-02-02 15:36:08"), trajectory_data_handling::File_Manager::string_to_time("2008-02-02 15:56:08")});
-
+    trajectory_data_handling::Trajectory_Manager::db_knn_query(trajectory_data_handling::db_table::original_trajectories, 2, spatial_queries::KNN_Query::KNN_Origin{200, 200, trajectory_data_handling::File_Manager::string_to_time("2008-02-02 15:36:08"), trajectory_data_handling::File_Manager::string_to_time("2008-02-02 15:56:08")});
+    trajectory_data_handling::Trajectory_Manager::db_range_query(trajectory_data_handling::db_table::original_trajectories, spatial_queries::Range_Query::Window{115, 117, 38, 40, trajectory_data_handling::File_Manager::string_to_time("2008-02-02 15:36:08"), trajectory_data_handling::File_Manager::string_to_time("2008-02-02 15:56:08")});
 
     data_structures::Trajectory t {};
     t.locations.emplace_back(data_structures::Location(1, 0, 1, 2));
