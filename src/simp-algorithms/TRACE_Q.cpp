@@ -125,8 +125,8 @@ namespace trace_q {
             futures.emplace_back(
                     std::async(std::launch::async,
                                [](const data_structures::Trajectory& original_trajectory, double x_low,
-                                       double x_high, double y_low, double y_high, long double t_low,
-                                       long double t_high)
+                                       double x_high, double y_low, double y_high, unsigned long t_low,
+                                       unsigned long t_high)
                                        { return spatial_queries::Range_Query_Test{original_trajectory, x_low, x_high,
                                                                                   y_low, y_high, t_low, t_high};
                                            },

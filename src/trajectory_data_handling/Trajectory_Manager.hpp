@@ -21,12 +21,13 @@ namespace trajectory_data_handling {
         static void print_trajectories(std::vector<data_structures::Trajectory> const& all_trajectories);
         static void create_database();
         static void reset_all_data();
-        static std::vector<data_structures::Trajectory> db_knn_query(db_table table);
+        static std::vector<data_structures::Trajectory> db_knn_query(
+                db_table table, int k, std::tuple<double, double, unsigned long, unsigned long> query_origin);
         static void replace_trajectory(data_structures::Trajectory const& trajectory);
     private:
         static std::string connection_string;
         static void add_query_file_to_transaction(std::string const& query_file_path, pqxx::work &transaction);
-        static data_structures::Location parse_location(int order, long time, std::string const& coordinates);
+        static data_structures::Location parse_location(int order, unsigned long time, std::string const& coordinates);
         static std::string get_table_name(db_table table);
     };
 }

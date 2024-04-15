@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <limits>
 #include <pqxx/pqxx>
 #include "Trajectory_Manager.hpp"
 
@@ -103,7 +104,7 @@ namespace trajectory_data_handling {
      * @param coordinates A string representing the coordinates. Is parsed to two doubles.
      * @return
      */
-    data_structures::Location Trajectory_Manager::parse_location(int order, long time, std::string const& coordinates) {
+    data_structures::Location Trajectory_Manager::parse_location(int order, unsigned long time, std::string const& coordinates) {
         auto coords = std::string{coordinates};
 
         std::erase(coords, '(');
@@ -128,10 +129,30 @@ namespace trajectory_data_handling {
         auto table_name = get_table_name(table);
         std::stringstream query{};
 
-        query << "SELECT DISTINCT trajectory_id FROM " << table_name
+        query << "SELECT DISTINCT trajectory_id FROM " << table_name << " WHERE 1=1";
+
+        if (window.x_high != std::numeric_limits<double>::max()) {
+            query << "AND coordinates[0]<=" << window.x_high;
+        }
+        if (window.x_low != std::numeric_limits<double>::min()) {
+            query << "AND coordinates[0]>=" << window.x_low;
+        }
+        if (window.y_high != std::numeric_limits<double>::max()) {
+            query << "AND coordinates[1]<=" << window.y_high;
+        }
+        if (window.y_low != std::numeric_limits<double>::min()) {
+            query << "AND coordinates[1]>=" << window.y_low;
+        }
+        if (window.t_high != std::numeric_limits<unsigned long>::max()) {
+            query << "AND time<=" << window.t_high;
+        }
+        if (window.t_low != std::numeric_limits<unsigned long>::min()) {
+            query << "AND time>=" << window.t_low;
+        }
+        /*
         << " WHERE coordinates[0]<=" << window.x_high << " AND coordinates[0]>=" << window.x_low
         << " AND coordinates[1]<=" << window.y_high << " AND coordinates[1]>=" << window.y_low
-        << " AND time <=" << window.t_high << " AND time>=" << window.t_low << ";";
+        << " AND time <=" << window.t_high << " AND time>=" << window.t_low << ";";*/
 
         pqxx::connection c{connection_string};
         pqxx::work txn{c};
@@ -147,11 +168,43 @@ namespace trajectory_data_handling {
         return load_into_data_structure(table, v_ids);
     }
 
-    std::vector<data_structures::Trajectory> Trajectory_Manager::db_knn_query(db_table table) {
+    std::vector<data_structures::Trajectory> Trajectory_Manager::db_knn_query(
+            db_table table, int k, std::tuple<double, double, unsigned long, unsigned long> query_origin) {
         auto table_name = get_table_name(table);
+        pqxx::connection c{connection_string};
+        pqxx::work txn{c};
         std::stringstream query{};
 
-        return std::vector<data_structures::Trajectory>{};
+        auto x_origin = std::get<0>(query_origin);
+        auto y_origin = std::get<1>(query_origin);
+        auto t_low_origin = std::get<2>(query_origin);
+        auto t_high_origin = std::get<3>(query_origin);
+
+        query << "SELECT trajectory_id, MIN(coordinates <-> POINT("
+        << std::to_string(x_origin) << "," << std::to_string(y_origin)
+        << ")) AS dist FROM " << table_name;
+        if (t_low_origin != std::numeric_limits<unsigned long>::min()
+            && t_high_origin != std::numeric_limits<unsigned long>::max()) {
+            query << " WHERE time >= " << t_low_origin << " AND time <= " << t_high_origin;
+        }
+        else if (t_low_origin != std::numeric_limits<unsigned long>::min()) {
+            query << " WHERE time >= " << t_low_origin;
+        }
+        else if (t_high_origin != std::numeric_limits<unsigned long>::max()) {
+            query << " WHERE time <= " << t_high_origin;
+        }
+        query << " GROUP BY trajectory_id ORDER BY MIN(coordinates <-> POINT("
+        << std::to_string(x_origin) << "," << std::to_string(y_origin) << ")) LIMIT " << k << ";";
+
+        auto ids = txn.query<int, double>(query.str());
+
+        txn.commit();
+        std::vector<int> v_ids{};
+        for (const auto& [id, dist] : ids) {
+            v_ids.push_back(id);
+        }
+
+        return load_into_data_structure(table, v_ids);
     }
 
     /**
@@ -225,7 +278,7 @@ namespace trajectory_data_handling {
             case db_table::simplified_trajectories:
                 return "simplified_trajectories";
             default:
-                std::cout << "Error in switch statement in get_table_name" << std::endl;
+                throw std::invalid_argument("Error in switch statement in get_table_name");
         }
     }
 }
