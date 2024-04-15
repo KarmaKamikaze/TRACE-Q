@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
     t.locations.emplace_back(data_structures::Location(17, 53, 277, 143));
     t.locations.emplace_back(data_structures::Location(18, 60, 300, 200));
 
-    auto trace_q = trace_q::TRACE_Q{2, 0.1, 3, 1.3, 0.2};
+    auto trace_q = trace_q::TRACE_Q{2, 0.1, 0.1, 3, 1.3, 0.2, 0.2, 10};
     auto result = trace_q.simplify(t, 0.99);
 
     for (int i = 0; i < result.locations.size(); ++i) {

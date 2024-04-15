@@ -12,7 +12,7 @@ namespace spatial_queries {
          * An element from the result of performing a KNN query.
          */
         struct KNN_Result_Element {
-            int id{};
+            unsigned int id{};
             double distance{};
         };
 
@@ -22,8 +22,8 @@ namespace spatial_queries {
         struct KNN_Origin {
             double x{};
             double y{};
-            unsigned long t_low{};
-            unsigned long t_high{};
+            long double t_low{};
+            long double t_high{};
         };
 
         /**

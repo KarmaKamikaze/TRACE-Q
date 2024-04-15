@@ -37,7 +37,7 @@ namespace trajectory_data_handling {
                 db_table table, spatial_queries::Range_Query::Window const& window);
 
         /**
-         * Performs a K-Nearest-Neighbour query on the given database given an origin point.
+         * Performs a K-Nearest-Neighbour query on the given database given a
          * @param table The table to query.
          * @param k The amount of nearest neighbours to return.
          * @param query_origin The origin point from where the nearest neighbours are discovered using euclidean distance.
