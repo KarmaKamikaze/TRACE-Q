@@ -11,8 +11,6 @@ namespace api {
 
     void handle_insert_trajectory_into_trajectory_table(const request<string_body> &req, response<string_body> &res);
 
-    void handle_spatial_range_query_on_rtree_table(const request<string_body> &req, response<string_body> &res);
-
     void handle_db_range_query(const request<string_body> &req, response<string_body> &res);
 
     void handle_root(const request<string_body> &req, response<string_body> &res);

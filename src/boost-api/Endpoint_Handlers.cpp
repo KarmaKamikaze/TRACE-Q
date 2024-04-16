@@ -87,52 +87,6 @@ namespace api {
         }
     }
 
-    void handle_spatial_range_query_on_rtree_table(const request<string_body> &req, response<string_body> &res) {
-        boost::json::value jsonData = get_json_from_request_body(req, res);
-        if (jsonData.is_null())
-            return;
-
-        try {
-            trajectory_data_handling::db_table table;
-
-            if (jsonData.as_object().contains("original")) {
-                table = trajectory_data_handling::db_table::original_trajectories;
-            } else if (jsonData.as_object().contains("simplified")) {
-                table = trajectory_data_handling::db_table::simplified_trajectories;;
-            } else {
-                res.result(status::bad_request);
-                res.set(field::content_type, "text/plain");
-                res.body() = "Invalid JSON format: missing 'original' or 'simplified' key";
-                return;
-            }
-
-            boost::json::object originalData = jsonData.as_object().at("original").as_object();
-
-            double x_low = originalData.at("longitudeRange").as_object().at("min").as_double();
-            double x_high = originalData.at("longitudeRange").as_object().at("max").as_double();
-
-            double y_low = originalData.at("latitudeRange").as_object().at("min").as_double();
-            double y_high = originalData.at("latitudeRange").as_object().at("max").as_double();
-
-            long t_low = originalData.at("timestampRange").as_object().at("min").as_int64();
-            long t_high = originalData.at("timestampRange").as_object().at("max").as_int64();
-
-            spatial_queries::Range_Query::Window window{};
-            window.x_low = x_low;
-            window.x_high = x_high;
-            window.y_low = y_low;
-            window.y_high = y_high;
-            window.t_low = t_low;
-            window.t_high = t_high;
-
-            Trajectory_Manager::db_range_query(table, window);
-        } catch (const std::exception &e) {
-            res.result(status::bad_request);
-            res.set(field::content_type, "text/plain");
-            res.body() = "Error processing JSON data: " + std::string(e.what());
-        }
-    }
-
     void handle_db_range_query(const request<string_body> &req, response<string_body> &res) {
         try {
             boost::json::value jsonData = get_json_from_request_body(req, res);
@@ -153,7 +107,7 @@ namespace api {
             }
 
             // Determine the db_table enum based on the table_key
-            db_table db_table_type = (table_key == "original") ? db_table::original_trajectories
+            db_table db_table = (table_key == "original") ? db_table::original_trajectories
                                                                : db_table::simplified_trajectories;
 
             // Extract window object or use defaults
@@ -171,7 +125,7 @@ namespace api {
             window.t_high = windowObj.contains("t_high") ? windowObj.at("t_high").as_int64() : std::numeric_limits<long>::max();
 
             // Perform the db_range_query with extracted values
-            trajectory_data_handling::Trajectory_Manager::db_range_query(db_table_type, window);
+            trajectory_data_handling::Trajectory_Manager::db_range_query(db_table, window);
 
             // Respond with success if no exceptions were thrown
             res.result(status::ok);
