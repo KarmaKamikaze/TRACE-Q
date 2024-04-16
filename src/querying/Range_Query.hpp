@@ -12,8 +12,8 @@ namespace spatial_queries {
             double x_high{};
             double y_low{};
             double y_high{};
-            long double t_low{};
-            long double t_high{};
+            unsigned long t_low{};
+            unsigned long t_high{};
         };
 
         /**

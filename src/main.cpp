@@ -14,6 +14,17 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    trajectory_data_handling::Trajectory_Manager::reset_all_data();
+    trajectory_data_handling::File_Manager::load_tdrive_dataset();
+
+    for (auto trajectories = trajectory_data_handling::Trajectory_Manager::load_into_data_structure(trajectory_data_handling::db_table::original_trajectories); auto const& t : trajectories) {
+        auto trace_q = trace_q::TRACE_Q{2, 0.1, 0.1, 3, 1.3, 0.2, 0.2, 10};
+        auto result = trace_q.simplify(t, 0.99);
+        trajectory_data_handling::Trajectory_Manager::insert_trajectory(result, trajectory_data_handling::db_table::simplified_trajectories);
+    }
+
+    /*trajectory_data_handling::Trajectory_Manager::db_knn_query(trajectory_data_handling::db_table::original_trajectories, 2, spatial_queries::KNN_Query::KNN_Origin{200, 200, trajectory_data_handling::File_Manager::string_to_time("2008-02-02 15:36:08"), trajectory_data_handling::File_Manager::string_to_time("2008-02-02 15:56:08")});
+    trajectory_data_handling::Trajectory_Manager::db_range_query(trajectory_data_handling::db_table::original_trajectories, spatial_queries::Range_Query::Window{115, 117, 38, 40, trajectory_data_handling::File_Manager::string_to_time("2008-02-02 15:36:08"), trajectory_data_handling::File_Manager::string_to_time("2008-02-02 15:56:08")});
 
     data_structures::Trajectory t {};
     t.locations.emplace_back(data_structures::Location(1, 0, 1, 2));
@@ -35,7 +46,7 @@ int main(int argc, char* argv[]) {
     t.locations.emplace_back(data_structures::Location(17, 53, 277, 143));
     t.locations.emplace_back(data_structures::Location(18, 60, 300, 200));
 
-    auto trace_q = trace_q::TRACE_Q{2, 0.1, 3, 1.3, 0.2};
+    auto trace_q = trace_q::TRACE_Q{2, 0.1, 0.1, 3, 1.3, 0.2, 0.2, 10};
     auto result = trace_q.simplify(t, 0.99);
 
     for (int i = 0; i < result.locations.size(); ++i) {
@@ -55,7 +66,7 @@ int main(int argc, char* argv[]) {
     // Create and bind an acceptor to listen for incoming connections
     boost::asio::ip::tcp::acceptor acceptor(io_context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), 8080));
     // Run the server
-    api::run(acceptor, endpoints);
+    api::run(acceptor, endpoints);*/
 
     return 0;
 }

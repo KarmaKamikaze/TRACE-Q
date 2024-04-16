@@ -17,18 +17,34 @@ namespace trace_q {
         simp_algorithms::MRPA mrpa{};
 
         /**
-         * The factor with which we will scale the grid. Calculated based on the grid_density_multiplier.
+         * The factor with which we will scale the grid for range queries.
+         * Calculated based on the range_query_grid_density_multiplier.
          * The grid is defined by the highest and lowest values of latitude and longitude for a given trajectory.
          * Possible values: 0.2, 0.43
          */
-        double grid_expansion_factor{};
+        double range_query_grid_expansion_factor{};
 
         /**
-         * Factor describing how close points appear in the grid.
+         * The factor with which we will scale the grid for knn queries.
+         * Calculated based on the knn_query_grid_density_multiplier.
+         * The grid is defined by the highest and lowest values of latitude and longitude for a given trajectory.
+         * Possible values: 0.2, 0.43
+         */
+        double knn_query_grid_expansion_factor{};
+
+        /**
+         * Factor describing how close points appear in the grid for range queries.
          * Lower values cause points to be more densely packed, thus increasing the number of queries
          * Possible values: 0.2, 0.05
          */
-        double grid_density{};
+        double range_query_grid_density{};
+
+        /**
+         * Factor describing how close points appear in the grid for knn queries.
+         * Lower values cause points to be more densely packed, thus increasing the number of queries
+         * Possible values: 0.2, 0.05
+         */
+        double knn_query_grid_density{};
 
         /**
          * Number of windows we will create for each grid point.
@@ -47,13 +63,24 @@ namespace trace_q {
         double window_expansion_rate{};
 
         /**
-         * The factor that will be used to scale time intervals for each window.
+         * The factor that will be used to scale time intervals for each window in range queries.
          * Lower values will result in more queries.
          * Possible values: 0.1, 1
          */
-        double time_interval_multiplier{};
+        double range_query_time_interval_multiplier{};
 
-     
+        /**
+         * The factor that will be used to scale time intervals for each window in knn queries.
+         * Lower values will result in more queries.
+         * Possible values: 0.1, 1
+         */
+        double knn_query_time_interval_multiplier{};
+
+        /**
+         * Number of nearest neighbours to analyse.
+         */
+        int knn_k{};
+
 
         /**
          * Calculates the query error of a simplified trajectory on a set of query objects.
@@ -73,8 +100,8 @@ namespace trace_q {
             double x_high{};
             double y_low{};
             double y_high{};
-            long double t_low{};
-            long double t_high{};
+            unsigned long t_low{};
+            unsigned long t_high{};
         };
 
         /**
@@ -89,7 +116,7 @@ namespace trace_q {
          * @param mbr The MBR which will be expanded.
          * @return The expanded MBR.
          */
-        [[nodiscard]] MBR expand_MBR(MBR mbr) const;
+        static MBR expand_MBR(MBR mbr, double expansion_factor);
 
         /**
          * Initializes a list of range query objects with the given trajectory used for the original_in_window boolean.
@@ -101,7 +128,20 @@ namespace trace_q {
          * @return A list of shared pointers to a number of range query objects that have been initialized with the given trajectory.
          */
         [[nodiscard]] std::vector<std::shared_ptr<spatial_queries::Range_Query_Test>> range_query_initialization(
-                data_structures::Trajectory const& trajectory, double x, double y, long double t, MBR const& mbr) const;
+                data_structures::Trajectory const& trajectory, double x, double y, unsigned long t, MBR const& mbr) const;
+
+        /**
+         * Initializes a list of KNN query objects with the given trajectory used to perform query similarity between
+         * KNN queries containing the original trajectory and the simplified counter-part.
+         * @param trajectory The original trajectory for which range queries will be performed.
+         * @param x The x-axis grid point.
+         * @param y The y-axis grid point.
+         * @param t The t-axis grid point.
+         * @param mbr The Minimum Bounding Rectangle that encompasses the Trajectory.
+         * @return A shared pointer to a KNN query object that have been initialized with the given trajectory.
+         */
+        static std::shared_ptr<spatial_queries::KNN_Query_Test> knn_query_initialization(
+                double x, double y, unsigned long t, MBR const& mbr, double time_interval_multiplier, int knn_k);
 
         /**
          * This function calculates the lower and upper bounds of a range centered around a given value,
@@ -115,8 +155,9 @@ namespace trace_q {
          * @param window_number The number of the window for which the range is calculated.
          * @return A pair containing the lower and upper bounds of the calculated range.
          */
-        static std::pair<long double, long double> calculate_window_range(
-                long double center, long double mbr_low, long double mbr_high,
+         template<typename T>
+        static std::pair<T, T> calculate_window_range(
+                T center, T mbr_low, T mbr_high,
                 double window_expansion_rate, double grid_density, int window_number);
 
         /**
@@ -133,20 +174,32 @@ namespace trace_q {
         /**
          * The TRACE_Q constructor that determines the query_amount based on the given parameters.
          * @param resolution_scale The MRPA resolution scale.
-         * @param grid_density_multiplier The grid density factor, which describes how close points
-         * appear in the grid.
+         * @param range_query_grid_density_multiplier The grid density factor for range queries,
+         * which describes how close points appear in the grid.
+         * @param knn_query_grid_density_multiplier The grid density factor for KNN queries,
+         * which describes how close points appear in the grid.
          * @param windows_per_grid_point The amount of windows per point in the grid.
          * @param window_expansion_rate The window scaling rate for each grid point.
-         * @param time_interval_multiplier The multiplier used to scale the time interval for each window.
+         * @param range_query_time_interval_multiplier The multiplier used to scale the time interval for each window
+         * in range queries.
+         * @param knn_query_time_interval_multiplier The multiplier used to scale the time interval for each window
+         * in KNN queries.
+         * @param knn_k The K value for K-Nearest-Neighbour queries.
          */
-        TRACE_Q(double resolution_scale, double grid_density_multiplier, int windows_per_grid_point,
-                double window_expansion_rate, double time_interval_multiplier)
+        TRACE_Q(double resolution_scale, double range_query_grid_density_multiplier,
+                double knn_query_grid_density_multiplier,  int windows_per_grid_point,
+                double window_expansion_rate, double range_query_time_interval_multiplier,
+                double knn_query_time_interval_multiplier, int knn_k)
                 : mrpa(resolution_scale),
-                  grid_expansion_factor(grid_density_multiplier * 0.8),
-                  grid_density(grid_density_multiplier),
+                  range_query_grid_expansion_factor(range_query_grid_density_multiplier * 0.8),
+                  knn_query_grid_expansion_factor(knn_query_grid_density_multiplier * 0.8),
+                  range_query_grid_density(range_query_grid_density_multiplier),
+                  knn_query_grid_density(knn_query_grid_density_multiplier),
                   windows_per_grid_point(windows_per_grid_point),
                   window_expansion_rate(window_expansion_rate),
-                  time_interval_multiplier(time_interval_multiplier) {}
+                  range_query_time_interval_multiplier(range_query_time_interval_multiplier),
+                  knn_query_time_interval_multiplier(knn_query_time_interval_multiplier),
+                  knn_k(knn_k) {}
 
 
         [[nodiscard]] data_structures::Trajectory simplify(const data_structures::Trajectory& original_trajectory,
