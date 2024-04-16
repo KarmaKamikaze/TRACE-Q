@@ -107,8 +107,10 @@ namespace api {
             }
 
             // Determine the db_table enum based on the table_key
-            db_table db_table = (table_key == "original") ? db_table::original_trajectories
-                                                               : db_table::simplified_trajectories;
+            db_table db_table{};
+            if (table_key == "original") {db_table = db_table::original_trajectories; }
+            else if (table_key == "simplified") {db_table = db_table::simplified_trajectories; }
+            else { throw std::runtime_error("Error in db_table, must be either 'simplified' or 'original' "); }
 
             // Extract window object or use defaults
             spatial_queries::Range_Query::Window window;
