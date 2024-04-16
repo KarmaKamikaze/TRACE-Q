@@ -54,13 +54,10 @@ namespace api {
                 auto timestamp = location_entry.at("timestamp").as_string().c_str();
                 auto longitude = location_entry.at("longitude").as_double();
                 auto latitude = location_entry.at("latitude").as_double();
-                data_structures::Location location;
                 if (trajectory_data_handling::File_Manager::stringToTime(timestamp) == -1.0){
                     throw std::invalid_argument("Invalid date and time format.");
                 }
-                location.timestamp = trajectory_data_handling::File_Manager::stringToTime(timestamp);
-                location.longitude = longitude;
-                location.latitude = latitude;
+                auto location = data_structures::Location {0, trajectory_data_handling::File_Manager::stringToTime(timestamp), longitude, latitude};
                 locations.emplace_back(location);
             }
             unsigned int id = static_cast<unsigned int>(std::stoi(trajectory_id));
