@@ -56,8 +56,6 @@ namespace trace_q {
         auto knn_query_points_on_axis = static_cast<int>(std::ceil(1 / knn_query_grid_density));
         auto knn_query_time_points = static_cast<int>(std::ceil(1 / knn_query_time_interval_multiplier));
 
-
-
         for (int x_point = 0; x_point <= knn_query_points_on_axis; ++x_point) {
             // Scale the coordinate based on the grid density, the mbr and the current point on the x-axis.
             auto x_coord = knn_query_mbr.x_low + x_point * knn_query_grid_density * (knn_query_mbr.x_high - knn_query_mbr.x_low);
@@ -84,7 +82,7 @@ namespace trace_q {
                 }
             }
         }
-        
+
         return query_objects;
     }
 
