@@ -41,14 +41,11 @@ namespace api {
         try {
             auto jsonObject = jsonData.as_object();
 
-//            if (jsonObject.size() != 1) {
-//                throw std::runtime_error("JSON must contain exactly one trajectory object.");
-//            }
-
-            auto type = jsonData.at("table").as_string();
+            auto table = jsonData.at("table").as_string();
             auto trajectory_id = jsonData.at("id").as_string().c_str();
 
-            std::cout << "Type: " << type << ", ID: " << trajectory_id << std::endl;
+            db_table db_table = (table == "original") ? db_table::original_trajectories
+                                                          : db_table::simplified_trajectories;
 
             auto locations_array = jsonData.at("locations").as_array();
             std::vector<data_structures::Location> locations;
@@ -62,13 +59,11 @@ namespace api {
                 location.longitude = longitude;
                 location.latitude = latitude;
                 locations.emplace_back(location);
-                std::cout << "Timestamp: " << timestamp << ", Longitude: " << longitude << ", Latitude: " << latitude << std::endl;
             }
             unsigned int id = static_cast<unsigned int>(std::stoi(trajectory_id));
-
             data_structures::Trajectory trajectory{id, std::move(locations)};
-//
-//            Trajectory_Manager::insert_trajectory(trajectory, db_table);
+
+            Trajectory_Manager::insert_trajectory(trajectory, db_table);
 
             res.result(status::ok);
             res.set(field::content_type, "text/plain");
