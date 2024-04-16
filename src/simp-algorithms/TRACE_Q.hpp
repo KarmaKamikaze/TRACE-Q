@@ -128,7 +128,7 @@ namespace trace_q {
          * @return A list of shared pointers to a number of range query objects that have been initialized with the given trajectory.
          */
         [[nodiscard]] std::vector<std::shared_ptr<spatial_queries::Range_Query_Test>> range_query_initialization(
-                data_structures::Trajectory const& trajectory, double x, double y, long double t, MBR const& mbr) const;
+                data_structures::Trajectory const& trajectory, double x, double y, unsigned long t, MBR const& mbr) const;
 
         /**
          * Initializes a list of KNN query objects with the given trajectory used to perform query similarity between
@@ -141,7 +141,7 @@ namespace trace_q {
          * @return A shared pointer to a KNN query object that have been initialized with the given trajectory.
          */
         static std::shared_ptr<spatial_queries::KNN_Query_Test> knn_query_initialization(
-                double x, double y, long double t, MBR const& mbr);
+                double x, double y, unsigned long t, MBR const& mbr, double time_interval_multiplier, int knn_k);
 
         /**
          * This function calculates the lower and upper bounds of a range centered around a given value,
@@ -155,8 +155,9 @@ namespace trace_q {
          * @param window_number The number of the window for which the range is calculated.
          * @return A pair containing the lower and upper bounds of the calculated range.
          */
-        static std::pair<long double, long double> calculate_window_range(
-                long double center, long double mbr_low, long double mbr_high,
+         template<typename T>
+        static std::pair<T, T> calculate_window_range(
+                T center, T mbr_low, T mbr_high,
                 double window_expansion_rate, double grid_density, int window_number);
 
         /**

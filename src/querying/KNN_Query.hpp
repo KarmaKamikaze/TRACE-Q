@@ -22,8 +22,8 @@ namespace spatial_queries {
         struct KNN_Origin {
             double x{};
             double y{};
-            long double t_low{};
-            long double t_high{};
+            unsigned long t_low{};
+            unsigned long t_high{};
         };
 
         /**

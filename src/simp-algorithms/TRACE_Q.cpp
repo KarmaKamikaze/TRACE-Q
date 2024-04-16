@@ -40,8 +40,8 @@ namespace trace_q {
             for (int y_point = 0; y_point <= range_query_points_on_axis; ++y_point) {
                 auto y_coord = range_query_mbr.y_low + y_point * range_query_grid_density * (range_query_mbr.y_high - range_query_mbr.y_low);
                 for (int t_point = 0; t_point <= range_query_time_points; ++t_point) {
-                    auto t_interval = static_cast<long double>(range_query_mbr.t_low) + t_point * range_query_time_interval_multiplier
-                                                                                        * static_cast<long double>((range_query_mbr.t_high - range_query_mbr.t_low));
+                    auto t_interval = static_cast<unsigned long>(std::round(range_query_mbr.t_low + t_point
+                            * range_query_time_interval_multiplier * static_cast<long double>(range_query_mbr.t_high - range_query_mbr.t_low)));
 
                     auto range_queries = range_query_initialization(original_trajectory,
                                                                     x_coord, y_coord, t_interval, range_query_mbr);
@@ -56,34 +56,35 @@ namespace trace_q {
         auto knn_query_points_on_axis = static_cast<int>(std::ceil(1 / knn_query_grid_density));
         auto knn_query_time_points = static_cast<int>(std::ceil(1 / knn_query_time_interval_multiplier));
 
-        std::vector<std::future<std::shared_ptr<spatial_queries::KNN_Query_Test>>> knn_futures{};
+
 
         for (int x_point = 0; x_point <= knn_query_points_on_axis; ++x_point) {
             // Scale the coordinate based on the grid density, the mbr and the current point on the x-axis.
             auto x_coord = knn_query_mbr.x_low + x_point * knn_query_grid_density * (knn_query_mbr.x_high - knn_query_mbr.x_low);
             for (int y_point = 0; y_point <= knn_query_points_on_axis; ++y_point) {
                 auto y_coord = knn_query_mbr.y_low + y_point * knn_query_grid_density * (knn_query_mbr.y_high - knn_query_mbr.y_low);
+
+                std::vector<std::future<std::shared_ptr<spatial_queries::KNN_Query_Test>>> knn_futures{};
                 for (int t_point = 0; t_point <= knn_query_time_points; ++t_point) {
                     auto t_interval = static_cast<long double>(knn_query_mbr.t_low) + t_point * knn_query_time_interval_multiplier
                                                                                         * static_cast<long double>((knn_query_mbr.t_high - knn_query_mbr.t_low));
 
-                    knn_futures.emplace_back(std::async(std::launch::async, knn_query_initialization, x_coord, y_coord, t_interval, knn_query_mbr));
+                    knn_futures.emplace_back(std::async(std::launch::async, knn_query_initialization, x_coord, y_coord, t_interval, knn_query_mbr, knn_query_time_interval_multiplier, knn_k));
                 }
 
-                spatial_queries::KNN_Query::KNN_Origin origin{x_coord, y_coord, std::numeric_limits<long double>::min(), std::numeric_limits<long double>::max()};
+                spatial_queries::KNN_Query::KNN_Origin origin{x_coord, y_coord, std::numeric_limits<unsigned long>::min(), std::numeric_limits<unsigned long>::max()};
 
                 knn_futures.emplace_back(
                         std::async(std::launch::async,
                                    [this](spatial_queries::KNN_Query::KNN_Origin const& o)
                                    { return std::make_shared<spatial_queries::KNN_Query_Test>(knn_k, o); }, origin));
 
+                for (auto& fut : knn_futures) {
+                    query_objects.push_back(fut.get());
+                }
             }
         }
-
-        for (auto& fut : knn_futures) {
-            query_objects.push_back(fut.get());
-        }
-
+        
         return query_objects;
     }
 
@@ -138,7 +139,7 @@ namespace trace_q {
     }
 
     std::vector<std::shared_ptr<spatial_queries::Range_Query_Test>> TRACE_Q::range_query_initialization(
-            data_structures::Trajectory const& trajectory, double x, double y, long double t, MBR const& mbr) const {
+            data_structures::Trajectory const& trajectory, double x, double y, unsigned long t, MBR const& mbr) const {
         std::vector<std::shared_ptr<spatial_queries::Range_Query_Test>> result{};
         std::vector<std::future<spatial_queries::Range_Query_Test>> futures{};
 
@@ -171,27 +172,27 @@ namespace trace_q {
     }
 
     std::shared_ptr<spatial_queries::KNN_Query_Test> TRACE_Q::knn_query_initialization(
-            double x, double y, long double t, MBR const& mbr) {
+            double x, double y, unsigned long t, MBR const& mbr, double time_interval_multiplier, int knn_k) {
 
         auto [t_low, t_high] = calculate_window_range(
-                t, mbr.t_low, mbr.t_high, window_expansion_rate,
-                knn_query_time_interval_multiplier, 0);
+                t, mbr.t_low, mbr.t_high, 0,
+                time_interval_multiplier, 0);
 
         spatial_queries::KNN_Query::KNN_Origin origin{x, y, t_low, t_high};
         return std::make_shared<spatial_queries::KNN_Query_Test>(knn_k, origin);
     }
 
-
-    std::pair<long double, long double> TRACE_Q::calculate_window_range(
-            long double center, long double mbr_low, long double mbr_high, double window_expansion_rate,
+    template<typename T>
+    std::pair<T, T> TRACE_Q::calculate_window_range(
+            T center, T mbr_low, T mbr_high, double window_expansion_rate,
             double grid_density, int window_number) {
-        long double w_low = center - 0.5 * (pow(window_expansion_rate, window_number)
-                * grid_density * (mbr_high - mbr_low));
+        auto w_low = static_cast<T>(std::round(static_cast<long double>(center) - 0.5 * (pow(window_expansion_rate, window_number)
+                * grid_density * static_cast<long double>(mbr_high - mbr_low))));
         if (w_low < mbr_low) {
             w_low = mbr_low;
         }
-        long double w_high = center + 0.5 * (pow(window_expansion_rate, window_number)
-                * grid_density * (mbr_high - mbr_low));
+        auto w_high = static_cast<T>(std::round(static_cast<long double>(center) + 0.5 * (pow(window_expansion_rate, window_number)
+                * grid_density * static_cast<long double>(mbr_high - mbr_low))));
         if (w_high > mbr_high) {
             w_high = mbr_high;
         }

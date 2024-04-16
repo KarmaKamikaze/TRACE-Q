@@ -53,7 +53,7 @@ namespace trajectory_data_handling {
          * @return A vector containing the trajectories loaded from the database with the given ids.
          */
         static std::vector<data_structures::Trajectory> load_into_data_structure(
-                db_table table, std::vector<int> const& ids = {});
+                db_table table, std::vector<unsigned int> const& ids = {});
 
         /**
          * Helper function that prints a list of trajectories.

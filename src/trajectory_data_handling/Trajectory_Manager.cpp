@@ -35,7 +35,7 @@ namespace trajectory_data_handling {
     }
 
      std::vector<data_structures::Trajectory> Trajectory_Manager::load_into_data_structure(
-             db_table table, std::vector<int> const& ids) {
+             db_table table, std::vector<unsigned int> const& ids) {
         auto table_name = get_table_name(table);
         std::stringstream query{};
 
@@ -134,7 +134,7 @@ namespace trajectory_data_handling {
         auto ids = txn.query<int>(query.str());
 
         txn.commit();
-        std::vector<int> v_ids{};
+        std::vector<unsigned int> v_ids{};
         for (const auto& [id] : ids) {
             v_ids.push_back(id);
         }
@@ -148,7 +148,7 @@ namespace trajectory_data_handling {
 
         auto query_results = spatial_queries::KNN_Query::knn(table_name, k, query_origin);
 
-        std::vector<int> result_ids{};
+        std::vector<unsigned int> result_ids{};
 
         for(const auto& query_result : query_results) {
             result_ids.push_back(query_result.id);

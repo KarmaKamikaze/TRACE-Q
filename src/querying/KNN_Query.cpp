@@ -17,14 +17,14 @@ namespace spatial_queries {
         query << "SELECT trajectory_id, MIN(coordinates <-> POINT("
               << std::to_string(query_origin.x) << "," << std::to_string(query_origin.y)
               << ")) AS dist FROM " << table;
-        if (query_origin.t_low != std::numeric_limits<long double>::min()
-            && query_origin.t_high != std::numeric_limits<long double>::max()) {
+        if (query_origin.t_low != std::numeric_limits<unsigned long>::min()
+            && query_origin.t_high != std::numeric_limits<unsigned long>::max()) {
             query << " WHERE time >= " << query_origin.t_low << " AND time <= " << query_origin.t_high;
         }
-        else if (query_origin.t_low != std::numeric_limits<long double>::min()) {
+        else if (query_origin.t_low != std::numeric_limits<unsigned long>::min()) {
             query << " WHERE time >= " << query_origin.t_low;
         }
-        else if (query_origin.t_high != std::numeric_limits<long double>::max()) {
+        else if (query_origin.t_high != std::numeric_limits<unsigned long>::max()) {
             query << " WHERE time <= " << query_origin.t_high;
         }
         query << " GROUP BY trajectory_id ORDER BY MIN(coordinates <-> POINT("
