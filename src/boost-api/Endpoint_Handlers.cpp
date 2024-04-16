@@ -55,6 +55,9 @@ namespace api {
                 auto longitude = location_entry.at("longitude").as_double();
                 auto latitude = location_entry.at("latitude").as_double();
                 data_structures::Location location;
+                if (trajectory_data_handling::File_Manager::stringToTime(timestamp) == -1.0){
+                    throw std::invalid_argument("Invalid date and time format.");
+                }
                 location.timestamp = trajectory_data_handling::File_Manager::stringToTime(timestamp);
                 location.longitude = longitude;
                 location.latitude = latitude;
