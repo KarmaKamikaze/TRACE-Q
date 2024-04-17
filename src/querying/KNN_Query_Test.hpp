@@ -31,7 +31,7 @@ namespace spatial_queries {
     public:
 
         KNN_Query_Test(int k, KNN_Query::KNN_Origin const& query_origin)
-        : origin{query_origin}, query_result{KNN_Query::knn(table_name, k , query_origin)} {}
+        : origin{query_origin}, query_result{KNN_Query::get_ids_from_knn(table_name, k, query_origin)} {}
 
         bool operator()(data_structures::Trajectory const& trajectory) override;
 

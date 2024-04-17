@@ -25,7 +25,7 @@ namespace trace_q {
         double range_query_grid_expansion_factor{};
 
         /**
-         * The factor with which we will scale the grid for knn queries.
+         * The factor with which we will scale the grid for get_ids_from_knn queries.
          * Calculated based on the knn_query_grid_density_multiplier.
          * The grid is defined by the highest and lowest values of latitude and longitude for a given trajectory.
          * Possible values: 0.2, 0.43
@@ -40,7 +40,7 @@ namespace trace_q {
         double range_query_grid_density{};
 
         /**
-         * Factor describing how close points appear in the grid for knn queries.
+         * Factor describing how close points appear in the grid for get_ids_from_knn queries.
          * Lower values cause points to be more densely packed, thus increasing the number of queries
          * Possible values: 0.2, 0.05
          */
@@ -70,7 +70,7 @@ namespace trace_q {
         double range_query_time_interval_multiplier{};
 
         /**
-         * The factor that will be used to scale time intervals for each window in knn queries.
+         * The factor that will be used to scale time intervals for each window in get_ids_from_knn queries.
          * Lower values will result in more queries.
          * Possible values: 0.1, 1
          */

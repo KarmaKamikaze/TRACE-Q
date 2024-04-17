@@ -34,7 +34,7 @@ namespace spatial_queries {
          * @return A list of KNN Results corresponding to the K-Nearest-Neighbours from the origin point. The result
          * element consists of a trajectory ID and a distance from the origin point.
          */
-        static std::vector<KNN_Result_Element> knn(std::string const& table, int k, KNN_Origin const& query_origin);
+        static std::vector<KNN_Result_Element> get_ids_from_knn(std::string const& table, int k, KNN_Origin const& query_origin);
 
     private:
         /**
