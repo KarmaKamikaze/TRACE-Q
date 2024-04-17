@@ -104,49 +104,17 @@ namespace trajectory_data_handling {
 
     std::vector<data_structures::Trajectory> Trajectory_Manager::db_range_query(db_table table, spatial_queries::Range_Query::Window const& window) {
         auto table_name = get_table_name(table);
-        std::stringstream query{};
 
-        query << "SELECT DISTINCT trajectory_id FROM " << table_name << " WHERE 1=1 ";
+        auto query_results = spatial_queries::Range_Query::get_ids_from_range_query(table_name, window);
 
-        if (window.x_high != std::numeric_limits<double>::max()) {
-            query << " AND coordinates[0]<=" << window.x_high;
-        }
-        if (window.x_low != std::numeric_limits<double>::min()) {
-            query << " AND coordinates[0]>=" << window.x_low;
-        }
-        if (window.y_high != std::numeric_limits<double>::max()) {
-            query << " AND coordinates[1]<=" << window.y_high;
-        }
-        if (window.y_low != std::numeric_limits<double>::min()) {
-            query << " AND coordinates[1]>=" << window.y_low;
-        }
-        if (window.t_high != std::numeric_limits<unsigned long>::max()) {
-            query << " AND time<=" << window.t_high;
-        }
-        if (window.t_low != std::numeric_limits<unsigned long>::min()) {
-            query << " AND time>=" << window.t_low;
-        }
-        query << ";";
-
-        pqxx::connection c{connection_string};
-        pqxx::work txn{c};
-
-        auto ids = txn.query<int>(query.str());
-
-        txn.commit();
-        std::vector<unsigned int> v_ids{};
-        for (const auto& [id] : ids) {
-            v_ids.push_back(id);
-        }
-
-        return load_into_data_structure(table, v_ids);
+        return load_into_data_structure(table, query_results);
     }
 
     std::vector<data_structures::Trajectory> Trajectory_Manager::db_knn_query(
             db_table table, int k, spatial_queries::KNN_Query::KNN_Origin const& query_origin) {
         auto table_name = get_table_name(table);
 
-        auto query_results = spatial_queries::KNN_Query::knn(table_name, k, query_origin);
+        auto query_results = spatial_queries::KNN_Query::get_ids_from_knn(table_name, k, query_origin);
 
         std::vector<unsigned int> result_ids{};
 

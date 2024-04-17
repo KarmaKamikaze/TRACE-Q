@@ -45,7 +45,7 @@ namespace trajectory_data_handling {
             return secondsSinceEpoch;
         } catch (const std::invalid_argument& e) {
             std::cerr << e.what() << std::endl;
-            return 0.0;
+            return 0;
         }
     }
 

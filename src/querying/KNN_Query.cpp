@@ -8,7 +8,7 @@ namespace spatial_queries {
 
     std::string KNN_Query::connection_string {"user=postgres password=postgres host=localhost dbname=traceq port=5432"};
 
-    std::vector<KNN_Query::KNN_Result_Element> KNN_Query::knn(
+    std::vector<KNN_Query::KNN_Result_Element> KNN_Query::get_ids_from_knn(
             std::string const& table, int k, KNN_Origin const& query_origin) {
         pqxx::connection c{connection_string};
         pqxx::work txn{c};
