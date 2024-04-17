@@ -12,7 +12,7 @@ namespace trajectory_data_handling {
             / "external" / "datasets" / "geolife" / "Geolife Trajectories 1.3" / "Data";
     char File_Manager::delimiter = ',';
 
-    long File_Manager::stringToTime(const std::string& timeString) {
+    unsigned long File_Manager::string_to_time(const std::string& timeString) {
         try {
             struct tm timeStruct = {};
             std::istringstream ss(timeString);
@@ -40,7 +40,7 @@ namespace trajectory_data_handling {
 
             // Convert to seconds since epoch
             auto duration = std::chrono::duration_cast<std::chrono::seconds>(timePoint.time_since_epoch());
-            long secondsSinceEpoch = duration.count();
+            unsigned long secondsSinceEpoch = duration.count();
 
             return secondsSinceEpoch;
         } catch (const std::invalid_argument& e) {
@@ -73,7 +73,7 @@ namespace trajectory_data_handling {
                         if (trajectory.id == 0) {
                             trajectory.id = std::stoi(id);
                         }
-                        location.timestamp = File_Manager::stringToTime(timestamp);
+                        location.timestamp = File_Manager::string_to_time(timestamp);
                         location.longitude = std::stod(longitude);
                         location.latitude = std::stod(latitude);
                         trajectory.locations.push_back(location);
@@ -133,7 +133,7 @@ namespace trajectory_data_handling {
                         std::getline(lineStream, date_days, delimiter) &&
                         std::getline(lineStream, date, delimiter) &&
                         std::getline(lineStream, time, delimiter)) {
-                        location.timestamp = File_Manager::stringToTime(date + " " + time);
+                        location.timestamp = File_Manager::string_to_time(date + " " + time);
                         location.longitude = std::stod(longitude);
                         location.latitude = std::stod(latitude);
                         if (location.longitude == 0.0 || location.latitude == 0.0)

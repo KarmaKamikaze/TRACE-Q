@@ -13,8 +13,8 @@ namespace spatial_queries {
             double x_high{ std::numeric_limits<double>::max() };
             double y_low{ std::numeric_limits<double>::lowest() };
             double y_high{ std::numeric_limits<double>::max() };
-            long t_low{ std::numeric_limits<long>::lowest() };
-            long t_high{ std::numeric_limits<long>::max() };
+            long t_low{ std::numeric_limits<unsigned long>::lowest() };
+            long t_high{ std::numeric_limits<unsigned long>::max() };
         };
 
         /**
