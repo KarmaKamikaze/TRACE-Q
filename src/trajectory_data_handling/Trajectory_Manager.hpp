@@ -70,6 +70,12 @@ namespace trajectory_data_handling {
          * Drops all tables and indexes, whereafter it calls create_database to reconstruct the tables.
          */
         static void reset_all_data();
+        /**
+         * Converts an enum descriptor of a table into a string representation.
+         * @param table The enum descriptor of the selected table.
+         * @return A string corresponding to the selected table.
+         */
+        static std::string get_table_name(db_table table);
     private:
         /**
          * The connection string that specifies the connection details for the PostgreSQL database.
@@ -91,13 +97,6 @@ namespace trajectory_data_handling {
          * @return The location object corresponding to the given parameters.
          */
         static data_structures::Location parse_location(int order, unsigned long time, std::string const& coordinates);
-
-        /**
-         * Converts an enum descriptor of a table into a string representation.
-         * @param table The enum descriptor of the selected table.
-         * @return A string corresponding to the selected table.
-         */
-        static std::string get_table_name(db_table table);
     };
 }
 

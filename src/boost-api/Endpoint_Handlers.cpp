@@ -114,11 +114,27 @@ namespace api {
             if (windowObj.contains("t_low")) { window.t_low = windowObj.at("t_low").as_int64(); }
             if (windowObj.contains("t_high")) { window.t_high = windowObj.at("t_high").as_int64(); }
 
-            trajectory_data_handling::Trajectory_Manager::db_range_query(db_table, window);
-            
+            // Perform the range query and get the IDs
+            auto ids = spatial_queries::Range_Query::get_ids_from_range_query(
+                    trajectory_data_handling::Trajectory_Manager::get_table_name(db_table), window);
+
+            // Create a JSON array of IDs
+            boost::json::array idsArray;
+            for (int id : ids) {
+                idsArray.push_back(id);
+            }
+
+            // Construct JSON response object
+            boost::json::object responseObject;
+            responseObject["ids"] = std::move(idsArray);
+
+            // Set response properties
             res.result(status::ok);
-            res.set(field::content_type, "text/plain");
-            res.body() = "Query executed successfully";
+            res.set(field::content_type, "application/json");
+            // Serialize JSON response object to string and assign to response body
+            std::stringstream ss;
+            ss << responseObject; // Serialize JSON object to string
+            res.body() = ss.str();
         }
         catch (const std::exception &e) {
             res.result(status::bad_request);
