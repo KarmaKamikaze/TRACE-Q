@@ -9,12 +9,12 @@ namespace spatial_queries {
 
     struct Range_Query {
         struct Window {
-            double x_low{ std::numeric_limits<double>::lowest() };
+            double x_low{ std::numeric_limits<double>::min() };
             double x_high{ std::numeric_limits<double>::max() };
-            double y_low{ std::numeric_limits<double>::lowest() };
+            double y_low{ std::numeric_limits<double>::min() };
             double y_high{ std::numeric_limits<double>::max() };
-            long t_low{ std::numeric_limits<long>::lowest() };
-            long t_high{ std::numeric_limits<long>::max() };
+            unsigned long t_low{ std::numeric_limits<unsigned long>::min() };
+            unsigned long t_high{ std::numeric_limits<unsigned long>::max() };
         };
 
         /**

@@ -113,23 +113,20 @@ namespace api {
             else { throw std::runtime_error("Error in db_table, must be either 'simplified' or 'original' "); }
 
             // Extract window object or use defaults
-            spatial_queries::Range_Query::Window window;
+            spatial_queries::Range_Query::Window window{};
             const boost::json::object &windowObj = jsonObject.contains("window") ?
                                                    jsonObject.at("window").as_object() :
                                                    boost::json::object(); // Empty object if not present
 
-            // Assign values from JSON or use defaults
-            window.x_low = windowObj.contains("x_low") ? windowObj.at("x_low").as_double() : std::numeric_limits<double>::lowest();
-            window.x_high = windowObj.contains("x_high") ? windowObj.at("x_high").as_double() : std::numeric_limits<double>::max();
-            window.y_low = windowObj.contains("y_low") ? windowObj.at("y_low").as_double() : std::numeric_limits<double>::lowest();
-            window.y_high = windowObj.contains("y_high") ? windowObj.at("y_high").as_double() : std::numeric_limits<double>::max();
-            window.t_low = windowObj.contains("t_low") ? windowObj.at("t_low").as_int64() : std::numeric_limits<long>::lowest();
-            window.t_high = windowObj.contains("t_high") ? windowObj.at("t_high").as_int64() : std::numeric_limits<long>::max();
+            if (windowObj.contains("x_low")) { window.x_low = windowObj.at("x_low").as_double(); }
+            if (windowObj.contains("x_high")) { window.x_high = windowObj.at("x_high").as_double(); }
+            if (windowObj.contains("y_low")) { window.y_low = windowObj.at("y_low").as_double(); }
+            if (windowObj.contains("y_high")) { window.y_high = windowObj.at("y_high").as_double(); }
+            if (windowObj.contains("t_low")) { window.t_low = windowObj.at("t_low").as_int64(); }
+            if (windowObj.contains("t_high")) { window.t_high = windowObj.at("t_high").as_int64(); }
 
-            // Perform the db_range_query with extracted values
             trajectory_data_handling::Trajectory_Manager::db_range_query(db_table, window);
-
-            // Respond with success if no exceptions were thrown
+            
             res.result(status::ok);
             res.set(field::content_type, "text/plain");
             res.body() = "Query executed successfully";
