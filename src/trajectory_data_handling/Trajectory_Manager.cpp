@@ -179,6 +179,27 @@ namespace trajectory_data_handling {
                 throw std::invalid_argument("Error in switch statement in get_table_name");
         }
     }
+
+    std::vector<int> Trajectory_Manager::db_get_all_trajectory_ids(trajectory_data_handling::db_table table) {
+        auto table_name = get_table_name(table);
+
+        std::stringstream query{};
+
+        query << "SELECT DISTINCT trajectory_id FROM " << table_name << ";";
+
+        pqxx::connection c{connection_string};
+        pqxx::work txn{c};
+
+        auto query_result = txn.query<int>(query.str());
+        txn.commit();
+
+        auto result = std::vector<int>{};
+        for (auto& [id] : query_result) {
+            result.emplace_back(id);
+        }
+
+        return result;
+    }
 }
 
 

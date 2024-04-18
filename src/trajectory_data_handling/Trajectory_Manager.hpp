@@ -70,6 +70,13 @@ namespace trajectory_data_handling {
          * Drops all tables and indexes, whereafter it calls create_database to reconstruct the tables.
          */
         static void reset_all_data();
+
+        /**
+         * Extracts all trajectory IDs from the given table.
+         * @param table The database table to extract trajectory IDs from.
+         * @return A list of integers corresponding to all trajectory IDs in the given table.
+         */
+        static std::vector<int> db_get_all_trajectory_ids(trajectory_data_handling::db_table table);
     private:
         /**
          * The connection string that specifies the connection details for the PostgreSQL database.
