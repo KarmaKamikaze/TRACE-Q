@@ -53,7 +53,7 @@ int main(int argc, char* argv[]) {
         std::cout << "loc" << i + 1 << ", longitude: " << result.locations[i].longitude
         << ", latitude: " << result.locations[i].latitude << ", t: " << result.locations[i].timestamp << '\n';
     }
-
+    std::cout <<"sticking out your GYATT for the RIZZLER (you are now ready to perform api calls)" << std::endl;
     // Define and populate endpoints map
     std::map<std::string, api::RequestHandler> endpoints;
 
