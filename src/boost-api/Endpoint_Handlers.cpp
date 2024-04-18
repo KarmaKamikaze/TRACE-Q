@@ -119,20 +119,20 @@ namespace api {
                     trajectory_data_handling::Trajectory_Manager::get_table_name(db_table), window);
 
             // Create a JSON array of IDs
-            boost::json::array idsArray;
+            boost::json::array idsArray{};
             for (int id : ids) {
                 idsArray.push_back(id);
             }
 
             // Construct JSON response object
-            boost::json::object responseObject;
+            boost::json::object responseObject{};
             responseObject["ids"] = std::move(idsArray);
 
             // Set response properties
             res.result(status::ok);
             res.set(field::content_type, "application/json");
             // Serialize JSON response object to string and assign to response body
-            std::stringstream ss;
+            std::stringstream ss{};
             ss << responseObject; // Serialize JSON object to string
             res.body() = ss.str();
         }
