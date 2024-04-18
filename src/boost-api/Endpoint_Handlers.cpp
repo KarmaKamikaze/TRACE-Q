@@ -76,51 +76,73 @@ namespace api {
         }
     }
 
-    void handle_spatial_range_query_on_rtree_table(const request<string_body> &req, response<string_body> &res) {
-        boost::json::value jsonData = get_json_from_request_body(req, res);
-        if (jsonData.is_null())
-            return;
-
+    void handle_db_range_query(const request<string_body> &req, response<string_body> &res) {
         try {
-            trajectory_data_handling::db_table table;
+            boost::json::value jsonData = get_json_from_request_body(req, res);
 
-            if (jsonData.as_object().contains("original")) {
-                table = trajectory_data_handling::db_table::original_trajectories;
-            } else if (jsonData.as_object().contains("simplified")) {
-                table = trajectory_data_handling::db_table::simplified_trajectories;;
-            } else {
-                res.result(status::bad_request);
-                res.set(field::content_type, "text/plain");
-                res.body() = "Invalid JSON format: missing 'original' or 'simplified' key";
-                return;
+            // Check if the JSON data is an object
+            if (!jsonData.is_object()) {
+                throw std::runtime_error("Invalid JSON data: expected an object");
             }
 
-            boost::json::object originalData = jsonData.as_object().at("original").as_object();
+            const boost::json::object &jsonObject = jsonData.as_object();
 
-            double x_low = originalData.at("longitudeRange").as_object().at("min").as_double();
-            double x_high = originalData.at("longitudeRange").as_object().at("max").as_double();
+            // Extract db_table value
+            std::string table_key;
+            if (jsonObject.contains("db_table")) {
+                table_key = jsonObject.at("db_table").as_string().c_str();
+            } else {
+                throw std::runtime_error("JSON object does not contain 'db_table'");
+            }
 
-            double y_low = originalData.at("latitudeRange").as_object().at("min").as_double();
-            double y_high = originalData.at("latitudeRange").as_object().at("max").as_double();
+            // Determine the db_table enum based on the table_key
+            db_table db_table{};
+            if (table_key == "original") {db_table = db_table::original_trajectories; }
+            else if (table_key == "simplified") {db_table = db_table::simplified_trajectories; }
+            else { throw std::runtime_error("Error in db_table, must be either 'simplified' or 'original' "); }
 
-            long double t_low = originalData.at("timestampRange").as_object().at("min").as_double();
-            long double t_high = originalData.at("timestampRange").as_object().at("max").as_double();
-
+            // Extract window object or use defaults
             spatial_queries::Range_Query::Window window{};
-            window.x_low = x_low;
-            window.x_high = x_high;
-            window.y_low = y_low;
-            window.y_high = y_high;
-            window.t_low = t_low;
-            window.t_high = t_high;
+            const boost::json::object &windowObj = jsonObject.contains("window") ?
+                                                   jsonObject.at("window").as_object() :
+                                                   boost::json::object(); // Empty object if not present
 
-            Trajectory_Manager::db_range_query(table, window);
-        } catch (const std::exception &e) {
+            if (windowObj.contains("x_low")) { window.x_low = windowObj.at("x_low").as_double(); }
+            if (windowObj.contains("x_high")) { window.x_high = windowObj.at("x_high").as_double(); }
+            if (windowObj.contains("y_low")) { window.y_low = windowObj.at("y_low").as_double(); }
+            if (windowObj.contains("y_high")) { window.y_high = windowObj.at("y_high").as_double(); }
+            if (windowObj.contains("t_low")) { window.t_low = windowObj.at("t_low").as_int64(); }
+            if (windowObj.contains("t_high")) { window.t_high = windowObj.at("t_high").as_int64(); }
+
+            // Perform the range query and get the IDs
+            auto ids = spatial_queries::Range_Query::get_ids_from_range_query(
+                    trajectory_data_handling::Trajectory_Manager::get_table_name(db_table), window);
+
+            // Create a JSON array of IDs
+            boost::json::array ids_array{};
+            for (int id : ids) {
+                ids_array.push_back(id);
+            }
+
+            // Construct JSON response object
+            boost::json::object response_object{};
+            response_object["trajectory_ids"] = std::move(ids_array);
+
+            // Set response properties
+            res.result(status::ok);
+            res.set(field::content_type, "application/json");
+            // Serialize JSON response object to string and assign to response body
+            std::stringstream ss{};
+            ss << response_object; // Serialize JSON object to string
+            res.body() = ss.str();
+        }
+        catch (const std::exception &e) {
             res.result(status::bad_request);
             res.set(field::content_type, "text/plain");
             res.body() = "Error processing JSON data: " + std::string(e.what());
         }
     }
+
 
     void handle_not_found(const request<string_body> &req, response<string_body> &res) {
         res.result(status::not_found);
