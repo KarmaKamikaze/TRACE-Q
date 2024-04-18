@@ -6,10 +6,11 @@
 #include <limits>
 #include "TRACE_Q.hpp"
 #include "MRPA.hpp"
+#include "../trajectory_data_handling/Trajectory_Manager.hpp"
 
 namespace trace_q {
 
-    data_structures::Trajectory TRACE_Q::simplify(data_structures::Trajectory const& original_trajectory, double min_query_accuracy) const {
+    data_structures::Trajectory TRACE_Q::simplify(data_structures::Trajectory const& original_trajectory) const {
         auto simplifications = mrpa(original_trajectory);
 
         auto query_objects = initialize_query_tests(original_trajectory);
@@ -62,6 +63,7 @@ namespace trace_q {
             for (int y_point = 0; y_point <= knn_query_points_on_axis; ++y_point) {
                 auto y_coord = knn_query_mbr.y_low + y_point * knn_query_grid_density * (knn_query_mbr.y_high - knn_query_mbr.y_low);
 
+                // Here we run the knn queries asynchronously for each query time point. Note that here, the query time points should not be larger than the allowed connections to the database (100)
                 std::vector<std::future<std::shared_ptr<spatial_queries::KNN_Query_Test>>> knn_futures{};
                 for (int t_point = 0; t_point <= knn_query_time_points; ++t_point) {
                     auto t_interval = static_cast<long double>(knn_query_mbr.t_low) + t_point * knn_query_time_interval_multiplier
@@ -205,6 +207,46 @@ namespace trace_q {
             }
         }
         return correct_queries;
+    }
+
+    void TRACE_Q::run() const {
+        auto ids = trajectory_data_handling::Trajectory_Manager::db_get_all_trajectory_ids(
+                trajectory_data_handling::db_table::original_trajectories);
+
+        std::vector<unsigned int> working_ids{};
+        unsigned int counter = 0;
+
+        while(counter < ids.size()) {
+            for (int i = 0; i < max_trajectories_in_batch && counter < ids.size(); i++, counter++) {
+                    working_ids.push_back(ids[counter]);
+            }
+            batch_job(working_ids);
+            working_ids.clear();
+        }
+    }
+
+    void TRACE_Q::batch_job(const std::vector<unsigned int> & ids) const {
+        using trajectory_data_handling::Trajectory_Manager;
+        using trajectory_data_handling::db_table;
+
+        std::vector<std::future<bool>> futures{};
+        for (const auto& id : ids) {
+            futures.emplace_back(std::async(std::launch::async, [this](unsigned int t_id){
+                auto original_trajectory =
+                        Trajectory_Manager::load_into_data_structure(db_table::original_trajectories,
+                                                                     std::vector<unsigned int>{t_id});
+                auto simplified_trajectory = simplify(original_trajectory.front());
+                Trajectory_Manager::insert_trajectory(simplified_trajectory,
+                                                      db_table::simplified_trajectories);
+                return true;
+            }, id));
+        }
+
+        for (auto& fut : futures) {
+            if (!fut.get()) {
+                throw std::runtime_error{"Batch job error: Future did not return"};
+            }
+        }
     }
 
 } // trace_q

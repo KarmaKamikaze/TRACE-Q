@@ -76,7 +76,7 @@ namespace trajectory_data_handling {
          * @param table The database table to extract trajectory IDs from.
          * @return A list of integers corresponding to all trajectory IDs in the given table.
          */
-        static std::vector<int> db_get_all_trajectory_ids(trajectory_data_handling::db_table table);
+        static std::vector<unsigned int> db_get_all_trajectory_ids(trajectory_data_handling::db_table table);
     private:
         /**
          * The connection string that specifies the connection details for the PostgreSQL database.

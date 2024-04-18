@@ -17,11 +17,8 @@ int main(int argc, char* argv[]) {
     trajectory_data_handling::Trajectory_Manager::reset_all_data();
     trajectory_data_handling::File_Manager::load_tdrive_dataset();
 
-    for (auto trajectories = trajectory_data_handling::Trajectory_Manager::load_into_data_structure(trajectory_data_handling::db_table::original_trajectories); auto const& t : trajectories) {
-        auto trace_q = trace_q::TRACE_Q{2, 0.1, 0.1, 3, 1.3, 0.2, 0.2, 10};
-        auto result = trace_q.simplify(t, 0.99);
-        trajectory_data_handling::Trajectory_Manager::insert_trajectory(result, trajectory_data_handling::db_table::simplified_trajectories);
-    }
+    auto trace_q = trace_q::TRACE_Q{2, 0.95, 0.1, 0.1, 3, 1.3, 0.2, 0.03, 10};
+    trace_q.run();
 
     /*trajectory_data_handling::Trajectory_Manager::db_knn_query(trajectory_data_handling::db_table::original_trajectories, 2, spatial_queries::KNN_Query::KNN_Origin{200, 200, trajectory_data_handling::File_Manager::string_to_time("2008-02-02 15:36:08"), trajectory_data_handling::File_Manager::string_to_time("2008-02-02 15:56:08")});
     trajectory_data_handling::Trajectory_Manager::db_range_query(trajectory_data_handling::db_table::original_trajectories, spatial_queries::Range_Query::Window{115, 117, 38, 40, trajectory_data_handling::File_Manager::string_to_time("2008-02-02 15:36:08"), trajectory_data_handling::File_Manager::string_to_time("2008-02-02 15:56:08")});

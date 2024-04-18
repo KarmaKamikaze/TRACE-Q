@@ -20,11 +20,26 @@ namespace trajectory_data_handling {
                     << std::to_string(trajectory[0].timestamp) << ");";
 
         txn.exec0(first_query.str());
-        for (int i = 1; i < trajectory.size(); i++) {
-            if(!(trajectory[i] == trajectory[i-1])) {
+
+        if (table == db_table::original_trajectories) {
+            for (int i = 1; i < trajectory.size(); i++) {
+                if (!(trajectory[i] == trajectory[i - 1])) {
+                    std::stringstream query{};
+                    query << "INSERT INTO " << table_name << "(trajectory_id, coordinates, time) " << " VALUES("
+                          << trajectory.id << ", point(" << std::to_string(trajectory[i].longitude) << ", "
+                          << std::to_string(trajectory[i].latitude) << "), "
+                          << std::to_string(trajectory[i].timestamp) << ");";
+
+                    txn.exec0(query.str());
+                }
+            }
+        }
+        else if (table == db_table::simplified_trajectories) {
+            for (int i = 1; i < trajectory.size(); i++) {
                 std::stringstream query{};
                 query << "INSERT INTO " << table_name << "(trajectory_id, coordinates, time) " << " VALUES("
-                      << trajectory.id << ", point(" << std::to_string(trajectory[i].longitude) << ", " << std::to_string(trajectory[i].latitude) << "), "
+                      << trajectory.id << ", point(" << std::to_string(trajectory[i].longitude) << ", "
+                      << std::to_string(trajectory[i].latitude) << "), "
                       << std::to_string(trajectory[i].timestamp) << ");";
 
                 txn.exec0(query.str());
@@ -180,7 +195,7 @@ namespace trajectory_data_handling {
         }
     }
 
-    std::vector<int> Trajectory_Manager::db_get_all_trajectory_ids(trajectory_data_handling::db_table table) {
+    std::vector<unsigned int> Trajectory_Manager::db_get_all_trajectory_ids(trajectory_data_handling::db_table table) {
         auto table_name = get_table_name(table);
 
         std::stringstream query{};
@@ -193,7 +208,7 @@ namespace trajectory_data_handling {
         auto query_result = txn.query<int>(query.str());
         txn.commit();
 
-        auto result = std::vector<int>{};
+        auto result = std::vector<unsigned int>{};
         for (auto& [id] : query_result) {
             result.emplace_back(id);
         }

@@ -2,6 +2,7 @@
 #define TRACE_Q_TRACE_Q_HPP
 
 #include <future>
+#include <cmath>
 #include "../data/Trajectory.hpp"
 #include "../querying/Query.hpp"
 #include "../querying/Range_Query_Test.hpp"
@@ -15,6 +16,16 @@ namespace trace_q {
          * The MRPA algorithm as a function object.
          */
         simp_algorithms::MRPA mrpa{};
+
+        /**
+         * The minimum query accuracy that the simplification method must uphold.
+         */
+        double min_query_accuracy{};
+
+        /**
+         * The maximum number of trajectories per batch that is able to run concurrently due to database connections.
+         */
+        int max_trajectories_in_batch{};
 
         /**
          * The factor with which we will scale the grid for range queries.
@@ -73,6 +84,8 @@ namespace trace_q {
          * The factor that will be used to scale time intervals for each window in get_ids_from_knn queries.
          * Lower values will result in more queries.
          * Possible values: 0.1, 1
+         * Lowest allowed KNN time interval multiplier is 0.02, otherwise number of query time points would be larger
+         * than the allowed database connections.
          */
         double knn_query_time_interval_multiplier{};
 
@@ -170,10 +183,22 @@ namespace trace_q {
 
         static int process_futures(std::vector<std::future<bool>>& futures);
 
+        /**
+         * Runs a single batch of the TRACE-Q algorithm given the list of trajectory IDs.
+         * The original trajectories are fetched from the database, simplified using the TRACE-Q algorithm which
+         * utilizes MRPA, and then inserted into the database for later querying. The batch is run concurrently for
+         * each trajectory.
+         * @param ids The list of trajectory IDs for which the batch job will run.
+         */
+        void batch_job(std::vector<unsigned int> const& ids) const;
+
+        [[nodiscard]] data_structures::Trajectory simplify(const data_structures::Trajectory& original_trajectory) const;
+
     public:
         /**
          * The TRACE_Q constructor that determines the query_amount based on the given parameters.
          * @param resolution_scale The MRPA resolution scale.
+         * @param min_query_accuracy The minimum query accuracy that the simplification method must uphold.
          * @param range_query_grid_density_multiplier The grid density factor for range queries,
          * which describes how close points appear in the grid.
          * @param knn_query_grid_density_multiplier The grid density factor for KNN queries,
@@ -186,11 +211,12 @@ namespace trace_q {
          * in KNN queries.
          * @param knn_k The K value for K-Nearest-Neighbour queries.
          */
-        TRACE_Q(double resolution_scale, double range_query_grid_density_multiplier,
+        TRACE_Q(double resolution_scale, double min_query_accuracy, double range_query_grid_density_multiplier,
                 double knn_query_grid_density_multiplier,  int windows_per_grid_point,
                 double window_expansion_rate, double range_query_time_interval_multiplier,
                 double knn_query_time_interval_multiplier, int knn_k)
                 : mrpa(resolution_scale),
+                  min_query_accuracy(min_query_accuracy),
                   range_query_grid_expansion_factor(range_query_grid_density_multiplier * 0.8),
                   knn_query_grid_expansion_factor(knn_query_grid_density_multiplier * 0.8),
                   range_query_grid_density(range_query_grid_density_multiplier),
@@ -199,11 +225,17 @@ namespace trace_q {
                   window_expansion_rate(window_expansion_rate),
                   range_query_time_interval_multiplier(range_query_time_interval_multiplier),
                   knn_query_time_interval_multiplier(knn_query_time_interval_multiplier),
-                  knn_k(knn_k) {}
+                  knn_k(knn_k) {
+            if (knn_query_time_interval_multiplier < 0.02) {
+                throw std::invalid_argument("knn_query_time_interval_multiplier was lower than allowed");
+            }
+            max_trajectories_in_batch = static_cast<int>(std::floor(80 / (1 / knn_query_time_interval_multiplier)));
+        }
 
-
-        [[nodiscard]] data_structures::Trajectory simplify(const data_structures::Trajectory& original_trajectory,
-                                             double min_query_accuracy) const;
+        /**
+         * Runs the TRACE-Q algorithm in batches with MRPA.
+         */
+        void run() const;
 
     };
 
