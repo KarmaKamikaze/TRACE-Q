@@ -141,21 +141,21 @@ namespace api {
 
             const boost::json::object &json_object = json_data.as_object();
 
-            std::string table_key{};
+            std::string db_table{};
             if (json_object.contains("db_table")) {
-                table_key = json_object.at("db_table").as_string().c_str();
+                const auto& table_value = json_object.at("db_table").as_string();
+                if (table_value == "original")
+                    db_table = "original_trajectories";
+                else if (table_value == "simplified")
+                    db_table = "simplified_trajectories";
+                else
+                    throw std::runtime_error("Error in db_table, must be either 'simplified' or 'original'");
             } else {
                 throw std::runtime_error("JSON object does not contain 'db_table'");
             }
 
-            std::string db_table{};
-            if (table_key == "original") {db_table = "original_trajectories"; }
-            else if (table_key == "simplified") {db_table = "simplified_trajectories"; }
-            else { throw std::runtime_error("Error in db_table, must be either 'simplified' or 'original' "); }
-
-
             if (!json_object.contains("k")){
-                throw std::runtime_error("JSON object does not contain 'db_table'");
+                throw std::runtime_error("JSON object does not contain 'k' for KNN");
             }
             int k = json_object.at("k").as_int64();
 
