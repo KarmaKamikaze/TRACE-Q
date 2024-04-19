@@ -67,6 +67,13 @@ namespace trajectory_data_handling {
          * @return A list of integers corresponding to all trajectory IDs in the given table.
          */
         static std::vector<unsigned int> db_get_all_trajectory_ids(trajectory_data_handling::db_table table);
+      
+        /**
+         * Converts an enum descriptor of a table into a string representation.
+         * @param table The enum descriptor of the selected table.
+         * @return A string corresponding to the selected table.
+         */
+        static std::string get_table_name(db_table table);
     private:
         /**
          * The connection string that specifies the connection details for the PostgreSQL database.
@@ -88,13 +95,6 @@ namespace trajectory_data_handling {
          * @return The location object corresponding to the given parameters.
          */
         static data_structures::Location parse_location(int order, unsigned long time, std::string const& coordinates);
-
-        /**
-         * Converts an enum descriptor of a table into a string representation.
-         * @param table The enum descriptor of the selected table.
-         * @return A string corresponding to the selected table.
-         */
-        static std::string get_table_name(db_table table);
     };
 }
 
