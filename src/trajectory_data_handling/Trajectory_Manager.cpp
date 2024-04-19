@@ -116,7 +116,6 @@ namespace trajectory_data_handling {
         return data_structures::Location{order, time, std::stod(lon_str), std::stod(lat_str)};
     }
 
-
     std::vector<data_structures::Trajectory> Trajectory_Manager::db_range_query(db_table table, spatial_queries::Range_Query::Window const& window) {
         auto table_name = get_table_name(table);
 
@@ -125,25 +124,6 @@ namespace trajectory_data_handling {
         return load_into_data_structure(table, query_results);
     }
 
-    std::vector<data_structures::Trajectory> Trajectory_Manager::db_knn_query(
-            db_table table, int k, spatial_queries::KNN_Query::KNN_Origin const& query_origin) {
-        auto table_name = get_table_name(table);
-
-        auto query_results = spatial_queries::KNN_Query::get_ids_from_knn(table_name, k, query_origin);
-
-        std::vector<unsigned int> result_ids{};
-
-        for(const auto& query_result : query_results) {
-            result_ids.push_back(query_result.id);
-        }
-
-        return load_into_data_structure(table, result_ids);
-    }
-
-    /**
-     * Helper function that prints a list of trajectories.
-     * @param all_trajectories
-     */
     void Trajectory_Manager::print_trajectories(std::vector<data_structures::Trajectory> const& all_trajectories) {
         for (const auto & trajectory : all_trajectories) {
             std::cout << "id: " << trajectory.id << std::endl;

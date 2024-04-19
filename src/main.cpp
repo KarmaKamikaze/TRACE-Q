@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
 
     auto trace_q = trace_q::TRACE_Q{2, 0.95, 0.1, 0.1, 3, 1.3, 0.2, 0.03, 10};
     trace_q.run();
-    
+
 
     // Define and populate endpoints map
     std::map<std::string, api::RequestHandler> endpoints;
