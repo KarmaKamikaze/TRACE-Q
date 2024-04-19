@@ -51,8 +51,8 @@ namespace api {
         }
 
         add_cors_headers(res);
-        boost::json::value jsonData = get_json_from_request_body(req, res);
-        if (jsonData.is_null()) {
+        boost::json::value json_data = get_json_from_request_body(req, res);
+        if (json_data.is_null()) {
             return;
         }
 
