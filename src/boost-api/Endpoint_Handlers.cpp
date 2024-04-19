@@ -8,6 +8,19 @@ namespace api {
     using namespace boost::beast::http;
     using namespace trajectory_data_handling;
 
+    void add_cors_headers(response<string_body> &res) {
+        res.set(field::access_control_allow_origin, "*");  // You can replace * with the specific origin you want to allow
+        res.set(field::access_control_allow_methods, "GET, POST, PUT, DELETE, OPTIONS");
+        res.set(field::access_control_allow_headers, "Content-Type, Authorization");
+    }
+
+    void handle_options(const request<string_body> &req, response<string_body> &res) {
+        add_cors_headers(res);
+        res.result(status::ok);
+        res.set(field::content_type, "text/plain");
+        res.body() = "";
+    }
+
     void handle_root(const request<string_body> &req, response<string_body> &res) {
         res.body() = "Welcome to the root endpoint!";
         res.prepare_payload();
@@ -32,8 +45,14 @@ namespace api {
     }
 
     void handle_insert_trajectory_into_trajectory_table(const request<string_body> &req, response<string_body> &res) {
-        boost::json::value json_data = get_json_from_request_body(req, res);
-        if (json_data.is_null()) {
+        if (req.method() == verb::options) {
+            handle_options(req, res);
+            return;
+        }
+
+        add_cors_headers(res);
+        boost::json::value jsonData = get_json_from_request_body(req, res);
+        if (jsonData.is_null()) {
             return;
         }
 
