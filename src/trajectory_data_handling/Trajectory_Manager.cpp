@@ -1,6 +1,5 @@
 #include <iostream>
 #include <fstream>
-#include <limits>
 #include <pqxx/pqxx>
 #include "Trajectory_Manager.hpp"
 
@@ -114,14 +113,6 @@ namespace trajectory_data_handling {
         getline(iss, lat_str, ',');
 
         return data_structures::Location{order, time, std::stod(lon_str), std::stod(lat_str)};
-    }
-
-    std::vector<data_structures::Trajectory> Trajectory_Manager::db_range_query(db_table table, spatial_queries::Range_Query::Window const& window) {
-        auto table_name = get_table_name(table);
-
-        auto query_results = spatial_queries::Range_Query::get_ids_from_range_query(table_name, window);
-
-        return load_into_data_structure(table, query_results);
     }
 
     void Trajectory_Manager::print_trajectories(std::vector<data_structures::Trajectory> const& all_trajectories) {

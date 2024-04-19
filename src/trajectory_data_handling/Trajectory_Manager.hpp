@@ -28,15 +28,6 @@ namespace trajectory_data_handling {
         static void insert_trajectory(data_structures::Trajectory const& trajectory, db_table table);
 
         /**
-         * Performs a range query on the given database given a window.
-         * @param table The table to query.
-         * @param window The window of the query.
-         * @return A vector of trajectories that are contained i
-         */
-        static std::vector<data_structures::Trajectory> db_range_query(
-                db_table table, spatial_queries::Range_Query::Window const& window);
-
-        /**
          * Loads a vector of trajectories from the database. If a list of ids are not given, all trajectories are loaded.
          * @param table The table to load trajectories from.
          * @param ids Vector of the ids of trajectories to load from the given table.
@@ -67,7 +58,7 @@ namespace trajectory_data_handling {
          * @return A list of integers corresponding to all trajectory IDs in the given table.
          */
         static std::vector<unsigned int> db_get_all_trajectory_ids(trajectory_data_handling::db_table table);
-      
+
         /**
          * Converts an enum descriptor of a table into a string representation.
          * @param table The enum descriptor of the selected table.

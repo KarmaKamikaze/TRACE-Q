@@ -1,8 +1,8 @@
 #include <iostream>
+#include <boost/asio.hpp>
 #include "trajectory_data_handling/Trajectory_Manager.hpp"
 #include "trajectory_data_handling/File_Manager.hpp"
 #include "TRACE_Q.hpp"
-#include <boost/asio.hpp>
 #include "Start_API.hpp"
 #include "Endpoint_Handlers.hpp"
 
@@ -28,6 +28,7 @@ int main(int argc, char* argv[]) {
     endpoints["/"] = api::handle_root;
     endpoints["/insert"] = api::handle_insert_trajectory_into_trajectory_table;
     endpoints["/db_range_query"] = api::handle_db_range_query;
+    endpoints["/knn_query"] = api::handle_knn_query;
     // Set up the io_context
     boost::asio::io_context io_context{};
     // Create and bind an acceptor to listen for incoming connections
