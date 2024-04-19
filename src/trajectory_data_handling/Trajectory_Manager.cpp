@@ -1,6 +1,5 @@
 #include <iostream>
 #include <fstream>
-#include <limits>
 #include <pqxx/pqxx>
 #include "Trajectory_Manager.hpp"
 
@@ -20,11 +19,26 @@ namespace trajectory_data_handling {
                     << std::to_string(trajectory[0].timestamp) << ");";
 
         txn.exec0(first_query.str());
-        for (int i = 1; i < trajectory.size(); i++) {
-            if(!(trajectory[i] == trajectory[i-1])) {
+
+        if (table == db_table::original_trajectories) {
+            for (int i = 1; i < trajectory.size(); i++) {
+                if (!(trajectory[i] == trajectory[i - 1])) {
+                    std::stringstream query{};
+                    query << "INSERT INTO " << table_name << "(trajectory_id, coordinates, time) " << " VALUES("
+                          << trajectory.id << ", point(" << std::to_string(trajectory[i].longitude) << ", "
+                          << std::to_string(trajectory[i].latitude) << "), "
+                          << std::to_string(trajectory[i].timestamp) << ");";
+
+                    txn.exec0(query.str());
+                }
+            }
+        }
+        else if (table == db_table::simplified_trajectories) {
+            for (int i = 1; i < trajectory.size(); i++) {
                 std::stringstream query{};
                 query << "INSERT INTO " << table_name << "(trajectory_id, coordinates, time) " << " VALUES("
-                      << trajectory.id << ", point(" << std::to_string(trajectory[i].longitude) << ", " << std::to_string(trajectory[i].latitude) << "), "
+                      << trajectory.id << ", point(" << std::to_string(trajectory[i].longitude) << ", "
+                      << std::to_string(trajectory[i].latitude) << "), "
                       << std::to_string(trajectory[i].timestamp) << ");";
 
                 txn.exec0(query.str());
@@ -101,25 +115,6 @@ namespace trajectory_data_handling {
         return data_structures::Location{order, time, std::stod(lon_str), std::stod(lat_str)};
     }
 
-    std::vector<data_structures::Trajectory> Trajectory_Manager::db_knn_query(
-            db_table table, int k, spatial_queries::KNN_Query::KNN_Origin const& query_origin) {
-        auto table_name = get_table_name(table);
-
-        auto query_results = spatial_queries::KNN_Query::get_ids_from_knn(table_name, k, query_origin);
-
-        std::vector<unsigned int> result_ids{};
-
-        for(const auto& query_result : query_results) {
-            result_ids.push_back(query_result.id);
-        }
-
-        return load_into_data_structure(table, result_ids);
-    }
-
-    /**
-     * Helper function that prints a list of trajectories.
-     * @param all_trajectories
-     */
     void Trajectory_Manager::print_trajectories(std::vector<data_structures::Trajectory> const& all_trajectories) {
         for (const auto & trajectory : all_trajectories) {
             std::cout << "id: " << trajectory.id << std::endl;
@@ -169,6 +164,27 @@ namespace trajectory_data_handling {
             default:
                 throw std::invalid_argument("Error in switch statement in get_table_name");
         }
+    }
+
+    std::vector<unsigned int> Trajectory_Manager::db_get_all_trajectory_ids(trajectory_data_handling::db_table table) {
+        auto table_name = get_table_name(table);
+
+        std::stringstream query{};
+
+        query << "SELECT DISTINCT trajectory_id FROM " << table_name << ";";
+
+        pqxx::connection c{connection_string};
+        pqxx::work txn{c};
+
+        auto query_result = txn.query<int>(query.str());
+        txn.commit();
+
+        auto result = std::vector<unsigned int>{};
+        for (auto& [id] : query_result) {
+            result.emplace_back(id);
+        }
+
+        return result;
     }
 }
 

@@ -28,16 +28,6 @@ namespace trajectory_data_handling {
         static void insert_trajectory(data_structures::Trajectory const& trajectory, db_table table);
 
         /**
-         * Performs a K-Nearest-Neighbour query on the given database given a
-         * @param table The table to query.
-         * @param k The amount of nearest neighbours to return.
-         * @param query_origin The origin point from where the nearest neighbours are discovered using euclidean distance.
-         * @return A list of trajectories corresponding to the K-Nearest-Neighbours from the origin point.
-         */
-        static std::vector<data_structures::Trajectory> db_knn_query(
-                db_table table, int k, spatial_queries::KNN_Query::KNN_Origin const& query_origin);
-
-        /**
          * Loads a vector of trajectories from the database. If a list of ids are not given, all trajectories are loaded.
          * @param table The table to load trajectories from.
          * @param ids Vector of the ids of trajectories to load from the given table.
@@ -61,6 +51,14 @@ namespace trajectory_data_handling {
          * Drops all tables and indexes, whereafter it calls create_database to reconstruct the tables.
          */
         static void reset_all_data();
+
+        /**
+         * Extracts all trajectory IDs from the given table.
+         * @param table The database table to extract trajectory IDs from.
+         * @return A list of integers corresponding to all trajectory IDs in the given table.
+         */
+        static std::vector<unsigned int> db_get_all_trajectory_ids(trajectory_data_handling::db_table table);
+
         /**
          * Converts an enum descriptor of a table into a string representation.
          * @param table The enum descriptor of the selected table.

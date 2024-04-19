@@ -59,7 +59,7 @@ namespace simp_algorithms {
                         (resolution - 1) * j + 1));
 
                 if (j == resolution - 1 && range_end < trajectory.size()) {
-                    throw std::range_error("Last range_end variable is not equal to size of trajectory");
+                    range_end = static_cast<int>(trajectory.size());
                 }
 
                 error_tolerance += error_SED_sum(trajectory, range_start, range_end);
@@ -96,16 +96,15 @@ namespace simp_algorithms {
         Trajectory res {};
 
         for (int k = i + 1; k < j; ++k) {
-            auto x = trajectory[i].longitude +
+            auto x = static_cast<double>(trajectory[i].longitude +
                      (static_cast<long double>(trajectory[k].timestamp - trajectory[i].timestamp) /
                      static_cast<long double>((trajectory[j].timestamp - trajectory[i].timestamp))) *
-                     (trajectory[j].longitude - trajectory[i].longitude);
-            auto y = trajectory[i].latitude +
+                     (trajectory[j].longitude - trajectory[i].longitude));
+            auto y = static_cast<double>(trajectory[i].latitude +
                      (static_cast<long double>(trajectory[k].timestamp - trajectory[i].timestamp) /
                      static_cast<long double>((trajectory[j].timestamp - trajectory[i].timestamp))) *
-                     (trajectory[j].latitude - trajectory[i].latitude);
-            auto point = Location (trajectory[k].order, trajectory[k].timestamp, x, y);
-            res.locations.emplace_back(point);
+                     (trajectory[j].latitude - trajectory[i].latitude));
+            res.locations.emplace_back(trajectory[k].order, trajectory[k].timestamp, x, y);
         }
 
         return res;
