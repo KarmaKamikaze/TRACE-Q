@@ -234,8 +234,8 @@ namespace trace_q {
             futures.emplace_back(std::async(std::launch::async, [this](unsigned int t_id){
                 auto original_trajectory =
                         Trajectory_Manager::load_into_data_structure(db_table::original_trajectories,
-                                                                     std::vector<unsigned int>{t_id});
-                auto simplified_trajectory = simplify(original_trajectory.front());
+                                                                     std::vector<unsigned int>{t_id}).front();
+                auto simplified_trajectory = simplify(original_trajectory);
                 Trajectory_Manager::insert_trajectory(simplified_trajectory,
                                                       db_table::simplified_trajectories);
                 return true;
