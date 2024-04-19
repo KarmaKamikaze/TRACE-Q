@@ -22,8 +22,8 @@ namespace spatial_queries {
         struct KNN_Origin {
             double x{};
             double y{};
-            unsigned long t_low{};
-            unsigned long t_high{};
+            unsigned long t_low{ std::numeric_limits<unsigned long>::min() };
+            unsigned long t_high{ std::numeric_limits<unsigned long>::max() };
         };
 
         /**

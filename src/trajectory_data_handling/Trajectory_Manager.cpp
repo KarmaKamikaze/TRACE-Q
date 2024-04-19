@@ -101,15 +101,6 @@ namespace trajectory_data_handling {
         return data_structures::Location{order, time, std::stod(lon_str), std::stod(lat_str)};
     }
 
-
-    std::vector<data_structures::Trajectory> Trajectory_Manager::db_range_query(db_table table, spatial_queries::Range_Query::Window const& window) {
-        auto table_name = get_table_name(table);
-
-        auto query_results = spatial_queries::Range_Query::get_ids_from_range_query(table_name, window);
-
-        return load_into_data_structure(table, query_results);
-    }
-
     std::vector<data_structures::Trajectory> Trajectory_Manager::db_knn_query(
             db_table table, int k, spatial_queries::KNN_Query::KNN_Origin const& query_origin) {
         auto table_name = get_table_name(table);

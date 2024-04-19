@@ -53,13 +53,14 @@ int main(int argc, char* argv[]) {
         std::cout << "loc" << i + 1 << ", longitude: " << result.locations[i].longitude
         << ", latitude: " << result.locations[i].latitude << ", t: " << result.locations[i].timestamp << '\n';
     }
-
+    std::cout <<"you are now ready to perform api calls" << std::endl;
     // Define and populate endpoints map
     std::map<std::string, api::RequestHandler> endpoints;
 
     endpoints["/"] = api::handle_root;
     endpoints["/insert"] = api::handle_insert_trajectory_into_trajectory_table;
     endpoints["/db_range_query"] = api::handle_db_range_query;
+    endpoints["/knn_query"] = api::handle_knn_query;
     // Set up the io_context
     boost::asio::io_context io_context{};
     // Create and bind an acceptor to listen for incoming connections
