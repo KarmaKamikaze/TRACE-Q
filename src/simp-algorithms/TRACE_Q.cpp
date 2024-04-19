@@ -218,7 +218,7 @@ namespace trace_q {
 
         while(counter < ids.size()) {
             for (int i = 0; i < max_trajectories_in_batch && counter < ids.size(); i++, counter++) {
-                    working_ids.push_back(ids[counter]);
+                working_ids.push_back(ids[counter]);
             }
             batch_job(working_ids);
             working_ids.clear();
