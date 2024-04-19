@@ -121,7 +121,7 @@ namespace api {
             res.result(status::ok);
             res.set(field::content_type, "application/json");
             std::stringstream ss{};
-            ss << response_object;
+            ss << response_object; // Serialize JSON object to string
             res.body() = ss.str();
         }
         catch (const std::exception &e) {
