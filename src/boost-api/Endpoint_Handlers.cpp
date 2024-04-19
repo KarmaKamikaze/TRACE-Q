@@ -20,8 +20,7 @@ namespace api {
         try {
             boost::json::error_code ec{};
             json_data = boost::json::parse(req.body(), ec);
-            if (ec)
-                throw std::runtime_error("Failed to parse JSON: " + ec.message());
+            if (ec) throw std::runtime_error("Failed to parse JSON: " + ec.message());
         } catch (const std::exception& e) {
             res.result(status::bad_request);
             res.set(field::content_type, "text/plain");
@@ -52,9 +51,9 @@ namespace api {
                 auto timestamp = location_entry.at("timestamp").as_string().c_str();
                 auto longitude = location_entry.at("longitude").as_double();
                 auto latitude = location_entry.at("latitude").as_double();
-                if (trajectory_data_handling::File_Manager::string_to_time(timestamp) == 0){
+                if (trajectory_data_handling::File_Manager::string_to_time(timestamp) == 0)
                     throw std::invalid_argument("Invalid date and time format.");
-                }
+
                 auto location = data_structures::Location{0, trajectory_data_handling::File_Manager::string_to_time(timestamp), longitude, latitude};
                 locations.emplace_back(location);
             }
@@ -101,12 +100,12 @@ namespace api {
                                                    json_object.at("window").as_object() :
                                                    boost::json::object(); // Empty object if not present
 
-            if (window_obj.contains("x_low")) { window.x_low = window_obj.at("x_low").as_double(); }
-            if (window_obj.contains("x_high")) { window.x_high = window_obj.at("x_high").as_double(); }
-            if (window_obj.contains("y_low")) { window.y_low = window_obj.at("y_low").as_double(); }
-            if (window_obj.contains("y_high")) { window.y_high = window_obj.at("y_high").as_double(); }
-            if (window_obj.contains("t_low")) { window.t_low = window_obj.at("t_low").as_int64(); }
-            if (window_obj.contains("t_high")) { window.t_high = window_obj.at("t_high").as_int64(); }
+            if (window_obj.contains("x_low")) window.x_low = window_obj.at("x_low").as_double();
+            if (window_obj.contains("x_high")) window.x_high = window_obj.at("x_high").as_double();
+            if (window_obj.contains("y_low")) window.y_low = window_obj.at("y_low").as_double();
+            if (window_obj.contains("y_high")) window.y_high = window_obj.at("y_high").as_double();
+            if (window_obj.contains("t_low")) window.t_low = window_obj.at("t_low").as_int64();
+            if (window_obj.contains("t_high")) window.t_high = window_obj.at("t_high").as_int64();
 
             auto ids = spatial_queries::Range_Query::get_ids_from_range_query(
                     trajectory_data_handling::Trajectory_Manager::get_table_name(db_table), window);
@@ -166,8 +165,8 @@ namespace api {
             const boost::json::object &origin_object = json_object.at("query_origin").as_object();
             query_origin.x = origin_object.at("x").as_double();
             query_origin.y = origin_object.at("y").as_double();
-            if (origin_object.contains("t_low")) { query_origin.t_low = origin_object.at("t_low").as_int64(); }
-            if (origin_object.contains("t_high")) { query_origin.t_high = origin_object.at("t_high").as_int64(); }
+            if (origin_object.contains("t_low")) query_origin.t_low = origin_object.at("t_low").as_int64();
+            if (origin_object.contains("t_high")) query_origin.t_high = origin_object.at("t_high").as_int64();
 
             auto id_dist_pairs = spatial_queries::KNN_Query::get_ids_from_knn(db_table, k, query_origin);
 
