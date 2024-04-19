@@ -15,7 +15,7 @@ namespace api {
             acceptor.accept(socket);
 
             // Declare the error_code variable here
-            boost::system::error_code ec;
+            boost::system::error_code ec{};
 
             while (true) {
                 // Read the HTTP request
