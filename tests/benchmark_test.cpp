@@ -1,4 +1,4 @@
-#include "../src/benchmark/benchmark.hpp"
+#include "../src/benchmark/Benchmark.hpp"
 #include <doctest/doctest.h>
 #include <iostream>
 
@@ -13,14 +13,14 @@ TEST_CASE("test see if benchmark time is above a specified time") {
         int t;
         auto t = 600;
         auto tp = t + t * 0.05;
-        auto duration = analytics::funcTime(time_func, t);
+        auto duration = analytics::function_time(time_func, t);
         CHECK((t <= duration && duration < tp));
 
     SUBCASE("1000 ms")
         int s;
         auto s = 1000;
         auto sp = s + s * 0.05;
-        auto durs = analytics::funcTime(time_func, s);
+        auto durs = analytics::function_time(time_func, s);
         CHECK((s <= durs && durs < sp));
 
 }

@@ -3,6 +3,7 @@
 
 
 #include "../data/Trajectory.hpp"
+#include <unordered_set>
 #include <limits>
 
 namespace spatial_queries {
@@ -31,7 +32,7 @@ namespace spatial_queries {
          * @param window The window wherein the trajectories are tested for presence.
          * @return A list of trajectory IDs corresponding to the range query using the given window.
          */
-        static std::vector<unsigned int> get_ids_from_range_query(std::string const& table, Window const& window);
+        static std::unordered_set<unsigned int> get_ids_from_range_query(std::string const& table, Window const& window);
 
     private:
         /**
