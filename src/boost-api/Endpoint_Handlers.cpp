@@ -175,7 +175,7 @@ namespace api {
             if (!json_object.contains("k")){
                 throw std::runtime_error("JSON object does not contain 'k' for KNN");
             }
-            int k = json_object.at("k").as_int64();
+            int k = json_object.at("k").as_uint64();
 
             spatial_queries::KNN_Query::KNN_Origin query_origin{};
             if (!json_object.contains("query_origin")){
@@ -184,8 +184,8 @@ namespace api {
             const boost::json::object &origin_object = json_object.at("query_origin").as_object();
             query_origin.x = origin_object.at("x").as_double();
             query_origin.y = origin_object.at("y").as_double();
-            if (origin_object.contains("t_low")) query_origin.t_low = origin_object.at("t_low").as_int64();
-            if (origin_object.contains("t_high")) query_origin.t_high = origin_object.at("t_high").as_int64();
+            if (origin_object.contains("t_low")) query_origin.t_low = origin_object.at("t_low").as_uint64();
+            if (origin_object.contains("t_high")) query_origin.t_high = origin_object.at("t_high").as_uint64();
 
             auto id_dist_pairs = spatial_queries::KNN_Query::get_ids_from_knn(db_table, k, query_origin);
 
@@ -211,6 +211,69 @@ namespace api {
             res.body() = "Error processing JSON data: " + std::string(e.what());
         }
     }
+
+    void handle_load_trajectory_from_id (const request<string_body> &req, response<string_body> &res) {
+        try {
+            boost::json::value json_data = get_json_from_request_body(req, res);
+
+            if (!json_data.is_object()) {
+                throw std::runtime_error("Invalid JSON data: expected an object");
+            }
+
+            const boost::json::object &json_object = json_data.as_object();
+
+            std::string table_key{};
+            if (json_object.contains("db_table")) {
+                table_key = json_object.at("db_table").as_string().c_str();
+            } else {
+                throw std::runtime_error("JSON object does not contain 'db_table'");
+            }
+
+            db_table db_table{};
+            if (table_key == "original") { db_table = db_table::original_trajectories; }
+            else if (table_key == "simplified") { db_table = db_table::simplified_trajectories; }
+            else { throw std::runtime_error("Error in db_table, must be either 'simplified' or 'original' "); }
+
+            if (!json_object.contains("id")) {
+                throw std::runtime_error("JSON object does not contain 'id'");
+            }
+            std::vector<unsigned int> id{static_cast<unsigned int>(json_object.at("id").as_uint64())};
+
+            std::vector<data_structures::Trajectory> trajectory = Trajectory_Manager::load_into_data_structure(db_table,id);
+            boost::json::array response_trajectory{};
+            for (const auto &traj: trajectory) {
+                boost::json::object json_traj{};
+                json_traj["id"] = traj.id;
+
+                boost::json::array json_locations{};
+                for (const auto &loc: traj.locations) {
+                    boost::json::object json_location{};
+                    json_location["order"] = loc.order;
+                    json_location["timestamp"] = loc.timestamp;
+                    json_location["longitude"] = loc.longitude;
+                    json_location["latitude"] = loc.latitude;
+                    json_locations.push_back(std::move(json_location));
+                }
+
+                json_traj["locations"] = std::move(json_locations);
+                response_trajectory.push_back(std::move(json_traj));
+            }
+
+            boost::json::object response_object{};
+            response_object["response_trajectory:"] = std::move(response_trajectory);
+            res.result(status::ok);
+            res.set(field::content_type, "application/json");
+            std::stringstream ss{};
+            ss << response_object;
+            res.body() = ss.str();
+        }
+        catch (const std::exception &e) {
+            res.result(status::bad_request);
+            res.set(field::content_type, "text/plain");
+            res.body() = "Error processing JSON data: " + std::string(e.what());
+        }
+    }
+
 
     void handle_not_found(const request<string_body> &req, response<string_body> &res) {
         res.result(status::not_found);

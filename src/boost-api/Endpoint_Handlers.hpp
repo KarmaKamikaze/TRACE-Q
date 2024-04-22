@@ -15,6 +15,8 @@ namespace api {
 
     void handle_knn_query(const request<string_body> &req, response<string_body> &res);
 
+    void handle_load_trajectory_from_id (const request<string_body> &req, response<string_body> &res);
+
     void handle_root(const request<string_body> &req, response<string_body> &res);
 
     void handle_not_found(const request<string_body> &req, response<string_body> &res);
