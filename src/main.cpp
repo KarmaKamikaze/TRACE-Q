@@ -29,11 +29,13 @@ int main(int argc, char* argv[]) {
     endpoints["/insert"] = api::handle_insert_trajectory_into_trajectory_table;
     endpoints["/db_range_query"] = api::handle_db_range_query;
     endpoints["/knn_query"] = api::handle_knn_query;
+    endpoints["/load_from_id"] = api::handle_load_trajectory_from_id;
     // Set up the io_context
     boost::asio::io_context io_context{};
     // Create and bind an acceptor to listen for incoming connections
     boost::asio::ip::tcp::acceptor acceptor(io_context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), 8080));
     // Run the server
+    std::cout << "The server is now running and you are ready to perform API calls." << std::endl;
     api::run(acceptor, endpoints);
 
     return 0;
