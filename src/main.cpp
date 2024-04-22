@@ -18,8 +18,8 @@ int main(int argc, char* argv[]) {
     trajectory_data_handling::Trajectory_Manager::reset_all_data();
     trajectory_data_handling::File_Manager::load_tdrive_dataset();
 
-    auto trace_q = trace_q::TRACE_Q{2, 0.95, 0.1, 0.1, 3, 1.3, 0.2, 0.03, 10};
-    trace_q.run();
+    //auto trace_q = trace_q::TRACE_Q{2, 0.95, 0.1, 0.1, 3, 1.3, 0.2, 0.03, 10};
+    //trace_q.run();
 
 
     // Define and populate endpoints map
@@ -30,6 +30,8 @@ int main(int argc, char* argv[]) {
     endpoints["/db_range_query"] = api::handle_db_range_query;
     endpoints["/knn_query"] = api::handle_knn_query;
     endpoints["/load_from_id"] = api::handle_load_trajectory_from_id;
+    endpoints["/run"] = api::handle_run_simplification;
+
     // Set up the io_context
     boost::asio::io_context io_context{};
     // Create and bind an acceptor to listen for incoming connections

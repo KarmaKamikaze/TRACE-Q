@@ -3,6 +3,7 @@
 #include "boost/json/stream_parser.hpp"
 #include "../trajectory_data_handling/Trajectory_Manager.hpp"
 #include "../trajectory_data_handling/File_Manager.hpp"
+#include "../simp-algorithms/TRACE_Q.hpp"
 
 namespace api {
     using namespace boost::beast::http;
@@ -33,7 +34,8 @@ namespace api {
         try {
             boost::json::error_code ec{};
             json_data = boost::json::parse(req.body(), ec);
-            if (ec) throw std::runtime_error("Failed to parse JSON: " + ec.message());
+            if (ec)
+                throw std::runtime_error("Failed to parse JSON: " + ec.message());
         } catch (const std::exception& e) {
             res.result(status::bad_request);
             res.set(field::content_type, "text/plain");
@@ -52,9 +54,8 @@ namespace api {
 
         add_cors_headers(res);
         boost::json::value json_data = get_json_from_request_body(req, res);
-        if (json_data.is_null()) {
+        if (json_data.is_null())
             return;
-        }
 
         try {
             auto table = json_data.at("table").as_string();
@@ -96,35 +97,42 @@ namespace api {
         try {
             boost::json::value json_data = get_json_from_request_body(req, res);
 
-            if (!json_data.is_object()) {
+            if (!json_data.is_object())
                 throw std::runtime_error("Invalid JSON data: expected an object");
-            }
 
             const boost::json::object &json_object = json_data.as_object();
 
             std::string table_key{};
-            if (json_object.contains("db_table")) {
+            if (json_object.contains("db_table"))
                 table_key = json_object.at("db_table").as_string().c_str();
-            } else {
+            else
                 throw std::runtime_error("JSON object does not contain 'db_table'");
-            }
 
             db_table db_table{};
-            if (table_key == "original") {db_table = db_table::original_trajectories; }
-            else if (table_key == "simplified") {db_table = db_table::simplified_trajectories; }
-            else { throw std::runtime_error("Error in db_table, must be either 'simplified' or 'original' "); }
+            if (table_key == "original")
+                db_table = db_table::original_trajectories;
+            else if (table_key == "simplified")
+                db_table = db_table::simplified_trajectories;
+            else
+                throw std::runtime_error("Error in db_table, must be either 'simplified' or 'original' ");
 
             spatial_queries::Range_Query::Window window{};
             const boost::json::object &window_obj = json_object.contains("window") ?
                                                    json_object.at("window").as_object() :
                                                    boost::json::object(); // Empty object if not present
 
-            if (window_obj.contains("x_low")) window.x_low = window_obj.at("x_low").as_double();
-            if (window_obj.contains("x_high")) window.x_high = window_obj.at("x_high").as_double();
-            if (window_obj.contains("y_low")) window.y_low = window_obj.at("y_low").as_double();
-            if (window_obj.contains("y_high")) window.y_high = window_obj.at("y_high").as_double();
-            if (window_obj.contains("t_low")) window.t_low = window_obj.at("t_low").as_int64();
-            if (window_obj.contains("t_high")) window.t_high = window_obj.at("t_high").as_int64();
+            if (window_obj.contains("x_low"))
+                window.x_low = window_obj.at("x_low").as_double();
+            if (window_obj.contains("x_high"))
+                window.x_high = window_obj.at("x_high").as_double();
+            if (window_obj.contains("y_low"))
+                window.y_low = window_obj.at("y_low").as_double();
+            if (window_obj.contains("y_high"))
+                window.y_high = window_obj.at("y_high").as_double();
+            if (window_obj.contains("t_low"))
+                window.t_low = window_obj.at("t_low").as_int64();
+            if (window_obj.contains("t_high"))
+                window.t_high = window_obj.at("t_high").as_int64();
 
             auto ids = spatial_queries::Range_Query::get_ids_from_range_query(
                     trajectory_data_handling::Trajectory_Manager::get_table_name(db_table), window);
@@ -150,12 +158,22 @@ namespace api {
     }
 
     void handle_knn_query(const request<string_body> &req, response<string_body> &res){
+        if (req.method() == verb::options) {
+            handle_options(req, res);
+            return;
+        }
+
+        add_cors_headers(res);
+        boost::json::value json_data = get_json_from_request_body(req, res);
+        if (json_data.is_null())
+            return;
+
+
         try {
             boost::json::value json_data = get_json_from_request_body(req, res);
 
-            if (!json_data.is_object()) {
+            if (!json_data.is_object())
                 throw std::runtime_error("Invalid JSON data: expected an object");
-            }
 
             const boost::json::object &json_object = json_data.as_object();
 
@@ -172,20 +190,25 @@ namespace api {
                 throw std::runtime_error("JSON object does not contain 'db_table'");
             }
 
-            if (!json_object.contains("k")){
+            if (!json_object.contains("k"))
                 throw std::runtime_error("JSON object does not contain 'k' for KNN");
-            }
+
             int k = json_object.at("k").as_uint64();
+
 
             spatial_queries::KNN_Query::KNN_Origin query_origin{};
             if (!json_object.contains("query_origin")){
                 throw std::runtime_error("JSON object does not contain 'query_origin'");
             }
             const boost::json::object &origin_object = json_object.at("query_origin").as_object();
-            query_origin.x = origin_object.at("x").as_double();
-            query_origin.y = origin_object.at("y").as_double();
-            if (origin_object.contains("t_low")) query_origin.t_low = origin_object.at("t_low").as_uint64();
-            if (origin_object.contains("t_high")) query_origin.t_high = origin_object.at("t_high").as_uint64();
+            std::string x_str = origin_object.at("x").as_string().c_str();
+            std::string y_str = origin_object.at("y").as_string().c_str();
+            query_origin.x =  std::stod(x_str);
+            query_origin.y =  std::stod(y_str);
+            if (origin_object.contains("t_low"))
+                query_origin.t_low = trajectory_data_handling::File_Manager::string_to_time(origin_object.at("t_low").as_string().c_str());
+            if (origin_object.contains("t_high"))
+                query_origin.t_high = trajectory_data_handling::File_Manager::string_to_time(origin_object.at("t_high").as_string().c_str());
 
             auto id_dist_pairs = spatial_queries::KNN_Query::get_ids_from_knn(db_table, k, query_origin);
 
@@ -216,27 +239,29 @@ namespace api {
         try {
             boost::json::value json_data = get_json_from_request_body(req, res);
 
-            if (!json_data.is_object()) {
+            if (!json_data.is_object())
                 throw std::runtime_error("Invalid JSON data: expected an object");
-            }
+
 
             const boost::json::object &json_object = json_data.as_object();
 
             std::string table_key{};
-            if (json_object.contains("db_table")) {
+            if (json_object.contains("db_table"))
                 table_key = json_object.at("db_table").as_string().c_str();
-            } else {
+            else
                 throw std::runtime_error("JSON object does not contain 'db_table'");
-            }
 
             db_table db_table{};
-            if (table_key == "original") { db_table = db_table::original_trajectories; }
-            else if (table_key == "simplified") { db_table = db_table::simplified_trajectories; }
-            else { throw std::runtime_error("Error in db_table, must be either 'simplified' or 'original' "); }
+            if (table_key == "original")
+                db_table = db_table::original_trajectories;
+            else if (table_key == "simplified")
+                db_table = db_table::simplified_trajectories;
+            else
+                throw std::runtime_error("Error in db_table, must be either 'simplified' or 'original' ");
 
-            if (!json_object.contains("id")) {
+            if (!json_object.contains("id"))
                 throw std::runtime_error("JSON object does not contain 'id'");
-            }
+
             std::vector<unsigned int> id{static_cast<unsigned int>(json_object.at("id").as_uint64())};
 
             std::vector<data_structures::Trajectory> trajectory = Trajectory_Manager::load_into_data_structure(db_table,id);
@@ -270,14 +295,46 @@ namespace api {
         catch (const std::exception &e) {
             res.result(status::bad_request);
             res.set(field::content_type, "text/plain");
-            res.body() = "Error processing JSON data: " + std::string(e.what());
         }
     }
 
+        void handle_run_simplification(const request<string_body> &req, response<string_body> &res) {
+            try {
+                boost::json::value json_data = boost::json::parse(req.body());
 
-    void handle_not_found(const request<string_body> &req, response<string_body> &res) {
-        res.result(status::not_found);
-        res.body() = "Endpoint not found";
-        res.prepare_payload();
+                if (!json_data.is_object())
+                    throw std::runtime_error("Invalid JSON data: expected an object");
+
+                const boost::json::object &json_object = json_data.as_object();
+
+                trace_q::TRACE_Q trace_q{
+                        json_object.at("resolution_scale").as_double(),
+                        json_object.at("min_query_accuracy").as_double(),
+                        json_object.at("range_query_grid_density").as_double(),
+                        json_object.at("knn_query_grid_density_multiplier").as_double(),
+                        static_cast<int>(json_object.at("windows_per_grid_point").as_int64()),
+                        json_object.at("window_expansion_rate").as_double(),
+                        json_object.at("range_query_time_interval_multiplier").as_double(),
+                        json_object.at("knn_query_time_interval_multiplier").as_double(),
+                        static_cast<int>(json_object.at("knn_k").as_int64())
+                };
+
+                trace_q.run();
+
+                res.result(boost::beast::http::status::ok);
+                res.set(boost::beast::http::field::content_type, "text/plain");
+                res.body() = "Simplification process completed successfully";
+            }
+            catch (const std::exception &e) {
+                res.result(boost::beast::http::status::bad_request);
+                res.set(boost::beast::http::field::content_type, "text/plain");
+                res.body() = "Error processing JSON data: " + std::string(e.what());
+            }
+        }
+
+        void handle_not_found(const request<string_body> &req, response<string_body> &res) {
+            res.result(status::not_found);
+            res.body() = "Endpoint not found";
+            res.prepare_payload();
+        }
     }
-}
