@@ -274,6 +274,20 @@ namespace api {
         }
     }
 
+    void handle_reset_all_data(const request<string_body> &req, response<string_body> &res){
+        try{
+            trajectory_data_handling::Trajectory_Manager::reset_all_data();
+            res.result(status::ok);
+            res.set(field::content_type, "text/plain");
+            res.body() = "All data has successfully been removed from the database";
+        }
+        catch (const std::exception &e){
+            res.result(status::bad_request);
+            res.set(field::content_type, "text/plain");
+            res.body() = "An error occurred while attempting to remove all data from the database: " + std::string(e.what());
+        }
+    }
+
 
     void handle_not_found(const request<string_body> &req, response<string_body> &res) {
         res.result(status::not_found);
