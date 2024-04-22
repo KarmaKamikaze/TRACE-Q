@@ -240,14 +240,14 @@ namespace api {
             std::vector<unsigned int> id{static_cast<unsigned int>(json_object.at("id").as_uint64())};
 
             std::vector<data_structures::Trajectory> trajectory = Trajectory_Manager::load_into_data_structure(db_table,id);
-            boost::json::array json_trajectory;
+            boost::json::array response_trajectory{};
             for (const auto &traj: trajectory) {
-                boost::json::object json_traj;
+                boost::json::object json_traj{};
                 json_traj["id"] = traj.id;
 
-                boost::json::array json_locations;
+                boost::json::array json_locations{};
                 for (const auto &loc: traj.locations) {
-                    boost::json::object json_location;
+                    boost::json::object json_location{};
                     json_location["order"] = loc.order;
                     json_location["timestamp"] = loc.timestamp;
                     json_location["longitude"] = loc.longitude;
@@ -256,11 +256,11 @@ namespace api {
                 }
 
                 json_traj["locations"] = std::move(json_locations);
-                json_trajectory.push_back(std::move(json_traj));
+                response_trajectory.push_back(std::move(json_traj));
             }
 
             boost::json::object response_object{};
-            response_object["response_trajectory:"] = std::move(json_trajectory);
+            response_object["response_trajectory:"] = std::move(response_trajectory);
             res.result(status::ok);
             res.set(field::content_type, "application/json");
             std::stringstream ss{};
