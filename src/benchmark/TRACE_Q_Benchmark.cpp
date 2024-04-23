@@ -20,6 +20,7 @@ TEST_CASE("TRACE-Q runtime benchmarking") {
     double range_query_time_interval_multiplier = 0.1;
     double knn_query_time_interval_multiplier = 0.1;
     int knn_k = 10;
+    bool use_KNN_for_query_accuracy = true;
 
     SUBCASE("TRACE-Q Runtime vs Query Accuracy - KNN K = 1") {
         trajectory_data_handling::Trajectory_Manager::reset_all_data();
@@ -30,7 +31,7 @@ TEST_CASE("TRACE-Q runtime benchmarking") {
         auto trace_q = trace_q::TRACE_Q{resolution_scale, min_query_accuracy, range_query_grid_density,
                                         knn_query_grid_density, windows_per_grid_point,
                                         window_expansion_rate, range_query_time_interval_multiplier,
-                                        knn_query_time_interval_multiplier, custom_knn_k};
+                                        knn_query_time_interval_multiplier, custom_knn_k, use_KNN_for_query_accuracy};
         auto time = analytics::Benchmark::function_time([&trace_q]() { trace_q.run(); });
 
         auto query_accuracy = analytics::Benchmark::benchmark_query_accuracy();
@@ -48,7 +49,7 @@ TEST_CASE("TRACE-Q runtime benchmarking") {
         auto trace_q = trace_q::TRACE_Q{resolution_scale, min_query_accuracy, range_query_grid_density,
                                         knn_query_grid_density, windows_per_grid_point,
                                         window_expansion_rate, range_query_time_interval_multiplier,
-                                        knn_query_time_interval_multiplier, custom_knn_k};
+                                        knn_query_time_interval_multiplier, custom_knn_k, use_KNN_for_query_accuracy};
         auto time = analytics::Benchmark::function_time([&trace_q]() { trace_q.run(); });
 
         auto query_accuracy = analytics::Benchmark::benchmark_query_accuracy();
@@ -66,7 +67,7 @@ TEST_CASE("TRACE-Q runtime benchmarking") {
         auto trace_q = trace_q::TRACE_Q{resolution_scale, min_query_accuracy, range_query_grid_density,
                                         knn_query_grid_density, windows_per_grid_point,
                                         window_expansion_rate, range_query_time_interval_multiplier,
-                                        knn_query_time_interval_multiplier, custom_knn_k};
+                                        knn_query_time_interval_multiplier, custom_knn_k, use_KNN_for_query_accuracy};
         auto time = analytics::Benchmark::function_time([&trace_q]() { trace_q.run(); });
 
         auto query_accuracy = analytics::Benchmark::benchmark_query_accuracy();

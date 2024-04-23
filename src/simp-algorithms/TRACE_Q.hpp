@@ -94,6 +94,11 @@ namespace trace_q {
          */
         int knn_k{};
 
+        /**
+         * Decides whether KNN queries should be utilized for determining the query accuracy.
+         */
+        bool use_KNN_for_query_accuracy{};
+
 
         /**
          * Calculates the query error of a simplified trajectory on a set of query objects.
@@ -102,8 +107,9 @@ namespace trace_q {
          * @param query_objects Vector of query objects that define a query and contain the original trajectory's result
          * @return Query accuracy
          */
-        static double query_accuracy(data_structures::Trajectory const& trajectory,
-                                            std::vector<std::shared_ptr<spatial_queries::Query>> const& query_objects);
+        double query_accuracy(
+                data_structures::Trajectory const& trajectory,
+                std::vector<std::shared_ptr<spatial_queries::Query>> const& query_objects) const;
 
         /**
          * A Minimum Bounding Rectangle for trajectory data.
@@ -210,11 +216,12 @@ namespace trace_q {
          * @param knn_query_time_interval_multiplier The multiplier used to scale the time interval for each window
          * in KNN queries.
          * @param knn_k The K value for K-Nearest-Neighbour queries.
+         * @param use_KNN_for_query_accuracy Decides whether KNN queries should be utilized for determining query accuracy.
          */
         TRACE_Q(double resolution_scale, double min_query_accuracy, double range_query_grid_density_multiplier,
                 double knn_query_grid_density_multiplier,  int windows_per_grid_point,
                 double window_expansion_rate, double range_query_time_interval_multiplier,
-                double knn_query_time_interval_multiplier, int knn_k)
+                double knn_query_time_interval_multiplier, int knn_k, bool use_KNN_for_query_accuracy)
                 : mrpa(resolution_scale),
                   min_query_accuracy(min_query_accuracy),
                   range_query_grid_expansion_factor(range_query_grid_density_multiplier * 0.8),
@@ -225,7 +232,8 @@ namespace trace_q {
                   window_expansion_rate(window_expansion_rate),
                   range_query_time_interval_multiplier(range_query_time_interval_multiplier),
                   knn_query_time_interval_multiplier(knn_query_time_interval_multiplier),
-                  knn_k(knn_k) {
+                  knn_k(knn_k),
+                  use_KNN_for_query_accuracy(use_KNN_for_query_accuracy){
             if (knn_query_time_interval_multiplier < 0.02) {
                 throw std::invalid_argument("knn_query_time_interval_multiplier was lower than allowed");
             }
