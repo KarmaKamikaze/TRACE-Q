@@ -311,11 +311,11 @@ namespace api {
                         json_object.at("resolution_scale").as_double(),
                         json_object.at("min_query_accuracy").as_double(),
                         json_object.at("range_query_grid_density").as_double(),
-                        json_object.at("knn_query_grid_density_multiplier").as_double(),
+                        json_object.at("knn_query_grid_density").as_double(),
                         static_cast<int>(json_object.at("windows_per_grid_point").as_int64()),
                         json_object.at("window_expansion_rate").as_double(),
-                        json_object.at("range_query_time_interval_multiplier").as_double(),
-                        json_object.at("knn_query_time_interval_multiplier").as_double(),
+                        json_object.at("range_query_time_interval").as_double(),
+                        json_object.at("knn_query_time_interval").as_double(),
                         static_cast<int>(json_object.at("knn_k").as_int64())
                 };
 
