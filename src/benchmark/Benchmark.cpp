@@ -9,12 +9,12 @@ namespace analytics {
 
     std::string Benchmark::connection_string{"user=postgres password=postgres host=localhost dbname=traceq port=5432"};
 
-    double Benchmark::grid_density{0.05};
+    double Benchmark::grid_density{0.02};
     double Benchmark::expansion_factor{grid_density * 0.8};
     int Benchmark::windows_per_grid_point{8};
     double Benchmark::window_expansion_rate{1.3};
-    double Benchmark::time_interval{0.05};
-    int Benchmark::knn_k{10};
+    double Benchmark::time_interval{0.02};
+    int Benchmark::knn_k{50};
     int Benchmark::max_connections{70};
 
     MBR Benchmark::get_mbr() {

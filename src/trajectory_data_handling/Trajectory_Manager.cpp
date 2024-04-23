@@ -22,7 +22,7 @@ namespace trajectory_data_handling {
 
         if (table == db_table::original_trajectories) {
             for (int i = 1; i < trajectory.size(); i++) {
-                if (!(trajectory[i] == trajectory[i - 1])) {
+                if (trajectory[i].timestamp != trajectory[i - 1].timestamp) {
                     std::stringstream query{};
                     query << "INSERT INTO " << table_name << "(trajectory_id, coordinates, time) " << " VALUES("
                           << trajectory.id << ", point(" << std::to_string(trajectory[i].longitude) << ", "

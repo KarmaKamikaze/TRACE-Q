@@ -18,10 +18,10 @@ int main(int argc, char* argv[]) {
     trajectory_data_handling::Trajectory_Manager::reset_all_data();
     trajectory_data_handling::File_Manager::load_tdrive_dataset();
 
-    auto trace_q = trace_q::TRACE_Q{2, 0.95, 0.1, 0.1, 3, 1.3, 0.2, 0.03, 10};
+    auto trace_q = trace_q::TRACE_Q{2, 0.95, 0.1, 0.1, 3, 1.3, 0.1, 0.1, 10};
     trace_q.run();
 
-
+    /*
     // Define and populate endpoints map
     std::map<std::string, api::RequestHandler> endpoints;
 
@@ -35,6 +35,6 @@ int main(int argc, char* argv[]) {
     boost::asio::ip::tcp::acceptor acceptor(io_context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), 8080));
     // Run the server
     api::run(acceptor, endpoints);
-
+    */
     return 0;
 }
