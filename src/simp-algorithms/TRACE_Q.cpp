@@ -173,7 +173,10 @@ namespace trace_q {
         }
 
         for (auto& fut : futures) {
-            result.push_back(std::make_shared<spatial_queries::Range_Query_Test>(fut.get()));
+            auto rq_test_result = fut.get();
+            if (rq_test_result.original_in_window) {
+                result.push_back(std::make_shared<spatial_queries::Range_Query_Test>(rq_test_result));
+            }
         }
         return result;
     }

@@ -11,6 +11,12 @@
 
 namespace trace_q {
 
+    enum class query_test_result {
+        passed,
+        failed,
+        out_of_range
+    };
+
     class TRACE_Q {
         /**
          * The MRPA algorithm as a function object.
@@ -107,7 +113,7 @@ namespace trace_q {
          * @param query_objects Vector of query objects that define a query and contain the original trajectory's result
          * @return Query accuracy
          */
-        double query_accuracy(
+        [[nodiscard]] double query_accuracy(
                 data_structures::Trajectory const& trajectory,
                 std::vector<std::shared_ptr<spatial_queries::Query>> const& query_objects) const;
 
@@ -203,6 +209,30 @@ namespace trace_q {
     public:
         /**
          * The TRACE_Q constructor that determines the query_amount based on the given parameters.
+         * @param resolution_scale The MRPA resolution scale.
+         * @param min_query_accuracy The minimum query accuracy that the simplification method must uphold.
+         * @param range_query_grid_density_multiplier The grid density factor for range queries,
+         * which describes how close points appear in the grid.
+         * @param windows_per_grid_point The amount of windows per point in the grid.
+         * @param window_expansion_rate The window scaling rate for each grid point.
+         * @param range_query_time_interval_multiplier The multiplier used to scale the time interval for each window
+         * in range queries.
+         * @param use_KNN_for_query_accuracy Decides whether KNN queries should be utilized for determining query accuracy.
+         */
+        TRACE_Q(double resolution_scale, double min_query_accuracy, double range_query_grid_density_multiplier,  int windows_per_grid_point,
+                double window_expansion_rate, double range_query_time_interval_multiplier, bool use_KNN_for_query_accuracy)
+                : mrpa(resolution_scale),
+                  min_query_accuracy(min_query_accuracy),
+                  max_trajectories_in_batch(5),
+                  range_query_grid_expansion_factor(range_query_grid_density_multiplier * 0.8),
+                  range_query_grid_density(range_query_grid_density_multiplier),
+                  windows_per_grid_point(windows_per_grid_point),
+                  window_expansion_rate(window_expansion_rate),
+                  range_query_time_interval_multiplier(range_query_time_interval_multiplier),
+                  use_KNN_for_query_accuracy(use_KNN_for_query_accuracy) {}
+
+        /**
+         * The TRACE_Q constructor, which includes KNN queries, that determines the query_amount based on the given parameters.
          * @param resolution_scale The MRPA resolution scale.
          * @param min_query_accuracy The minimum query accuracy that the simplification method must uphold.
          * @param range_query_grid_density_multiplier The grid density factor for range queries,

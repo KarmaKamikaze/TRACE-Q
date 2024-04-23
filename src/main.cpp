@@ -18,8 +18,10 @@ int main(int argc, char* argv[]) {
     trajectory_data_handling::Trajectory_Manager::reset_all_data();
     trajectory_data_handling::File_Manager::load_tdrive_dataset();
 
-    auto trace_q = trace_q::TRACE_Q{2, 0.95, 0.1, 0.1, 3, 1.3, 0.1, 0.1, 10, true};
-    trace_q.run();
+    //auto trace_q = trace_q::TRACE_Q{2, 0.95, 0.1, 0.1, 3, 1.3, 0.1, 0.1, 10, true};
+    auto trace_q_no_knn = trace_q::TRACE_Q{2, 0.98, 0.05, 4, 1.3, 0.05, false};
+    //trace_q.run();
+    trace_q_no_knn.run();
 
     /*
     // Define and populate endpoints map
