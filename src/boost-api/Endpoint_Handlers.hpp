@@ -23,5 +23,7 @@ namespace api {
 
     void handle_run_simplification(const request<string_body> &req, response<string_body> &res);
 
+    void handle_db_status(const request<string_body> &req, response<string_body> &res);
+
     void handle_not_found(const request<string_body> &req, response<string_body> &res);
 }

@@ -65,6 +65,8 @@ namespace trajectory_data_handling {
          * @return A string corresponding to the selected table.
          */
         static std::string get_table_name(db_table table);
+
+        static bool get_db_status();
     private:
         /**
          * The connection string that specifies the connection details for the PostgreSQL database.
