@@ -186,6 +186,27 @@ namespace trajectory_data_handling {
 
         return result;
     }
+
+    bool Trajectory_Manager::get_db_status() {
+        std::stringstream query{};
+
+        pqxx::connection c{connection_string};
+        pqxx::work txn{c};
+
+        query << "SELECT COUNT(DISTINCT trajectory_id) FROM original_trajectories;";
+        int original_count = txn.exec1(query.str())[0].as<int>();
+
+        query.str(std::string());
+        query << "SELECT COUNT(DISTINCT trajectory_id) FROM simplified_trajectories;";
+        int simplified_count = txn.exec1(query.str())[0].as<int>();
+
+        txn.commit();
+
+        return (original_count == simplified_count);
+    }
+
+
+
 }
 
 

@@ -472,6 +472,22 @@ namespace api {
             res.body() = "Error processing JSON data: " + std::string(e.what());
         }
     }
+    /**
+     This endpoint checks that there are the same amount of trajectories in both the original_trajectories and simplified_trajectories databases. No body is needed for this endpoint.
+     */
+    void handle_db_status(const request<string_body> &req, response<string_body> &res) {
+        try {
+            bool db_status = trajectory_data_handling::Trajectory_Manager::get_db_status();
+
+            res.result(boost::beast::http::status::ok);
+            res.set(boost::beast::http::field::content_type, "text/plain");
+            res.body() = db_status ? "true" : "false";
+        } catch(const std::exception &e) {
+            res.result(boost::beast::http::status::bad_request);
+            res.set(boost::beast::http::field::content_type, "text/plain");
+            res.body() = "Error in handle_db_status: " + std::string(e.what());
+        }
+    }
 
     void handle_not_found(const request<string_body> &req, response<string_body> &res) {
         res.result(status::not_found);
