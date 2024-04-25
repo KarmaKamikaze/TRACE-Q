@@ -30,8 +30,8 @@ namespace analytics {
 
         static MBR get_mbr();
         static double benchmark_query_accuracy();
-        static std::vector<std::future<bool>> create_range_query_futures(double x, double y, unsigned long t, MBR const& mbr);
-        static std::future<bool> create_knn_query_future(int k, double x, double y, unsigned long t, MBR const& mbr);
+        static std::vector<std::future<double>> create_range_query_futures(double x, double y, unsigned long t, MBR const& mbr);
+        static std::future<double> create_knn_query_future(int k, double x, double y, unsigned long t, MBR const& mbr);
         template<typename T>
         static std::pair<T, T> calculate_window_range(
                 T center, T mbr_low, T mbr_high, double window_expansion_rate,

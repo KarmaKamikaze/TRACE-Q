@@ -48,11 +48,11 @@ namespace analytics {
 
         auto mbr = get_mbr();
 
-        std::vector<std::future<bool>> range_futures{};
-        std::vector<std::future<bool>> knn_futures{};
+        std::vector<std::future<double>> range_futures{};
+        std::vector<std::future<double>> knn_futures{};
 
-        int correct_range_queries = 0;
-        int correct_knn_queries = 0;
+        double range_query_cum_TP_percentage = 0.0;
+        double knn_query_cum_TP_percentage = 0.0;
         int total_range_queries = 0;
         int total_knn_queries = 0;
         int query_count = 0;
@@ -78,10 +78,10 @@ namespace analytics {
 
                     if (query_count > max_connections) {
                         for (auto & fut : range_futures) {
-                            if (fut.get()) correct_range_queries++;
+                            range_query_cum_TP_percentage += fut.get();
                         }
                         for (auto & fut : knn_futures) {
-                            if (fut.get()) correct_knn_queries++;
+                            knn_query_cum_TP_percentage += fut.get();
                         }
                         range_futures.clear();
                         knn_futures.clear();
@@ -95,19 +95,21 @@ namespace analytics {
         }
 
         for (auto & fut : range_futures) {
-            if (fut.get()) correct_range_queries++;
+            range_query_cum_TP_percentage += fut.get();
         }
         for (auto & fut : knn_futures) {
-            if (fut.get()) correct_knn_queries++;
+            knn_query_cum_TP_percentage += fut.get();
         }
 
-        auto range_query_accuracy = static_cast<double>(correct_range_queries) / static_cast<double>(total_range_queries);
-        auto knn_accuracy = static_cast<double>(correct_knn_queries) / static_cast<double>(total_knn_queries);
-        return std::midpoint(range_query_accuracy, knn_accuracy);
+        auto range_query_f1 = range_query_cum_TP_percentage 
+                / (range_query_cum_TP_percentage + 0.5 * (total_range_queries - range_query_cum_TP_percentage));
+        auto knn_query_f1 = knn_query_cum_TP_percentage
+                / (knn_query_cum_TP_percentage + 0.5 * (total_knn_queries - range_query_cum_TP_percentage));
+        return std::midpoint(range_query_f1, knn_query_f1);
     }
 
-    std::vector<std::future<bool>> Benchmark::create_range_query_futures(double x, double y, unsigned long t, MBR const& mbr) {
-        std::vector<std::future<bool>> futures;
+    std::vector<std::future<double>> Benchmark::create_range_query_futures(double x, double y, unsigned long t, MBR const& mbr) {
+        std::vector<std::future<double>> futures;
         for(int window_number = 0; window_number < windows_per_grid_point; window_number++) {
             auto [window_x_low, window_x_high] = calculate_window_range(
                     x, mbr.x_low, mbr.x_high, window_expansion_rate, grid_density, window_number);
@@ -122,15 +124,23 @@ namespace analytics {
             futures.emplace_back(std::async(std::launch::async, [window](){
                 auto original_res = spatial_queries::Range_Query::get_ids_from_range_query("original_trajectories", window);
                 auto simplified_res = spatial_queries::Range_Query::get_ids_from_range_query("simplified_trajectories", window);
-                
-                return original_res == simplified_res;
+
+                int true_positives = 0;
+
+                for (const auto& original : original_res) {
+                    if(simplified_res.contains(original)) {
+                        true_positives++;
+                    }
+                }
+
+                return true_positives / static_cast<double>(original_res.size());
             }));
         }
 
         return futures;
     }
 
-    std::future<bool> Benchmark::create_knn_query_future(int k, double x, double y, unsigned long t, const MBR & mbr) {
+    std::future<double> Benchmark::create_knn_query_future(int k, double x, double y, unsigned long t, const MBR & mbr) {
 
         spatial_queries::KNN_Query::KNN_Origin origin{};
         origin.x = x;
@@ -148,21 +158,24 @@ namespace analytics {
             origin.t_high = std::numeric_limits<unsigned long>::max();
         }
 
-        return std::future<bool>{std::async(std::launch::async, [origin, k](){
+        return std::future<double>{std::async(std::launch::async, [origin, k](){
             auto original_res = spatial_queries::KNN_Query::get_ids_from_knn("original_trajectories", k, origin);
             auto simplified_res = spatial_queries::KNN_Query::get_ids_from_knn("simplified_trajectories", k, origin);
 
-            std::unordered_set<unsigned int> original_set{};
             std::unordered_set<unsigned int> simplified_set{};
 
-            for (const auto& o : original_res) {
-                original_set.insert(o.id);
-            }
             for (const auto& s : simplified_res) {
                 simplified_set.insert(s.id);
             }
 
-            return original_set == simplified_set;
+            int true_positives = 0;
+            for (const auto& original : original_res) {
+                if (simplified_set.contains(original.id)) {
+                    true_positives++;
+                }
+            }
+
+            return true_positives / static_cast<double>(original_res.size());
         })};
     }
 
