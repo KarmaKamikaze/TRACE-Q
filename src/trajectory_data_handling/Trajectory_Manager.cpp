@@ -188,24 +188,24 @@ namespace trajectory_data_handling {
     }
 
     bool Trajectory_Manager::get_db_status() {
-        std::stringstream query_original{};
-        std::stringstream query_simplified{};
+        std::stringstream query{};
 
         pqxx::connection c{connection_string};
         pqxx::work txn{c};
 
-        query_original << "SELECT COUNT(DISTINCT trajectory_id) FROM original_trajectories;";
-        query_simplified << "SELECT COUNT(DISTINCT trajectory_id) FROM simplified_trajectories;";
+        query << "SELECT COUNT(DISTINCT trajectory_id) FROM original_trajectories;";
+        int original_count = txn.exec1(query.str())[0].as<int>();
 
-        pqxx::result result_original = txn.exec(query_original.str());
-        pqxx::result result_simplified = txn.exec(query_simplified.str());
+        query.str(std::string());
+        query << "SELECT COUNT(DISTINCT trajectory_id) FROM simplified_trajectories;";
+        int simplified_count = txn.exec1(query.str())[0].as<int>();
 
-        int original_count = result_original[0][0].as<int>();
-        int simplified_count = result_simplified[0][0].as<int>();
         txn.commit();
 
         return (original_count == simplified_count);
     }
+
+
 
 }
 
