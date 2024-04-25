@@ -11,12 +11,6 @@
 
 namespace trace_q {
 
-    enum class query_test_result {
-        passed,
-        failed,
-        out_of_range
-    };
-
     class TRACE_Q {
         /**
          * The MRPA algorithm as a function object.
@@ -166,6 +160,7 @@ namespace trace_q {
          * @return A shared pointer to a KNN query object that have been initialized with the given trajectory.
          */
         static std::shared_ptr<spatial_queries::KNN_Query_Test> knn_query_initialization(
+                unsigned int original_trajectory_id,
                 double x, double y, unsigned long t, MBR const& mbr, double time_interval_multiplier, int knn_k);
 
         /**

@@ -70,18 +70,21 @@ namespace trace_q {
                         auto t_interval = static_cast<long double>(knn_query_mbr.t_low) + t_point * knn_query_time_interval_multiplier
                                                                                           * static_cast<long double>((knn_query_mbr.t_high - knn_query_mbr.t_low));
 
-                        knn_futures.emplace_back(std::async(std::launch::async, knn_query_initialization, x_coord, y_coord, t_interval, knn_query_mbr, knn_query_time_interval_multiplier, knn_k));
+                        knn_futures.emplace_back(std::async(std::launch::async, knn_query_initialization, original_trajectory.id, x_coord, y_coord, t_interval, knn_query_mbr, knn_query_time_interval_multiplier, knn_k));
                     }
 
                     spatial_queries::KNN_Query::KNN_Origin origin{x_coord, y_coord, std::numeric_limits<unsigned long>::min(), std::numeric_limits<unsigned long>::max()};
 
                     knn_futures.emplace_back(
                             std::async(std::launch::async,
-                                       [this](spatial_queries::KNN_Query::KNN_Origin const& o)
-                                       { return std::make_shared<spatial_queries::KNN_Query_Test>(knn_k, o); }, origin));
+                                       [this](unsigned int original_trajectory_id, spatial_queries::KNN_Query::KNN_Origin const& o)
+                                       { return std::make_shared<spatial_queries::KNN_Query_Test>(original_trajectory_id, knn_k, o); }, original_trajectory.id, origin));
 
                     for (auto& fut : knn_futures) {
-                        query_objects.push_back(fut.get());
+                        auto knn_query_test = *(fut.get());
+                        if (knn_query_test.original_in_result) {
+                            query_objects.push_back(fut.get());
+                        }
                     }
                 }
             }
@@ -107,15 +110,14 @@ namespace trace_q {
 
         int correct_range_queries = process_futures(range_futures);
 
-        auto range_query_accuracy = static_cast<double>(correct_range_queries) / static_cast<double>(range_futures.size());
+        auto range_query_f1 = static_cast<double>(correct_range_queries) / (correct_range_queries + 0.5 * static_cast<double>(range_futures.size() - correct_range_queries));
         if (use_KNN_for_query_accuracy) {
             int correct_knn_queries = process_futures(knn_futures);
-            auto knn_accuracy = static_cast<double>(correct_knn_queries) / static_cast<double>(knn_futures.size());
-            return std::midpoint(range_query_accuracy, knn_accuracy);
+            auto knn_query_f1 = static_cast<double>(correct_knn_queries) / (correct_knn_queries + 0.5 * static_cast<double>(knn_futures.size() - correct_knn_queries));
+            return std::midpoint(range_query_f1, knn_query_f1);
         }
 
-
-        return range_query_accuracy;
+        return range_query_f1;
     }
 
     TRACE_Q::MBR TRACE_Q::calculate_MBR(data_structures::Trajectory const& trajectory) {
@@ -182,6 +184,7 @@ namespace trace_q {
     }
 
     std::shared_ptr<spatial_queries::KNN_Query_Test> TRACE_Q::knn_query_initialization(
+            unsigned int original_trajectory_id,
             double x, double y, unsigned long t, MBR const& mbr, double time_interval_multiplier, int knn_k) {
 
         auto [t_low, t_high] = calculate_window_range(
@@ -189,7 +192,7 @@ namespace trace_q {
                 time_interval_multiplier, 0);
 
         spatial_queries::KNN_Query::KNN_Origin origin{x, y, t_low, t_high};
-        return std::make_shared<spatial_queries::KNN_Query_Test>(knn_k, origin);
+        return std::make_shared<spatial_queries::KNN_Query_Test>(original_trajectory_id, knn_k, origin);
     }
 
     template<typename T>

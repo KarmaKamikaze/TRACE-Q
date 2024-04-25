@@ -101,7 +101,7 @@ namespace analytics {
             knn_query_cum_TP_percentage += fut.get();
         }
 
-        auto range_query_f1 = range_query_cum_TP_percentage 
+        auto range_query_f1 = range_query_cum_TP_percentage
                 / (range_query_cum_TP_percentage + 0.5 * (total_range_queries - range_query_cum_TP_percentage));
         auto knn_query_f1 = knn_query_cum_TP_percentage
                 / (knn_query_cum_TP_percentage + 0.5 * (total_knn_queries - range_query_cum_TP_percentage));

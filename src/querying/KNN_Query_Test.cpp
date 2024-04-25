@@ -6,12 +6,6 @@ namespace spatial_queries {
 
     bool KNN_Query_Test::operator()(data_structures::Trajectory const& trajectory) {
 
-        // If there are no nearest neighbour results due to time constraints,
-        // the simplification cannot possibly appear within the results either.
-        if (query_result.empty()) {
-            return true;
-        }
-
         auto min_distance_simplified = std::numeric_limits<double>::max();
 
         for (const auto& location : trajectory.locations) {
@@ -22,24 +16,11 @@ namespace spatial_queries {
             }
         }
 
-        for (int i = 0; i < query_result.size(); ++i) {
-            if (query_result[i].id == trajectory.id) {
-                if (i > 0 && i < query_result.size() - 1) {
-                    return min_distance_simplified >= query_result[i - 1].distance
-                    && min_distance_simplified <= query_result[i + 1].distance;
-                }
-                // Handle cases where trajectory is at the start or end of the vector
-                else if (i == 0) {
-                    return min_distance_simplified <= query_result[i + 1].distance;
-                }
-                else {  // i == query_result.size() - 1
-                    return min_distance_simplified >= query_result[i - 1].distance;
-                }
-            }
+        if (min_distance_simplified <= query_result.back().distance) {
+            return true;
         }
 
-        // If the trajectory is not part of the K-Nearest-Neighbours, return true
-        return true;
+        return false;
     }
 
     double KNN_Query_Test::euclidean_distance(data_structures::Location const& location, KNN_Query::KNN_Origin const& origin) {
