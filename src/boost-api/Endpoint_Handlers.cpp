@@ -46,6 +46,27 @@ namespace api {
         return json_data;
     }
 
+    boost::json::array get_json_trajectory(const std::vector<data_structures::Trajectory>& trajectory){
+        boost::json::array response_trajectory{};
+        boost::json::object json_traj{};
+        json_traj["id"] = trajectory[0].id;
+
+        boost::json::array json_locations{};
+        for (const auto &loc: trajectory[0].locations) {
+            boost::json::object json_location{};
+            json_location["order"] = loc.order;
+            json_location["timestamp"] = loc.timestamp;
+            json_location["longitude"] = loc.longitude;
+            json_location["latitude"] = loc.latitude;
+            json_locations.push_back(std::move(json_location));
+        }
+
+        json_traj["locations"] = std::move(json_locations);
+        response_trajectory.push_back(std::move(json_traj));
+
+        return response_trajectory;
+    }
+
     /**
          This endpoint handles insertion of a trajectory into a specified database table. Works with JSON formatted as:
 
@@ -361,24 +382,7 @@ namespace api {
             std::vector<unsigned int> id{static_cast<unsigned int>(json_object.at("id").as_int64())};
 
             std::vector<data_structures::Trajectory> trajectory = Trajectory_Manager::load_into_data_structure(db_table,id);
-            boost::json::array response_trajectory{};
-            for (const auto &traj: trajectory) {
-                boost::json::object json_traj{};
-                json_traj["id"] = traj.id;
-
-                boost::json::array json_locations{};
-                for (const auto &loc: traj.locations) {
-                    boost::json::object json_location{};
-                    json_location["order"] = loc.order;
-                    json_location["timestamp"] = loc.timestamp;
-                    json_location["longitude"] = loc.longitude;
-                    json_location["latitude"] = loc.latitude;
-                    json_locations.push_back(std::move(json_location));
-                }
-
-                json_traj["locations"] = std::move(json_locations);
-                response_trajectory.push_back(std::move(json_traj));
-            }
+            boost::json::array response_trajectory{get_json_trajectory(trajectory)};
 
             boost::json::object response_object{};
             response_object["response_trajectory"] = std::move(response_trajectory);
@@ -486,6 +490,57 @@ namespace api {
             res.result(boost::beast::http::status::bad_request);
             res.set(boost::beast::http::field::content_type, "text/plain");
             res.body() = "Error in handle_db_status: " + std::string(e.what());
+        }
+    }
+
+    /**
+     This endpoint finds trajectories from both the original_trajectories and simplified_trajectories tables from an id and a date. It works with JSON such as:
+     {
+        "id" : 1,
+        "date" : "2008-02-02"
+    }
+     */
+    void handle_load_trajectories_from_id_and_time(const request<string_body> &req, response<string_body> &res){
+        try {
+            if (req.method() == verb::options) {
+                handle_options(req, res);
+                return;
+            }
+            add_cors_headers(res);
+
+            boost::json::value json_data = boost::json::parse(req.body());
+            const boost::json::object &json_object = json_data.as_object();
+
+            if (!json_data.is_object())
+                throw std::runtime_error("Invalid JSON data: expected an object");
+
+            if (!json_object.contains("id"))
+                throw std::runtime_error("JSON object does not contain 'id'");
+
+            if (!json_object.contains("date"))
+                throw std::runtime_error("JSON object does not contain 'date'");
+
+            auto date{json_object.at("date").as_string().c_str()};
+            auto id {json_object.at("id").as_int64()};
+
+            auto original_trajectory = Trajectory_Manager::get_trajectory_from_id_table_date(id, trajectory_data_handling::db_table::original_trajectories, date);
+            auto simplified_trajectory = Trajectory_Manager::get_trajectory_from_id_table_date(id, trajectory_data_handling::db_table::simplified_trajectories, date);
+            boost::json::array json_original_trajectory{get_json_trajectory(original_trajectory)};
+            boost::json::array json_simplified_trajectory{get_json_trajectory(simplified_trajectory)};
+
+            boost::json::object response_object{};
+            response_object["original_trajectory"] = std::move(json_original_trajectory);
+            response_object["simplified_trajectory"] = std::move(json_simplified_trajectory);
+            res.result(status::ok);
+            res.set(field::content_type, "application/json");
+            std::stringstream ss{};
+            ss << response_object;
+            res.body() = ss.str();
+        }
+        catch (const std::exception &e){
+            res.result(boost::beast::http::status::bad_request);
+            res.set(boost::beast::http::field::content_type, "text/plain");
+            res.body() = "Error processing JSON data: " + std::string(e.what());
         }
     }
 

@@ -2,6 +2,7 @@
 #include <fstream>
 #include <pqxx/pqxx>
 #include "Trajectory_Manager.hpp"
+#include "File_Manager.hpp"
 
 namespace trajectory_data_handling {
 
@@ -202,7 +203,59 @@ namespace trajectory_data_handling {
 
         txn.commit();
 
-        return (original_count == simplified_count);
+        return (original_count != 0 && simplified_count != 0 && original_count == simplified_count);
+    }
+
+    std::vector<data_structures::Trajectory> Trajectory_Manager::get_trajectory_from_id_table_date(int trajectory_id, trajectory_data_handling::db_table table, const std::string& date){
+        auto table_name = get_table_name(table);
+        std::stringstream datestream;
+        pqxx::connection c{connection_string};
+        pqxx::work txn{c};
+
+        datestream << date << " 00:00:00";
+        auto date_start = File_Manager::string_to_time(datestream.str());
+
+        datestream.str(std::string());
+
+        datestream << date << " 23:59:59";
+        auto date_end = File_Manager::string_to_time(datestream.str());
+
+        std::stringstream query;
+
+        query << "SELECT trajectory_id, coordinates, time FROM " << table_name << " WHERE trajectory_id = " << trajectory_id
+              << " AND time >= '" << date_start << "' AND time <= '" << date_end << "';";
+
+        pqxx::result query_res{txn.exec(query.str())};
+        txn.commit();
+        std::vector<data_structures::Trajectory> res{};
+
+        data_structures::Trajectory working_trajectory{};
+        auto current_trajectory_id = query_res.front()["trajectory_id"];
+        if (current_trajectory_id.is_null())
+            throw std::runtime_error("Trajectory ID is null or not found in the database. Consider running simplification first!");
+        working_trajectory.id = current_trajectory_id.as<int>();
+        auto next_order = 1;
+
+        for (auto const& row : query_res) {
+            auto trajectory_id = row["trajectory_id"].as<int>();
+            auto coords = row["coordinates"].c_str();
+            auto time = row["time"].as<long>();
+
+            if (current_trajectory_id.as<int>() != trajectory_id) {
+                res.push_back(working_trajectory);
+                working_trajectory = data_structures::Trajectory{};
+                current_trajectory_id = row["trajectory_id"];
+                working_trajectory.id = trajectory_id;
+                next_order = 1;
+            }
+
+            auto location = parse_location(next_order, time, coords);
+            working_trajectory.locations.push_back(location);
+            next_order++;
+        }
+
+        res.push_back(working_trajectory);
+        return res;
     }
 
 
