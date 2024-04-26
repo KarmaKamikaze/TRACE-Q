@@ -28,6 +28,17 @@ namespace trace_q {
         int max_trajectories_in_batch{};
 
         /**
+         * The maximum amount of threads that are allowed to run database client connections to the PostgreSQL database.
+         */
+        int max_threads{};
+
+        /**
+         * The maximum amount of client connections per used in KNN part of the initialize_query_tests defined by
+         * max_trajectories_in_batch and max_threads.
+         */
+        int max_connections_per_batch_simplification{};
+
+        /**
          * The factor with which we will scale the grid for range queries.
          * Calculated based on the range_query_grid_density_multiplier.
          * The grid is defined by the highest and lowest values of latitude and longitude for a given trajectory.
@@ -221,6 +232,10 @@ namespace trace_q {
          * The TRACE_Q constructor that determines the query_amount based on the given parameters.
          * @param resolution_scale The MRPA resolution scale.
          * @param min_query_accuracy The minimum query accuracy that the simplification method must uphold.
+         * @param max_trajectories_in_batch The maximum number of trajectories per batch that is able to run
+         * concurrently due to database connections.
+         * @param max_threads The maximum amount of threads that are allowed to run database client connections to
+         * the PostgreSQL database.
          * @param range_query_grid_density_multiplier The grid density factor for range queries,
          * which describes how close points appear in the grid.
          * @param windows_per_grid_point The amount of windows per point in the grid.
@@ -229,22 +244,33 @@ namespace trace_q {
          * in range queries.
          * @param use_KNN_for_query_accuracy Decides whether KNN queries should be utilized for determining query accuracy.
          */
-        TRACE_Q(double resolution_scale, double min_query_accuracy, double range_query_grid_density_multiplier,  int windows_per_grid_point,
+        TRACE_Q(double resolution_scale, double min_query_accuracy, int max_trajectories_in_batch, int max_threads,
+                double range_query_grid_density_multiplier,  int windows_per_grid_point,
                 double window_expansion_rate, double range_query_time_interval_multiplier, bool use_KNN_for_query_accuracy)
                 : mrpa(resolution_scale),
                   min_query_accuracy(min_query_accuracy),
-                  max_trajectories_in_batch(5),
+                  max_trajectories_in_batch(max_trajectories_in_batch),
+                  max_threads(max_threads),
+                  max_connections_per_batch_simplification(max_threads / max_trajectories_in_batch),
                   range_query_grid_expansion_factor(range_query_grid_density_multiplier * 0.8),
                   range_query_grid_density(range_query_grid_density_multiplier),
                   windows_per_grid_point(windows_per_grid_point),
                   window_expansion_rate(window_expansion_rate),
                   range_query_time_interval_multiplier(range_query_time_interval_multiplier),
-                  use_KNN_for_query_accuracy(use_KNN_for_query_accuracy) {}
+                  use_KNN_for_query_accuracy(use_KNN_for_query_accuracy) {
+            if (max_connections_per_batch_simplification == 0) {
+                throw std::invalid_argument("max_connections_per_batch_simplification is too low");
+            }
+        }
 
         /**
          * The TRACE_Q constructor, which includes KNN queries, that determines the query_amount based on the given parameters.
          * @param resolution_scale The MRPA resolution scale.
          * @param min_query_accuracy The minimum query accuracy that the simplification method must uphold.
+         * @param max_trajectories_in_batch The maximum number of trajectories per batch that is able to run
+         * concurrently due to database connections.
+         * @param max_threads The maximum amount of threads that are allowed to run database client connections to
+         * the PostgreSQL database.
          * @param range_query_grid_density_multiplier The grid density factor for range queries,
          * which describes how close points appear in the grid.
          * @param knn_query_grid_density_multiplier The grid density factor for KNN queries,
@@ -258,12 +284,16 @@ namespace trace_q {
          * @param knn_k The K value for K-Nearest-Neighbour queries.
          * @param use_KNN_for_query_accuracy Decides whether KNN queries should be utilized for determining query accuracy.
          */
-        TRACE_Q(double resolution_scale, double min_query_accuracy, double range_query_grid_density_multiplier,
+        TRACE_Q(double resolution_scale, double min_query_accuracy, int max_trajectories_in_batch, int max_threads,
+                double range_query_grid_density_multiplier,
                 double knn_query_grid_density_multiplier,  int windows_per_grid_point,
                 double window_expansion_rate, double range_query_time_interval_multiplier,
                 double knn_query_time_interval_multiplier, int knn_k, bool use_KNN_for_query_accuracy)
                 : mrpa(resolution_scale),
                   min_query_accuracy(min_query_accuracy),
+                  max_trajectories_in_batch(max_trajectories_in_batch),
+                  max_threads(max_threads),
+                  max_connections_per_batch_simplification(max_threads / max_trajectories_in_batch),
                   range_query_grid_expansion_factor(range_query_grid_density_multiplier * 0.8),
                   knn_query_grid_expansion_factor(knn_query_grid_density_multiplier * 0.8),
                   range_query_grid_density(range_query_grid_density_multiplier),
@@ -273,11 +303,10 @@ namespace trace_q {
                   range_query_time_interval_multiplier(range_query_time_interval_multiplier),
                   knn_query_time_interval_multiplier(knn_query_time_interval_multiplier),
                   knn_k(knn_k),
-                  use_KNN_for_query_accuracy(use_KNN_for_query_accuracy){
-            if (knn_query_time_interval_multiplier < 0.02) {
-                throw std::invalid_argument("knn_query_time_interval_multiplier was lower than allowed");
+                  use_KNN_for_query_accuracy(use_KNN_for_query_accuracy) {
+            if (max_connections_per_batch_simplification == 0) {
+                throw std::invalid_argument("max_connections_per_batch_simplification is too low");
             }
-            max_trajectories_in_batch = static_cast<int>(std::floor(80 / (1 / knn_query_time_interval_multiplier)));
         }
 
         /**

@@ -13,6 +13,8 @@ TEST_CASE("TRACE-Q KNN K benchmarking") {
 
     double resolution_scale = 2.0;
     double min_query_accuracy = 0.95;
+    int max_trajectories_in_batch = 8;
+    int max_threads = 50;
     auto range_query_grid_density = 0.1;
     auto knn_query_grid_density = 0.1;
     int windows_per_grid_point = 3;
@@ -28,10 +30,12 @@ TEST_CASE("TRACE-Q KNN K benchmarking") {
 
         int custom_knn_k = 1;
 
-        auto trace_q = trace_q::TRACE_Q{resolution_scale, min_query_accuracy, range_query_grid_density,
+        auto trace_q = trace_q::TRACE_Q{resolution_scale, min_query_accuracy, max_trajectories_in_batch, max_threads,
+                                        range_query_grid_density,
                                         knn_query_grid_density, windows_per_grid_point,
                                         window_expansion_rate, range_query_time_interval_multiplier,
-                                        knn_query_time_interval_multiplier, custom_knn_k, use_KNN_for_query_accuracy};
+                                        knn_query_time_interval_multiplier, custom_knn_k,
+                                        use_KNN_for_query_accuracy};
         auto time = analytics::Benchmark::function_time([&trace_q]() { trace_q.run(); });
 
         auto query_accuracy = analytics::Benchmark::benchmark_query_accuracy();
@@ -47,10 +51,12 @@ TEST_CASE("TRACE-Q KNN K benchmarking") {
 
         int custom_knn_k = 10;
 
-        auto trace_q = trace_q::TRACE_Q{resolution_scale, min_query_accuracy, range_query_grid_density,
+        auto trace_q = trace_q::TRACE_Q{resolution_scale, min_query_accuracy, max_trajectories_in_batch, max_threads,
+                                        range_query_grid_density,
                                         knn_query_grid_density, windows_per_grid_point,
                                         window_expansion_rate, range_query_time_interval_multiplier,
-                                        knn_query_time_interval_multiplier, custom_knn_k, use_KNN_for_query_accuracy};
+                                        knn_query_time_interval_multiplier, custom_knn_k,
+                                        use_KNN_for_query_accuracy};
         auto time = analytics::Benchmark::function_time([&trace_q]() { trace_q.run(); });
 
         auto query_accuracy = analytics::Benchmark::benchmark_query_accuracy();
@@ -66,10 +72,12 @@ TEST_CASE("TRACE-Q KNN K benchmarking") {
 
         int custom_knn_k = 50;
 
-        auto trace_q = trace_q::TRACE_Q{resolution_scale, min_query_accuracy, range_query_grid_density,
+        auto trace_q = trace_q::TRACE_Q{resolution_scale, min_query_accuracy, max_trajectories_in_batch, max_threads,
+                                        range_query_grid_density,
                                         knn_query_grid_density, windows_per_grid_point,
                                         window_expansion_rate, range_query_time_interval_multiplier,
-                                        knn_query_time_interval_multiplier, custom_knn_k, use_KNN_for_query_accuracy};
+                                        knn_query_time_interval_multiplier, custom_knn_k,
+                                        use_KNN_for_query_accuracy};
         auto time = analytics::Benchmark::function_time([&trace_q]() { trace_q.run(); });
 
         auto query_accuracy = analytics::Benchmark::benchmark_query_accuracy();
@@ -88,6 +96,8 @@ TEST_CASE("TRACE-Q IS KNN NECESSARY?") {
 
     double resolution_scale = 2.0;
     double min_query_accuracy = 0.95;
+    int max_trajectories_in_batch = 8;
+    int max_threads = 50;
     auto range_query_grid_density = 0.1;
     auto knn_query_grid_density = 0.1;
     int windows_per_grid_point = 3;
@@ -103,10 +113,12 @@ TEST_CASE("TRACE-Q IS KNN NECESSARY?") {
 
         bool custom_use_KNN_for_query_accuracy = true;
 
-        auto trace_q = trace_q::TRACE_Q{resolution_scale, min_query_accuracy, range_query_grid_density,
+        auto trace_q = trace_q::TRACE_Q{resolution_scale, min_query_accuracy, max_trajectories_in_batch, max_threads,
+                                        range_query_grid_density,
                                         knn_query_grid_density, windows_per_grid_point,
                                         window_expansion_rate, range_query_time_interval_multiplier,
-                                        knn_query_time_interval_multiplier, knn_k, custom_use_KNN_for_query_accuracy};
+                                        knn_query_time_interval_multiplier, knn_k,
+                                        custom_use_KNN_for_query_accuracy};
         auto time = analytics::Benchmark::function_time([&trace_q]() { trace_q.run(); });
 
         auto query_accuracy = analytics::Benchmark::benchmark_query_accuracy();
@@ -122,8 +134,10 @@ TEST_CASE("TRACE-Q IS KNN NECESSARY?") {
 
         bool custom_use_KNN_for_query_accuracy = false;
 
-        auto trace_q = trace_q::TRACE_Q{resolution_scale, min_query_accuracy, range_query_grid_density, windows_per_grid_point,
-                                        window_expansion_rate, range_query_time_interval_multiplier, custom_use_KNN_for_query_accuracy};
+        auto trace_q = trace_q::TRACE_Q{resolution_scale, min_query_accuracy, max_trajectories_in_batch, max_threads,
+                                        range_query_grid_density, windows_per_grid_point,
+                                        window_expansion_rate, range_query_time_interval_multiplier,
+                                        custom_use_KNN_for_query_accuracy};
         auto time = analytics::Benchmark::function_time([&trace_q]() { trace_q.run(); });
 
         auto query_accuracy = analytics::Benchmark::benchmark_query_accuracy();
@@ -132,4 +146,10 @@ TEST_CASE("TRACE-Q IS KNN NECESSARY?") {
         std::cout << "Runtime: " << time / 1000 << " s\n";
         std::cout << "Query accuracy: " << query_accuracy << "\n" << std::endl;
     }
+}
+
+TEST_CASE("Query Accuracy") {
+auto query_accuracy = analytics::Benchmark::benchmark_query_accuracy();
+
+std::cout << query_accuracy << std::endl;
 }

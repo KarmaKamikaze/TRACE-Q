@@ -56,21 +56,30 @@ namespace trace_q {
             auto knn_query_points_on_axis = static_cast<int>(std::ceil(1 / knn_query_grid_density));
             auto knn_query_time_points = static_cast<int>(std::ceil(1 / knn_query_time_interval_multiplier));
 
+            // Here we run the knn queries asynchronously for each query time point. Note that here, the query time points should not be larger than the allowed connections to the database (100)
+            std::vector<std::future<std::shared_ptr<spatial_queries::KNN_Query_Test>>> knn_futures{};
+
             for (int x_point = 0; x_point <= knn_query_points_on_axis; ++x_point) {
                 // Scale the coordinate based on the grid density, the mbr and the current point on the x-axis.
                 auto x_coord = knn_query_mbr.x_low + x_point * knn_query_grid_density * (knn_query_mbr.x_high - knn_query_mbr.x_low);
                 for (int y_point = 0; y_point <= knn_query_points_on_axis; ++y_point) {
                     auto y_coord = knn_query_mbr.y_low + y_point * knn_query_grid_density * (knn_query_mbr.y_high - knn_query_mbr.y_low);
 
-                    // Here we run the knn queries asynchronously for each query time point. Note that here, the query time points should not be larger than the allowed connections to the database (100)
-                    std::vector<std::future<std::shared_ptr<spatial_queries::KNN_Query_Test>>> knn_futures{};
                     for (int t_point = 0; t_point <= knn_query_time_points; ++t_point) {
                         auto t_interval = knn_query_mbr.t_low + static_cast<unsigned long>(t_point * knn_query_time_interval_multiplier
                                                                                           * static_cast<long double>((knn_query_mbr.t_high - knn_query_mbr.t_low)));
 
                         knn_futures.emplace_back(std::async(std::launch::async, knn_query_initialization, original_trajectory.id, x_coord, y_coord, t_interval, knn_query_mbr, knn_query_time_interval_multiplier, knn_k));
+                        if (knn_futures.size() >= max_connections_per_batch_simplification) {
+                            for (auto& fut : knn_futures) {
+                                auto knn_query_test_pointer = fut.get();
+                                if (knn_query_test_pointer->original_in_result) {
+                                    query_objects.push_back(knn_query_test_pointer);
+                                }
+                            }
+                            knn_futures.clear();
+                        }
                     }
-
 
                     spatial_queries::KNN_Query::KNN_Origin origin{x_coord, y_coord, std::numeric_limits<unsigned long>::min(), std::numeric_limits<unsigned long>::max()};
 
@@ -78,16 +87,17 @@ namespace trace_q {
                             std::async(std::launch::async,
                                        [this](unsigned int original_trajectory_id, spatial_queries::KNN_Query::KNN_Origin const& o)
                                        { return std::make_shared<spatial_queries::KNN_Query_Test>(original_trajectory_id, knn_k, o); }, original_trajectory.id, origin));
+                }
+            }
 
-                    for (auto& fut : knn_futures) {
-                        auto knn_query_test_pointer = fut.get();
-                        if (knn_query_test_pointer->original_in_result) {
-                            query_objects.push_back(knn_query_test_pointer);
-                        }
-                    }
+            for (auto& fut : knn_futures) {
+                auto knn_query_test_pointer = fut.get();
+                if (knn_query_test_pointer->original_in_result) {
+                    query_objects.push_back(knn_query_test_pointer);
                 }
             }
         }
+
         return query_objects;
     }
 
@@ -107,10 +117,10 @@ namespace trace_q {
         }
         int correct_range_queries = process_futures(range_futures);
 
-        auto range_query_f1 = static_cast<double>(correct_range_queries) / (correct_range_queries + 0.5 * static_cast<double>(range_futures.size() - correct_range_queries));
+        auto range_query_f1 = static_cast<double>(correct_range_queries) / (correct_range_queries + 0.5 * (static_cast<double>(range_futures.size() - correct_range_queries)));
         if (use_KNN_for_query_accuracy) {
             int correct_knn_queries = process_futures(knn_futures);
-            auto knn_query_f1 = static_cast<double>(correct_knn_queries) / (correct_knn_queries + 0.5 * static_cast<double>(knn_futures.size() - correct_knn_queries));
+            auto knn_query_f1 = static_cast<double>(correct_knn_queries) / (correct_knn_queries + 0.5 * (static_cast<double>(knn_futures.size() - correct_knn_queries)));
 
             return std::midpoint(range_query_f1, knn_query_f1);
         }
