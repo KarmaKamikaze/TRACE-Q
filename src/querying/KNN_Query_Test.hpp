@@ -13,6 +13,8 @@ namespace spatial_queries {
          */
         KNN_Query::KNN_Origin origin{};
 
+        int k{};
+
         std::vector<KNN_Query::KNN_Result_Element> query_result{};
 
         /**
@@ -36,9 +38,10 @@ namespace spatial_queries {
          */
         bool original_in_result{false};
 
-        KNN_Query_Test(int original_trajectory_id, int k, KNN_Query::KNN_Origin const& query_origin)
-        : origin{query_origin}, query_result{KNN_Query::get_ids_from_knn(table_name, k + 1, query_origin)} {
-            for (int i = 0; i < k; i++) {
+        KNN_Query_Test(unsigned int original_trajectory_id, int k, KNN_Query::KNN_Origin const& query_origin)
+        : origin{query_origin}, k{k} {
+            query_result = KNN_Query::get_ids_from_knn(table_name, k + 1, query_origin);
+            for (int i = 0; i < k && i < query_result.size(); i++) {
                 if (original_trajectory_id == query_result[i].id) {
                     original_in_result = true;
                 }

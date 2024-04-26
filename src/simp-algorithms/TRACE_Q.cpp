@@ -14,7 +14,6 @@ namespace trace_q {
         auto simplifications = mrpa(original_trajectory);
 
         auto query_objects = initialize_query_tests(original_trajectory);
-
         // iterate from the back since simplifications appear in decreasing resolution
         for (int i = static_cast<int>(simplifications.size()) - 1; i >= 0; --i) {
             if (query_accuracy(simplifications[i], query_objects) >= min_query_accuracy) {
@@ -51,7 +50,6 @@ namespace trace_q {
                 }
             }
         }
-
         if (use_KNN_for_query_accuracy) {
             auto knn_query_mbr = expand_MBR(calculate_MBR(original_trajectory), knn_query_grid_expansion_factor);
 
@@ -67,11 +65,12 @@ namespace trace_q {
                     // Here we run the knn queries asynchronously for each query time point. Note that here, the query time points should not be larger than the allowed connections to the database (100)
                     std::vector<std::future<std::shared_ptr<spatial_queries::KNN_Query_Test>>> knn_futures{};
                     for (int t_point = 0; t_point <= knn_query_time_points; ++t_point) {
-                        auto t_interval = static_cast<long double>(knn_query_mbr.t_low) + t_point * knn_query_time_interval_multiplier
-                                                                                          * static_cast<long double>((knn_query_mbr.t_high - knn_query_mbr.t_low));
+                        auto t_interval = knn_query_mbr.t_low + static_cast<unsigned long>(t_point * knn_query_time_interval_multiplier
+                                                                                          * static_cast<long double>((knn_query_mbr.t_high - knn_query_mbr.t_low)));
 
                         knn_futures.emplace_back(std::async(std::launch::async, knn_query_initialization, original_trajectory.id, x_coord, y_coord, t_interval, knn_query_mbr, knn_query_time_interval_multiplier, knn_k));
                     }
+
 
                     spatial_queries::KNN_Query::KNN_Origin origin{x_coord, y_coord, std::numeric_limits<unsigned long>::min(), std::numeric_limits<unsigned long>::max()};
 
@@ -81,15 +80,14 @@ namespace trace_q {
                                        { return std::make_shared<spatial_queries::KNN_Query_Test>(original_trajectory_id, knn_k, o); }, original_trajectory.id, origin));
 
                     for (auto& fut : knn_futures) {
-                        auto knn_query_test = *(fut.get());
-                        if (knn_query_test.original_in_result) {
-                            query_objects.push_back(fut.get());
+                        auto knn_query_test_pointer = fut.get();
+                        if (knn_query_test_pointer->original_in_result) {
+                            query_objects.push_back(knn_query_test_pointer);
                         }
                     }
                 }
             }
         }
-
         return query_objects;
     }
 
@@ -107,13 +105,13 @@ namespace trace_q {
                 knn_futures.emplace_back(std::async(std::launch::async, *knn_query, std::ref(trajectory)));
             }
         }
-
         int correct_range_queries = process_futures(range_futures);
 
         auto range_query_f1 = static_cast<double>(correct_range_queries) / (correct_range_queries + 0.5 * static_cast<double>(range_futures.size() - correct_range_queries));
         if (use_KNN_for_query_accuracy) {
             int correct_knn_queries = process_futures(knn_futures);
             auto knn_query_f1 = static_cast<double>(correct_knn_queries) / (correct_knn_queries + 0.5 * static_cast<double>(knn_futures.size() - correct_knn_queries));
+
             return std::midpoint(range_query_f1, knn_query_f1);
         }
 
@@ -157,7 +155,7 @@ namespace trace_q {
                     x, mbr.x_low, mbr.x_high, window_expansion_rate, range_query_grid_density, window_number);
             auto [window_y_low, window_y_high] = calculate_window_range(
                     y, mbr.y_low, mbr.y_high, window_expansion_rate, range_query_grid_density, window_number);
-            auto [window_t_low, window_t_high] = calculate_window_range(
+            auto [window_t_low, window_t_high] = calculate_time_range(
                     t, mbr.t_low, mbr.t_high, window_expansion_rate,
                     range_query_time_interval_multiplier, window_number);
 
@@ -187,32 +185,47 @@ namespace trace_q {
             unsigned int original_trajectory_id,
             double x, double y, unsigned long t, MBR const& mbr, double time_interval_multiplier, int knn_k) {
 
-        auto [t_low, t_high] = calculate_window_range(
-                t, mbr.t_low, mbr.t_high, 0,
+        auto [t_low, t_high] = calculate_time_range(
+                t, mbr.t_low, mbr.t_high, 1,
                 time_interval_multiplier, 0);
 
         spatial_queries::KNN_Query::KNN_Origin origin{x, y, t_low, t_high};
         return std::make_shared<spatial_queries::KNN_Query_Test>(original_trajectory_id, knn_k, origin);
     }
 
-    template<typename T>
-    std::pair<T, T> TRACE_Q::calculate_window_range(
-            T center, T mbr_low, T mbr_high, double window_expansion_rate,
+    std::pair<double, double> TRACE_Q::calculate_window_range(
+            double center, double mbr_low, double mbr_high, double window_expansion_rate,
             double grid_density, int window_number) {
-        auto w_low = static_cast<T>(std::round(static_cast<long double>(center) - 0.5 * (pow(window_expansion_rate, window_number)
-                * grid_density * static_cast<long double>(mbr_high - mbr_low))));
+        auto w_low = center - 0.5 * (pow(window_expansion_rate, window_number)
+                * grid_density * (mbr_high - mbr_low));
         if (w_low < mbr_low) {
             w_low = mbr_low;
         }
-        auto w_high = static_cast<T>(std::round(static_cast<long double>(center) + 0.5 * (pow(window_expansion_rate, window_number)
-                * grid_density * static_cast<long double>(mbr_high - mbr_low))));
+        auto w_high = center + 0.5 * (pow(window_expansion_rate, window_number)
+                * grid_density * (mbr_high - mbr_low));
         if (w_high > mbr_high) {
             w_high = mbr_high;
         }
         return {w_low, w_high};
     }
 
-    int TRACE_Q::process_futures(std::vector<std::future<bool>>& futures){
+    std::pair<unsigned long, unsigned long> TRACE_Q::calculate_time_range(
+            unsigned long center, unsigned long mbr_low, unsigned long mbr_high,
+            double window_expansion_rate, double grid_density, int window_number) {
+        auto w_low = static_cast<unsigned long>(std::floor(center - 0.5 * (pow(window_expansion_rate, window_number)
+                                     * grid_density * static_cast<long double>(mbr_high - mbr_low))));
+        if (w_low < mbr_low) {
+            w_low = mbr_low;
+        }
+        auto w_high = static_cast<unsigned long>(std::ceil(center + 0.5 * (pow(window_expansion_rate, window_number)
+                                      * grid_density * static_cast<long double>(mbr_high - mbr_low))));
+        if (w_high > mbr_high) {
+            w_high = mbr_high;
+        }
+        return {w_low, w_high};
+    }
+
+    int TRACE_Q::process_futures(std::vector<std::future<bool>>& futures) {
         int correct_queries = 0;
         for (auto & fut : futures) {
             if (fut.get()) {

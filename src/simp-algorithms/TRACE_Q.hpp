@@ -164,20 +164,35 @@ namespace trace_q {
                 double x, double y, unsigned long t, MBR const& mbr, double time_interval_multiplier, int knn_k);
 
         /**
-         * This function calculates the lower and upper bounds of a range centered around a given value,
+         * This function calculates the lower and upper bounds of a window range centered around a given value,
          * considering the window expansion rate, grid density, and window number.
          *
-         * @param center The center value around which the range is calculated.
+         * @param center The center value around which the window range is calculated.
          * @param mbr_low The lower bound of the Minimum Bounding Rectangle (MBR) for the dimension.
          * @param mbr_high The upper bound of the Minimum Bounding Rectangle (MBR) for the dimension.
          * @param window_expansion_rate The rate at which the window expands with each window number.
          * @param grid_density The density of the grid, affecting the size of the window.
          * @param window_number The number of the window for which the range is calculated.
-         * @return A pair containing the lower and upper bounds of the calculated range.
+         * @return A pair containing the lower and upper bounds of the calculated window range.
          */
-         template<typename T>
-        static std::pair<T, T> calculate_window_range(
-                T center, T mbr_low, T mbr_high,
+        static std::pair<double, double> calculate_window_range(
+                double center, double mbr_low, double mbr_high,
+                double window_expansion_rate, double grid_density, int window_number);
+
+        /**
+         * This function calculates the lower and upper bounds of a time range centered around a given value,
+         * considering the window expansion rate, grid density, and window number.
+         *
+         * @param center The center value around which the time range is calculated.
+         * @param mbr_low The lower bound of the Minimum Bounding Rectangle (MBR) for the dimension.
+         * @param mbr_high The upper bound of the Minimum Bounding Rectangle (MBR) for the dimension.
+         * @param window_expansion_rate The rate at which the window expands with each window number.
+         * @param grid_density The density of the grid, affecting the size of the window.
+         * @param window_number The number of the window for which the range is calculated.
+         * @return A pair containing the lower and upper bounds of the calculated time range.
+         */
+        static std::pair<unsigned long, unsigned long> calculate_time_range(
+                unsigned long center, unsigned long mbr_low, unsigned long mbr_high,
                 double window_expansion_rate, double grid_density, int window_number);
 
         /**

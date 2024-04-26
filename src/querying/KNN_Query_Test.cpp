@@ -16,6 +16,14 @@ namespace spatial_queries {
             }
         }
 
+        if (min_distance_simplified == std::numeric_limits<double>::max()) {
+            return false;
+        }
+
+        if (query_result.size() <= k) {
+            return true;
+        }
+
         if (min_distance_simplified <= query_result.back().distance) {
             return true;
         }
