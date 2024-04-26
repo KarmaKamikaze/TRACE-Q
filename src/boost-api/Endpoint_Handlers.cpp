@@ -46,8 +46,7 @@ namespace api {
         return json_data;
     }
 
-    boost::json::array convert_trajectory_to_json(const std::vector<data_structures::Trajectory>& trajectory){
-        boost::json::array response_trajectory{};
+    boost::json::object convert_trajectory_to_json(const std::vector<data_structures::Trajectory>& trajectory){
         boost::json::object json_traj{};
         json_traj["id"] = trajectory[0].id;
 
@@ -62,9 +61,8 @@ namespace api {
         }
 
         json_traj["locations"] = std::move(json_locations);
-        response_trajectory.push_back(std::move(json_traj));
 
-        return response_trajectory;
+        return json_traj;
     }
 
     /**
@@ -382,7 +380,7 @@ namespace api {
             std::vector<unsigned int> id{static_cast<unsigned int>(json_object.at("id").as_int64())};
 
             std::vector<data_structures::Trajectory> trajectory = Trajectory_Manager::load_into_data_structure(db_table,id);
-            boost::json::array response_trajectory{convert_trajectory_to_json(trajectory)};
+            boost::json::object response_trajectory{convert_trajectory_to_json(trajectory)};
 
             boost::json::object response_object{};
             response_object["response_trajectory"] = std::move(response_trajectory);
@@ -525,8 +523,8 @@ namespace api {
 
             auto original_trajectory = Trajectory_Manager::get_trajectory_from_id_table_date(id, trajectory_data_handling::db_table::original_trajectories, date);
             auto simplified_trajectory = Trajectory_Manager::get_trajectory_from_id_table_date(id, trajectory_data_handling::db_table::simplified_trajectories, date);
-            boost::json::array json_original_trajectory{convert_trajectory_to_json(original_trajectory)};
-            boost::json::array json_simplified_trajectory{convert_trajectory_to_json(simplified_trajectory)};
+            boost::json::object json_original_trajectory{convert_trajectory_to_json(original_trajectory)};
+            boost::json::object json_simplified_trajectory{convert_trajectory_to_json(simplified_trajectory)};
 
             boost::json::object response_object{};
             response_object["original_trajectory"] = std::move(json_original_trajectory);
