@@ -6,9 +6,9 @@ include_directories(${Boost_INCLUDE_DIRS})
 # Check if the platform is Windows
 if(WIN32)
     # Link against Ws2_32.lib on Windows
-    target_link_libraries(boost-api PRIVATE ${Boost_LIBRARIES} Ws2_32.lib trajectory_data_handling)
+    target_link_libraries(boost-api PRIVATE ${Boost_LIBRARIES} Ws2_32.lib trajectory_data_handling simp-algorithms)
 else()
-    target_link_libraries(boost-api PRIVATE ${Boost_LIBRARIES} trajectory_data_handling)
+    target_link_libraries(boost-api PRIVATE ${Boost_LIBRARIES} trajectory_data_handling simp-algorithms)
 endif()
 
 target_sources(boost-api
