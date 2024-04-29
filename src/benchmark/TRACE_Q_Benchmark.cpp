@@ -185,6 +185,7 @@ TEST_CASE("Query Accuracy") {
     auto query_objects = analytics::Benchmark::initialize_query_objects();
     auto query_accuracy = analytics::Benchmark::benchmark_query_accuracy(query_objects);
 
-    std::cout << "Range Query Accuracy: " << query_accuracy.range_f1 << "\n"
-    << "KNN Query Accuracy: " << query_accuracy.knn_f1 << std::endl;
+    std::cout << "Range Query Accuracy: " << query_accuracy.range_f1 << "\n";
+    std::cout << "KNN Query Accuracy: " << query_accuracy.knn_f1 << "\n";
+    std::cout << "Compression Ratio: " << analytics::Benchmark::get_compression_ratio() << std::endl;
 }
