@@ -49,6 +49,7 @@ namespace analytics {
         static std::pair<unsigned long, unsigned long> calculate_time_range(
                 unsigned long center, unsigned long mbr_low, unsigned long mbr_high,
                 double w_expansion_rate, double w_grid_density, int window_number);
+        static double get_compression_ratio();
 
         /**
          * This function takes a function and its parameters and times how long times it takes to execute it.

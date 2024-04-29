@@ -47,8 +47,9 @@ TEST_CASE("TRACE-Q KNN K benchmarking") {
 
         std::cout << "TRACE-Q Runtime vs Query Accuracy - KNN K = 1" << std::endl;
         std::cout << "Runtime: " << time / 1000 << " s\n";
-        std::cout << "Range Query Accuracy: " << query_accuracy.range_f1 << "\n"
-                  << "KNN Query Accuracy: " << query_accuracy.knn_f1 << std::endl;
+        std::cout << "Range Query Accuracy: " << query_accuracy.range_f1 << "\n";
+        std::cout << "KNN Query Accuracy: " << query_accuracy.knn_f1 << "\n";
+        std::cout << "Compression Ratio: " << analytics::Benchmark::get_compression_ratio() << std::endl;
 
         // Teardown
         trajectory_data_handling::Trajectory_Manager::reset_all_data();
@@ -71,8 +72,9 @@ TEST_CASE("TRACE-Q KNN K benchmarking") {
 
         std::cout << "TRACE-Q Runtime vs Query Accuracy - KNN K = 10" << std::endl;
         std::cout << "Runtime: " << time / 1000 << " s\n";
-        std::cout << "Range Query Accuracy: " << query_accuracy.range_f1 << "\n"
-                  << "KNN Query Accuracy: " << query_accuracy.knn_f1 << std::endl;
+        std::cout << "Range Query Accuracy: " << query_accuracy.range_f1 << "\n";
+        std::cout << "KNN Query Accuracy: " << query_accuracy.knn_f1 << "\n";
+        std::cout << "Compression Ratio: " << analytics::Benchmark::get_compression_ratio() << std::endl;
 
         // Teardown
         trajectory_data_handling::Trajectory_Manager::reset_all_data();
@@ -95,8 +97,9 @@ TEST_CASE("TRACE-Q KNN K benchmarking") {
 
         std::cout << "TRACE-Q Runtime vs Query Accuracy - KNN K = 50" << std::endl;
         std::cout << "Runtime: " << time / 1000 << " s\n";
-        std::cout << "Range Query Accuracy: " << query_accuracy.range_f1 << "\n"
-                  << "KNN Query Accuracy: " << query_accuracy.knn_f1 << std::endl;
+        std::cout << "Range Query Accuracy: " << query_accuracy.range_f1 << "\n";
+        std::cout << "KNN Query Accuracy: " << query_accuracy.knn_f1 << "\n";
+        std::cout << "Compression Ratio: " << analytics::Benchmark::get_compression_ratio() << std::endl;
 
         // Teardown
         trajectory_data_handling::Trajectory_Manager::reset_all_data();
@@ -145,8 +148,9 @@ TEST_CASE("TRACE-Q IS KNN NECESSARY?") {
 
         std::cout << "TRACE-Q WITH KNN" << std::endl;
         std::cout << "Runtime: " << time / 1000 << " s\n";
-        std::cout << "Range Query Accuracy: " << query_accuracy.range_f1 << "\n"
-                  << "KNN Query Accuracy: " << query_accuracy.knn_f1 << std::endl;
+        std::cout << "Range Query Accuracy: " << query_accuracy.range_f1 << "\n";
+        std::cout << "KNN Query Accuracy: " << query_accuracy.knn_f1 << "\n";
+        std::cout << "Compression Ratio: " << analytics::Benchmark::get_compression_ratio() << std::endl;
 
         // Teardown
         trajectory_data_handling::Trajectory_Manager::reset_all_data();
@@ -167,8 +171,9 @@ TEST_CASE("TRACE-Q IS KNN NECESSARY?") {
 
         std::cout << "TRACE-Q WITHOUT KNN" << std::endl;
         std::cout << "Runtime: " << time / 1000 << " s\n";
-        std::cout << "Range Query Accuracy: " << query_accuracy.range_f1 << "\n"
-                  << "KNN Query Accuracy: " << query_accuracy.knn_f1 << std::endl;
+        std::cout << "Range Query Accuracy: " << query_accuracy.range_f1 << "\n";
+        std::cout << "KNN Query Accuracy: " << query_accuracy.knn_f1 << "\n";
+        std::cout << "Compression Ratio: " << analytics::Benchmark::get_compression_ratio() << std::endl;
 
         // Teardown
         trajectory_data_handling::Trajectory_Manager::reset_all_data();

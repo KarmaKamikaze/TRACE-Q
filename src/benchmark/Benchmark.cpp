@@ -247,6 +247,23 @@ namespace analytics {
         return {w_low, w_high};
     }
 
+    double Benchmark::get_compression_ratio() {
+
+        std::stringstream query{};
+
+        query << "SELECT CAST(o_count AS float) / CAST(s_count AS float) AS compression_ratio"
+                 "FROM (SELECT COUNT(*) AS o_count FROM original_trajectories) t1_count, "
+                 "(SELECT COUNT(*) AS s_count FROM simplified_trajectories) t2_count";
+
+        pqxx::connection c{connection_string};
+        pqxx::work txn{c};
+
+        auto query_result = txn.exec1(query.str());
+        txn.commit();
+
+        return query_result["compression_ratio"].as<double>();
+    }
+
 }
 
 
