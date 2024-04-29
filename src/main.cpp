@@ -34,6 +34,7 @@ int main(int argc, char* argv[]) {
     endpoints["/run"] = api::handle_run_simplification;
     endpoints["/status"] = api::handle_db_status;
     endpoints["/load_from_id_date"] = api::handle_load_trajectories_from_id_and_time;
+    endpoints["/get_dates_from_id"] = api::handle_get_dates_from_id;
     // Set up the io_context
     boost::asio::io_context io_context{};
     // Create and bind an acceptor to listen for incoming connections

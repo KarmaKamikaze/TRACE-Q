@@ -27,5 +27,7 @@ namespace api {
 
     void handle_load_trajectories_from_id_and_time(const request<string_body> &req, response<string_body> &res);
 
+    void handle_get_dates_from_id(const request<string_body> &req, response<string_body> &res);
+
     void handle_not_found(const request<string_body> &req, response<string_body> &res);
 }
