@@ -52,6 +52,7 @@ TEST_CASE("TRACE-Q KNN K benchmarking") {
 
         // Teardown
         trajectory_data_handling::Trajectory_Manager::reset_all_data();
+        trajectory_data_handling::File_Manager::load_tdrive_dataset();
     }
 
     SUBCASE("TRACE-Q Runtime vs Query Accuracy - KNN K = 10") {
@@ -75,6 +76,7 @@ TEST_CASE("TRACE-Q KNN K benchmarking") {
 
         // Teardown
         trajectory_data_handling::Trajectory_Manager::reset_all_data();
+        trajectory_data_handling::File_Manager::load_tdrive_dataset();
     }
 
     SUBCASE("TRACE-Q Runtime vs Query Accuracy - KNN K = 50") {
@@ -98,6 +100,7 @@ TEST_CASE("TRACE-Q KNN K benchmarking") {
 
         // Teardown
         trajectory_data_handling::Trajectory_Manager::reset_all_data();
+        trajectory_data_handling::File_Manager::load_tdrive_dataset();
     }
 }
 
