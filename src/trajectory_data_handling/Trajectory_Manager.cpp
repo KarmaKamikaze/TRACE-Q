@@ -259,7 +259,7 @@ namespace trajectory_data_handling {
     }
 
     std::vector<std::string> Trajectory_Manager::get_dates_from_id(int trajectory_id){
-        std::stringstream datestream;
+        std::stringstream datestream{};
         pqxx::connection c{connection_string};
         pqxx::work txn{c};
 
