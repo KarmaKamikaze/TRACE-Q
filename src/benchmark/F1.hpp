@@ -7,10 +7,12 @@
 namespace analytics {
 
     class F1 {
-    public:
+    private:
         int true_positives{};
         int false_positives{};
         int false_negatives{};
+
+    public:
 
         F1(std::vector<spatial_queries::KNN_Query::KNN_Result_Element> const& original_vec,
            std::vector<spatial_queries::KNN_Query::KNN_Result_Element> const& simplified_vec);
