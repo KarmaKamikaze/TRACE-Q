@@ -147,6 +147,7 @@ TEST_CASE("TRACE-Q IS KNN NECESSARY?") {
 
         // Teardown
         trajectory_data_handling::Trajectory_Manager::reset_all_data();
+        trajectory_data_handling::File_Manager::load_tdrive_dataset();
     }
 
     SUBCASE("TRACE-Q WITHOUT KNN") {
@@ -168,6 +169,7 @@ TEST_CASE("TRACE-Q IS KNN NECESSARY?") {
 
         // Teardown
         trajectory_data_handling::Trajectory_Manager::reset_all_data();
+        trajectory_data_handling::File_Manager::load_tdrive_dataset();
     }
 }
 
