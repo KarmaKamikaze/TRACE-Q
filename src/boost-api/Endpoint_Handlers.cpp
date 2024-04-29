@@ -542,6 +542,45 @@ namespace api {
         }
     }
 
+    void handle_get_dates_from_id(const request<string_body> &req, response<string_body> &res) {
+        try {
+            if (req.method() == verb::options) {
+                handle_options(req, res);
+                return;
+            }
+            add_cors_headers(res);
+
+            boost::json::value json_data = boost::json::parse(req.body());
+            const boost::json::object &json_object = json_data.as_object();
+
+            if (!json_data.is_object())
+                throw std::runtime_error("Invalid JSON data: expected an object");
+
+            if (!json_object.contains("id"))
+                throw std::runtime_error("JSON object does not contain 'id'");
+
+            auto id {json_object.at("id").as_int64()};
+
+            auto dates = Trajectory_Manager::get_dates_from_id(id);
+
+            boost::json::object response_object{};
+            boost::json::array json_dates{};
+            for (auto & date : dates) {
+                json_dates.emplace_back(date);
+            }
+            response_object["dates"] = std::move(json_dates);
+            res.result(status::ok);
+            res.set(field::content_type, "application/json");
+            res.body() = boost::json::serialize(response_object);
+        }
+        catch (const std::exception &e){
+            res.result(boost::beast::http::status::bad_request);
+            res.set(boost::beast::http::field::content_type, "text/plain");
+            res.body() = "Error processing JSON data: " + std::string(e.what());
+        }
+    }
+    
+
     void handle_not_found(const request<string_body> &req, response<string_body> &res) {
         res.result(status::not_found);
         res.body() = "Endpoint not found";

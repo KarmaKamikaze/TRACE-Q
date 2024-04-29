@@ -208,7 +208,7 @@ namespace trajectory_data_handling {
 
     std::vector<data_structures::Trajectory> Trajectory_Manager::get_trajectory_from_id_table_date(int trajectory_id, trajectory_data_handling::db_table table, const std::string& date){
         auto table_name = get_table_name(table);
-        std::stringstream datestream;
+        std::stringstream datestream{};
         pqxx::connection c{connection_string};
         pqxx::work txn{c};
 
@@ -220,7 +220,7 @@ namespace trajectory_data_handling {
         datestream << date << " 23:59:59";
         auto date_end = File_Manager::string_to_time(datestream.str());
 
-        std::stringstream query;
+        std::stringstream query{};
 
         query << "SELECT trajectory_id, coordinates, time FROM " << table_name << " WHERE trajectory_id = " << trajectory_id
               << " AND time >= '" << date_start << "' AND time <= '" << date_end << "';";
@@ -258,8 +258,23 @@ namespace trajectory_data_handling {
         return res;
     }
 
+    std::vector<std::string> Trajectory_Manager::get_dates_from_id(int trajectory_id){
+        std::stringstream datestream{};
+        pqxx::connection c{connection_string};
+        pqxx::work txn{c};
 
+        std::stringstream query{};
+        query << "SELECT DISTINCT to_char(to_timestamp(time), 'YYYY-MM-DD') as date FROM original_trajectories WHERE trajectory_id =" << trajectory_id << ";";
 
+        pqxx::result query_res{txn.exec(query.str())};
+        txn.commit();
+        std::vector<std::string> res{};
+
+        for (auto const& row : query_res) {
+            res.emplace_back(row["date"].c_str());
+        }
+        return res;
+    }
 }
 
 

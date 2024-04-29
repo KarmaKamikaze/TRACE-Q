@@ -69,6 +69,8 @@ namespace trajectory_data_handling {
         static bool get_db_status();
 
         static std::vector<data_structures::Trajectory> get_trajectory_from_id_table_date(int trajectory_id, trajectory_data_handling::db_table table, const std::string& date);
+
+        static std::vector<std::string> get_dates_from_id(int trajectory_id);
     private:
         /**
          * The connection string that specifies the connection details for the PostgreSQL database.
