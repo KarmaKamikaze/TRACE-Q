@@ -4,9 +4,18 @@
 #include <chrono>
 #include <functional>
 #include "../querying/KNN_Query.hpp"
+#include "../simp-algorithms/TRACE_Q.hpp"
 #include "F1.hpp"
+#include "benchmark-query-objects/Benchmark_Query.hpp"
+#include "benchmark-query-objects/Benchmark_Range_Query.hpp"
+#include "benchmark-query-objects/Benchmark_KNN_Query.hpp"
 
 namespace analytics {
+
+    struct Query_Accuracy {
+        double range_f1{};
+        double knn_f1{};
+    };
 
     struct MBR {
         double x_low{};
@@ -15,11 +24,6 @@ namespace analytics {
         double y_high{};
         unsigned long t_low{};
         unsigned long t_high{};
-    };
-
-    struct Query_Accuracy {
-        double range_f1{};
-        double knn_f1{};
     };
 
     class Benchmark {
@@ -35,9 +39,10 @@ namespace analytics {
         static int knn_k;
 
         static MBR get_mbr();
-        static Query_Accuracy benchmark_query_accuracy();
-        static std::vector<std::future<F1>> create_range_query_futures(double x, double y, unsigned long t, MBR const& mbr);
-        static std::future<F1> create_knn_query_future(int k, double x, double y, unsigned long t, MBR const& mbr);
+        static std::vector<std::shared_ptr<Benchmark_Query>> initialize_query_objects();
+        static Query_Accuracy benchmark_query_accuracy(std::vector<std::shared_ptr<Benchmark_Query>> const& query_objects);
+        static std::vector<std::future<Benchmark_Range_Query>> create_range_query_futures(double x, double y, unsigned long t, MBR const& mbr);
+        static std::future<Benchmark_KNN_Query> create_knn_query_future(int k, double x, double y, unsigned long t, MBR const& mbr);
         static std::pair<double, double> calculate_window_range(
                 double center, double mbr_low, double mbr_high, double w_expansion_rate,
                 double w_grid_density, int window_number);

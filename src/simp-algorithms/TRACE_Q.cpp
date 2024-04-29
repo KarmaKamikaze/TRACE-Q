@@ -16,7 +16,8 @@ namespace trace_q {
         auto query_objects = initialize_query_tests(original_trajectory);
         // iterate from the back since simplifications appear in decreasing resolution
         for (int i = static_cast<int>(simplifications.size()) - 1; i >= 0; --i) {
-            if (query_accuracy(simplifications[i], query_objects) >= min_query_accuracy) {
+            auto query_accuracy_res = query_accuracy(simplifications[i], query_objects);
+            if (query_accuracy_res.range_f1 >= min_range_query_accuracy && query_accuracy_res.knn_f1 >= min_knn_query_accuracy) {
                 return simplifications[i];
             }
         }
@@ -34,42 +35,57 @@ namespace trace_q {
         // Defines how many time intervals there should be made for each point in the grid in range queries.
         auto range_query_time_points = static_cast<int>(std::ceil(1 / range_query_time_interval_multiplier));
 
+        query_objects.reserve((range_query_points_on_axis + 1) * (range_query_points_on_axis + 1) * (range_query_time_points + 1));
+
+        auto range_query_x_range = range_query_mbr.x_high - range_query_mbr.x_low;
+        auto range_query_y_range = range_query_mbr.y_high - range_query_mbr.y_low;
+        auto range_query_time_range = static_cast<long double>(range_query_mbr.t_high - range_query_mbr.t_low);
+
         for (int x_point = 0; x_point <= range_query_points_on_axis; ++x_point) {
             // Scale the coordinate based on the grid density, the mbr and the current point on the x-axis.
-            auto x_coord = range_query_mbr.x_low + x_point * range_query_grid_density * (range_query_mbr.x_high - range_query_mbr.x_low);
+            auto x_coord = range_query_mbr.x_low + x_point * range_query_grid_density * range_query_x_range;
             for (int y_point = 0; y_point <= range_query_points_on_axis; ++y_point) {
-                auto y_coord = range_query_mbr.y_low + y_point * range_query_grid_density * (range_query_mbr.y_high - range_query_mbr.y_low);
+                auto y_coord = range_query_mbr.y_low + y_point * range_query_grid_density * range_query_y_range;
                 for (int t_point = 0; t_point <= range_query_time_points; ++t_point) {
                     auto t_interval = static_cast<unsigned long>(std::round(range_query_mbr.t_low + t_point
-                            * range_query_time_interval_multiplier * static_cast<long double>(range_query_mbr.t_high - range_query_mbr.t_low)));
+                                                                                                    * range_query_time_interval_multiplier * range_query_time_range));
 
                     auto range_queries = range_query_initialization(original_trajectory,
                                                                     x_coord, y_coord, t_interval, range_query_mbr);
-                    query_objects.insert(std::end(query_objects), std::begin(range_queries),
-                                         std::end(range_queries));
+                    query_objects.insert(std::end(query_objects), std::make_move_iterator(std::begin(range_queries)),
+                                         std::make_move_iterator(std::end(range_queries)));
                 }
             }
         }
+
         if (use_KNN_for_query_accuracy) {
             auto knn_query_mbr = expand_MBR(calculate_MBR(original_trajectory), knn_query_grid_expansion_factor);
 
             auto knn_query_points_on_axis = static_cast<int>(std::ceil(1 / knn_query_grid_density));
             auto knn_query_time_points = static_cast<int>(std::ceil(1 / knn_query_time_interval_multiplier));
 
-            // Here we run the knn queries asynchronously for each query time point. Note that here, the query time points should not be larger than the allowed connections to the database (100)
+            // Here we run the knn queries asynchronously for each query time point.
+            // Note that here, the query time points should not be larger than the allowed connections to the database (100)
             std::vector<std::future<std::shared_ptr<spatial_queries::KNN_Query_Test>>> knn_futures{};
+            knn_futures.reserve((knn_query_points_on_axis + 1) * (knn_query_points_on_axis + 1) * (knn_query_time_points + 1));
+
+            auto knn_x_range = knn_query_mbr.x_high - knn_query_mbr.x_low;
+            auto knn_y_range = knn_query_mbr.y_high - knn_query_mbr.y_low;
+            auto knn_time_range = static_cast<long double>(knn_query_mbr.t_high - knn_query_mbr.t_low);
 
             for (int x_point = 0; x_point <= knn_query_points_on_axis; ++x_point) {
                 // Scale the coordinate based on the grid density, the mbr and the current point on the x-axis.
-                auto x_coord = knn_query_mbr.x_low + x_point * knn_query_grid_density * (knn_query_mbr.x_high - knn_query_mbr.x_low);
+                auto x_coord = knn_query_mbr.x_low + x_point * knn_query_grid_density * (knn_x_range);
                 for (int y_point = 0; y_point <= knn_query_points_on_axis; ++y_point) {
-                    auto y_coord = knn_query_mbr.y_low + y_point * knn_query_grid_density * (knn_query_mbr.y_high - knn_query_mbr.y_low);
+                    auto y_coord = knn_query_mbr.y_low + y_point * knn_query_grid_density * (knn_y_range);
 
                     for (int t_point = 0; t_point <= knn_query_time_points; ++t_point) {
-                        auto t_interval = knn_query_mbr.t_low + static_cast<unsigned long>(t_point * knn_query_time_interval_multiplier
-                                                                                          * static_cast<long double>((knn_query_mbr.t_high - knn_query_mbr.t_low)));
+                        auto t_interval = knn_query_mbr.t_low + static_cast<unsigned long>(t_point
+                                * knn_query_time_interval_multiplier * knn_time_range);
 
-                        knn_futures.emplace_back(std::async(std::launch::async, knn_query_initialization, original_trajectory.id, x_coord, y_coord, t_interval, knn_query_mbr, knn_query_time_interval_multiplier, knn_k));
+                        knn_futures.emplace_back(std::async(std::launch::async, knn_query_initialization,
+                                                            original_trajectory.id, x_coord, y_coord, t_interval,
+                                                            knn_query_mbr, knn_query_time_interval_multiplier, knn_k));
                         if (knn_futures.size() >= max_connections_per_batch_simplification) {
                             for (auto& fut : knn_futures) {
                                 auto knn_query_test_pointer = fut.get();
@@ -101,7 +117,7 @@ namespace trace_q {
         return query_objects;
     }
 
-    double TRACE_Q::query_accuracy(data_structures::Trajectory const& trajectory,
+    TRACE_Q::Query_Accuracy TRACE_Q::query_accuracy(data_structures::Trajectory const& trajectory,
                                    std::vector<std::shared_ptr<spatial_queries::Query>> const& query_objects) const {
 
         std::vector<std::future<bool>> range_futures{};
@@ -122,10 +138,10 @@ namespace trace_q {
             int correct_knn_queries = process_futures(knn_futures);
             auto knn_query_f1 = static_cast<double>(correct_knn_queries) / (correct_knn_queries + 0.5 * (static_cast<double>(knn_futures.size() - correct_knn_queries)));
 
-            return std::midpoint(range_query_f1, knn_query_f1);
+            return Query_Accuracy{range_query_f1, knn_query_f1};
         }
 
-        return range_query_f1;
+        return Query_Accuracy{range_query_f1, 0};
     }
 
     TRACE_Q::MBR TRACE_Q::calculate_MBR(data_structures::Trajectory const& trajectory) {

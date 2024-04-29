@@ -2,21 +2,24 @@
 #include <cmath>
 #include <future>
 #include <algorithm>
+#include <memory>
 #include "Benchmark.hpp"
 #include "../querying/Range_Query.hpp"
+#include "benchmark-query-objects/Benchmark_Range_Query.hpp"
+#include "benchmark-query-objects/Benchmark_KNN_Query.hpp"
 
 
 namespace analytics {
 
     std::string Benchmark::connection_string{"user=postgres password=postgres host=localhost dbname=traceq port=5432"};
 
-    double Benchmark::grid_density{0.2};
+    double Benchmark::grid_density{0.02};
     double Benchmark::expansion_factor{grid_density * 0.8};
-    int Benchmark::windows_per_grid_point{3};
+    int Benchmark::windows_per_grid_point{5};
     double Benchmark::window_expansion_rate{1.3};
-    double Benchmark::time_interval{0.2};
-    int Benchmark::knn_k{5};
-    int Benchmark::max_connections{50};
+    double Benchmark::time_interval{0.02};
+    int Benchmark::knn_k{50};
+    int Benchmark::max_connections{50}; // Don't touch
 
     MBR Benchmark::get_mbr() {
 
@@ -42,12 +45,7 @@ namespace analytics {
         return mbr;
     }
 
-    Query_Accuracy Benchmark::benchmark_query_accuracy() {
-
-        auto points_on_axis = static_cast<int>(std::ceil(1 / grid_density));
-        auto time_points = static_cast<int>(std::ceil(1 / time_interval));
-
-        auto mbr = get_mbr();
+    Query_Accuracy Benchmark::benchmark_query_accuracy(std::vector<std::shared_ptr<Benchmark_Query>> const& query_objects) {
 
         std::vector<std::future<F1>> range_futures{};
         std::vector<std::future<F1>> knn_futures{};
@@ -56,37 +54,39 @@ namespace analytics {
         std::vector<F1> knn_query_cum_F1{};
         int query_count = 0;
 
-        for (int x_point = 0; x_point <= points_on_axis; x_point++) {
-            auto x_coord = mbr.x_low + x_point * grid_density * (mbr.x_high - mbr.x_low);
-            for (int y_point = 0; y_point <= points_on_axis; y_point++) {
-                auto y_coord = mbr.y_low + y_point * grid_density * (mbr.y_high - mbr.y_low);
-                for (int t_point = 0; t_point <= time_points; ++t_point) {
-                    auto t_interval = static_cast<unsigned long>(std::round(mbr.t_low + t_point
-                            * time_interval * static_cast<long double>(mbr.t_high - mbr.t_low)));
+        for (const auto& query_object : query_objects) {
 
-                    for (auto rq_futures = create_range_query_futures(
-                            x_coord, y_coord, t_interval, mbr); auto& fut : rq_futures) {
-                        query_count++;
-                        range_futures.emplace_back(std::move(fut));
+            if (auto range_query = std::dynamic_pointer_cast<Benchmark_Range_Query>(query_object)) {
+                range_futures.emplace_back(std::async(std::launch::async, [range_query]() {
+                    auto simplified_res = spatial_queries::Range_Query::get_ids_from_range_query("simplified_trajectories", range_query->window);
+
+                    return F1{range_query->query_result_ids, simplified_res};
+                }));
+            }
+            if (auto knn_query = std::dynamic_pointer_cast<Benchmark_KNN_Query>(query_object)) {
+                knn_futures.emplace_back(std::async(std::launch::async, [knn_query](){
+                    auto simplified_res = spatial_queries::KNN_Query::get_ids_from_knn("simplified_trajectories", knn_k, knn_query->origin);
+                    std::unordered_set<unsigned int> simplified_set{};
+                    for (const auto& simp : simplified_res) {
+                        simplified_set.insert(simp.id);
                     }
 
-                    knn_futures.emplace_back(create_knn_query_future(knn_k, x_coord, y_coord, t_interval, mbr));
-                    query_count++;
+                    return F1{knn_query->query_result_ids, simplified_set};
+                }));
+            }
 
-                    if (query_count > max_connections) {
-                        for (auto & fut : range_futures) {
-                            range_query_cum_F1.push_back(fut.get());
-                        }
-                        for (auto & fut : knn_futures) {
-                            knn_query_cum_F1.push_back(fut.get());
-                        }
-                        range_futures.clear();
-                        knn_futures.clear();
-                        query_count = 0;
-                    }
+            query_count++;
+
+            if (query_count > max_connections) {
+                for (auto & fut : range_futures) {
+                    range_query_cum_F1.push_back(fut.get());
                 }
-                knn_futures.emplace_back(create_knn_query_future(knn_k, x_coord, y_coord, 0, mbr));
-                query_count++;
+                for (auto & fut : knn_futures) {
+                    knn_query_cum_F1.push_back(fut.get());
+                }
+                range_futures.clear();
+                knn_futures.clear();
+                query_count = 0;
             }
         }
 
@@ -102,8 +102,67 @@ namespace analytics {
         return Query_Accuracy{range_query_f1, knn_query_f1};
     }
 
-    std::vector<std::future<F1>> Benchmark::create_range_query_futures(double x, double y, unsigned long t, MBR const& mbr) {
-        std::vector<std::future<F1>> futures;
+    std::vector<std::shared_ptr<Benchmark_Query>> Benchmark::initialize_query_objects() {
+
+        auto points_on_axis = static_cast<int>(std::ceil(1 / grid_density));
+        auto time_points = static_cast<int>(std::ceil(1 / time_interval));
+
+        auto mbr = get_mbr();
+
+        std::vector<std::future<Benchmark_Range_Query>> range_futures{};
+        std::vector<std::future<Benchmark_KNN_Query>> knn_futures{};
+
+        std::vector<std::shared_ptr<Benchmark_Query>> query_objects{};
+        int query_count = 0;
+
+        for (int x_point = 0; x_point <= points_on_axis; x_point++) {
+            auto x_coord = mbr.x_low + x_point * grid_density * (mbr.x_high - mbr.x_low);
+            for (int y_point = 0; y_point <= points_on_axis; y_point++) {
+                auto y_coord = mbr.y_low + y_point * grid_density * (mbr.y_high - mbr.y_low);
+                for (int t_point = 0; t_point <= time_points; ++t_point) {
+                    auto t_interval = static_cast<unsigned long>(
+                            std::round(mbr.t_low + t_point * time_interval
+                            * static_cast<long double>(mbr.t_high - mbr.t_low)));
+
+                    for (auto rq_futures = create_range_query_futures(
+                            x_coord, y_coord, t_interval, mbr); auto& fut : rq_futures) {
+                        query_count++;
+                        range_futures.emplace_back(std::move(fut));
+                    }
+
+                    knn_futures.emplace_back(create_knn_query_future(knn_k, x_coord, y_coord, t_interval, mbr));
+                    query_count++;
+
+                    if (query_count > max_connections) {
+                        for (auto & fut : range_futures) {
+                            query_objects.push_back(std::make_shared<Benchmark_Range_Query>(fut.get()));
+                        }
+                        for (auto & fut : knn_futures) {
+                            query_objects.push_back(std::make_shared<Benchmark_KNN_Query>(fut.get()));
+                        }
+                        range_futures.clear();
+                        knn_futures.clear();
+                        query_count = 0;
+                    }
+                }
+                knn_futures.emplace_back(create_knn_query_future(knn_k, x_coord, y_coord, 0, mbr));
+                query_count++;
+            }
+        }
+
+        for (auto & fut : range_futures) {
+            query_objects.push_back(std::make_shared<Benchmark_Range_Query>(fut.get()));
+        }
+        for (auto & fut : knn_futures) {
+            query_objects.push_back(std::make_shared<Benchmark_KNN_Query>(fut.get()));
+        }
+
+        return query_objects;
+    }
+
+
+    std::vector<std::future<Benchmark_Range_Query>> Benchmark::create_range_query_futures(double x, double y, unsigned long t, MBR const& mbr) {
+        std::vector<std::future<Benchmark_Range_Query>> futures;
         for(int window_number = 0; window_number < windows_per_grid_point; window_number++) {
             auto [window_x_low, window_x_high] = calculate_window_range(
                     x, mbr.x_low, mbr.x_high, window_expansion_rate, grid_density, window_number);
@@ -117,16 +176,15 @@ namespace analytics {
                                                         window_y_high, window_t_low, window_t_high};
             futures.emplace_back(std::async(std::launch::async, [window](){
                 auto original_res = spatial_queries::Range_Query::get_ids_from_range_query("original_trajectories", window);
-                auto simplified_res = spatial_queries::Range_Query::get_ids_from_range_query("simplified_trajectories", window);
 
-                return F1(original_res, simplified_res);
+                return Benchmark_Range_Query{original_res, window};
             }));
         }
 
         return futures;
     }
 
-    std::future<F1> Benchmark::create_knn_query_future(int k, double x, double y, unsigned long t, const MBR & mbr) {
+    std::future<Benchmark_KNN_Query> Benchmark::create_knn_query_future(int k, double x, double y, unsigned long t, const MBR & mbr) {
 
         spatial_queries::KNN_Query::KNN_Origin origin{};
         origin.x = x;
@@ -144,11 +202,16 @@ namespace analytics {
             origin.t_high = std::numeric_limits<unsigned long>::max();
         }
 
-        return std::future<F1>{std::async(std::launch::async, [origin, k](){
+        return std::future<Benchmark_KNN_Query>{std::async(std::launch::async, [origin, k](){
             auto original_res = spatial_queries::KNN_Query::get_ids_from_knn("original_trajectories", k, origin);
-            auto simplified_res = spatial_queries::KNN_Query::get_ids_from_knn("simplified_trajectories", k, origin);
 
-            return F1(original_res, simplified_res);
+            std::unordered_set<unsigned int> original_set{};
+
+            for (const auto& original : original_res) {
+                original_set.insert(original.id);
+            }
+
+            return Benchmark_KNN_Query{original_set, origin};
         })};
     }
 

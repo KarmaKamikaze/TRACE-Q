@@ -18,9 +18,14 @@ namespace trace_q {
         simp_algorithms::MRPA mrpa{};
 
         /**
-         * The minimum query accuracy that the simplification method must uphold.
+         * The minimum range query accuracy that the simplification method must uphold.
          */
-        double min_query_accuracy{};
+        double min_range_query_accuracy{};
+
+        /**
+         * The minimum knn query accuracy that the simplification method must uphold.
+         */
+        double min_knn_query_accuracy{};
 
         /**
          * The maximum number of trajectories per batch that is able to run concurrently due to database connections.
@@ -110,18 +115,6 @@ namespace trace_q {
          */
         bool use_KNN_for_query_accuracy{};
 
-
-        /**
-         * Calculates the query error of a simplified trajectory on a set of query objects.
-         * This is more accurately a query accuracy, since it is a percentage queries that return correct results.
-         * @param trajectory Simplified trajectory
-         * @param query_objects Vector of query objects that define a query and contain the original trajectory's result
-         * @return Query accuracy
-         */
-        [[nodiscard]] double query_accuracy(
-                data_structures::Trajectory const& trajectory,
-                std::vector<std::shared_ptr<spatial_queries::Query>> const& query_objects) const;
-
         /**
          * A Minimum Bounding Rectangle for trajectory data.
          */
@@ -133,6 +126,26 @@ namespace trace_q {
             unsigned long t_low{};
             unsigned long t_high{};
         };
+
+        /**
+         * Struct describing the f1-scores of range and knn queries performed on the simplified trajectory.
+         */
+        struct Query_Accuracy {
+            double range_f1{};
+            double knn_f1{};
+        };
+
+        /**
+         * Calculates the query error of a simplified trajectory on a set of query objects.
+         * This is more accurately a query accuracy, since it is a percentage queries that return correct results.
+         * @param trajectory Simplified trajectory
+         * @param query_objects Vector of query objects that define a query and contain the original trajectory's result
+         * @return Query accuracy
+         */
+        [[nodiscard]] Query_Accuracy query_accuracy(
+                data_structures::Trajectory const& trajectory,
+                std::vector<std::shared_ptr<spatial_queries::Query>> const& query_objects) const;
+
 
         /**
          * Calculates the Minimum Bounding Rectangle for a given trajectory.
@@ -231,7 +244,7 @@ namespace trace_q {
         /**
          * The TRACE_Q constructor that determines the query_amount based on the given parameters.
          * @param resolution_scale The MRPA resolution scale.
-         * @param min_query_accuracy The minimum query accuracy that the simplification method must uphold.
+         * @param min_range_query_accuracy The minimum range query accuracy that the simplification method must uphold.
          * @param max_trajectories_in_batch The maximum number of trajectories per batch that is able to run
          * concurrently due to database connections.
          * @param max_threads The maximum amount of threads that are allowed to run database client connections to
@@ -244,11 +257,11 @@ namespace trace_q {
          * in range queries.
          * @param use_KNN_for_query_accuracy Decides whether KNN queries should be utilized for determining query accuracy.
          */
-        TRACE_Q(double resolution_scale, double min_query_accuracy, int max_trajectories_in_batch, int max_threads,
+        TRACE_Q(double resolution_scale, double min_range_query_accuracy, int max_trajectories_in_batch, int max_threads,
                 double range_query_grid_density_multiplier,  int windows_per_grid_point,
                 double window_expansion_rate, double range_query_time_interval_multiplier, bool use_KNN_for_query_accuracy)
                 : mrpa(resolution_scale),
-                  min_query_accuracy(min_query_accuracy),
+                  min_range_query_accuracy(min_range_query_accuracy),
                   max_trajectories_in_batch(max_trajectories_in_batch),
                   max_threads(max_threads),
                   max_connections_per_batch_simplification(max_threads / max_trajectories_in_batch),
@@ -266,7 +279,8 @@ namespace trace_q {
         /**
          * The TRACE_Q constructor, which includes KNN queries, that determines the query_amount based on the given parameters.
          * @param resolution_scale The MRPA resolution scale.
-         * @param min_query_accuracy The minimum query accuracy that the simplification method must uphold.
+         * @param min_range_query_accuracy The minimum range query accuracy that the simplification method must uphold.
+         * @param min_knn_query_accuracy The minimum knn query accuracy that the simplification method must uphold.
          * @param max_trajectories_in_batch The maximum number of trajectories per batch that is able to run
          * concurrently due to database connections.
          * @param max_threads The maximum amount of threads that are allowed to run database client connections to
@@ -284,13 +298,14 @@ namespace trace_q {
          * @param knn_k The K value for K-Nearest-Neighbour queries.
          * @param use_KNN_for_query_accuracy Decides whether KNN queries should be utilized for determining query accuracy.
          */
-        TRACE_Q(double resolution_scale, double min_query_accuracy, int max_trajectories_in_batch, int max_threads,
+        TRACE_Q(double resolution_scale, double min_range_query_accuracy, double min_knn_query_accuracy, int max_trajectories_in_batch, int max_threads,
                 double range_query_grid_density_multiplier,
                 double knn_query_grid_density_multiplier,  int windows_per_grid_point,
                 double window_expansion_rate, double range_query_time_interval_multiplier,
                 double knn_query_time_interval_multiplier, int knn_k, bool use_KNN_for_query_accuracy)
                 : mrpa(resolution_scale),
-                  min_query_accuracy(min_query_accuracy),
+                  min_range_query_accuracy(min_range_query_accuracy),
+                  min_knn_query_accuracy(min_knn_query_accuracy),
                   max_trajectories_in_batch(max_trajectories_in_batch),
                   max_threads(max_threads),
                   max_connections_per_batch_simplification(max_threads / max_trajectories_in_batch),

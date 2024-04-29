@@ -25,6 +25,9 @@ add_executable(TRACE_Q_Benchmark
         Benchmark.cpp
         F1.hpp
         F1.cpp
+        benchmark-query-objects/Benchmark_Query.hpp
+        benchmark-query-objects/Benchmark_Range_Query.hpp
+        benchmark-query-objects/Benchmark_KNN_Query.hpp
 )
 target_link_libraries(TRACE_Q_Benchmark PRIVATE doctest::doctest_with_main "${PQXX_LIBRARIES}")
 
