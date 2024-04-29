@@ -23,6 +23,8 @@ add_executable(TRACE_Q_Benchmark
         ../querying/KNN_Query.cpp
         Benchmark.hpp
         Benchmark.cpp
+        F1.hpp
+        F1.cpp
 )
 target_link_libraries(TRACE_Q_Benchmark PRIVATE doctest::doctest_with_main "${PQXX_LIBRARIES}")
 
