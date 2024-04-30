@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.28)
+
 add_executable(TRACE_Q_Benchmark
         TRACE_Q_Benchmark.cpp
         ../simp-algorithms/TRACE_Q.hpp
