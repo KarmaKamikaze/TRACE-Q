@@ -1,8 +1,3 @@
-add_executable(Querying_Benchmark
-        Querying_Benchmark.cpp
-)
-target_link_libraries(Querying_Benchmark PRIVATE doctest::doctest_with_main)
-
 add_executable(TRACE_Q_Benchmark
         TRACE_Q_Benchmark.cpp
         ../simp-algorithms/TRACE_Q.hpp
@@ -32,5 +27,4 @@ add_executable(TRACE_Q_Benchmark
 target_link_libraries(TRACE_Q_Benchmark PRIVATE doctest::doctest_with_main "${PQXX_LIBRARIES}")
 
 
-add_test(NAME Querying_Benchmark COMMAND Querying_Benchmark)
 add_test(NAME TRACE_Q_Benchmark COMMAND TRACE_Q_Benchmark)

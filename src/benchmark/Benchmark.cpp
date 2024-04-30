@@ -1,10 +1,8 @@
 #include <pqxx/pqxx>
 #include <cmath>
 #include <future>
-#include <algorithm>
 #include <memory>
 #include "Benchmark.hpp"
-#include "../querying/Range_Query.hpp"
 #include "benchmark-query-objects/Benchmark_Range_Query.hpp"
 #include "benchmark-query-objects/Benchmark_KNN_Query.hpp"
 
@@ -60,7 +58,7 @@ namespace analytics {
                 range_futures.emplace_back(std::async(std::launch::async, [range_query]() {
                     auto simplified_res = spatial_queries::Range_Query::get_ids_from_range_query("simplified_trajectories", range_query->window);
 
-                    return F1{range_query->query_result_ids, simplified_res};
+                    return F1{F1::query_type::range_query, range_query->query_result_ids, simplified_res};
                 }));
             }
             if (auto knn_query = std::dynamic_pointer_cast<Benchmark_KNN_Query>(query_object)) {
@@ -71,7 +69,7 @@ namespace analytics {
                         simplified_set.insert(simp.id);
                     }
 
-                    return F1{knn_query->query_result_ids, simplified_set};
+                    return F1{F1::query_type::knn_query, knn_query->query_result_ids, simplified_set};
                 }));
             }
 
@@ -191,8 +189,8 @@ namespace analytics {
         origin.y = y;
         if (t != 0) {
             auto [t_low, t_high] = calculate_time_range(
-                    t, mbr.t_low, mbr.t_high, 0,
-                    time_interval, 0);
+                    t, mbr.t_low, mbr.t_high, 1,
+                    time_interval, 1);
 
             origin.t_low = t_low;
             origin.t_high = t_high;

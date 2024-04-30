@@ -13,11 +13,12 @@ namespace analytics {
         int false_negatives{};
 
     public:
+        enum class query_type {
+            range_query,
+            knn_query
+        };
 
-        F1(std::vector<spatial_queries::KNN_Query::KNN_Result_Element> const& original_vec,
-           std::vector<spatial_queries::KNN_Query::KNN_Result_Element> const& simplified_vec);
-
-        F1(std::unordered_set<unsigned int> const& original_set, std::unordered_set<unsigned int> const& simplified_set);
+        F1(F1::query_type type, std::unordered_set<unsigned int> const& original_set, std::unordered_set<unsigned int> const& simplified_set);
 
         static double calc_cum_F1_score(std::vector<F1> const& f1_values);
 

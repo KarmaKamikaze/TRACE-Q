@@ -2,25 +2,8 @@
 
 namespace analytics {
 
-    F1::F1(std::vector<spatial_queries::KNN_Query::KNN_Result_Element> const& original_vec,
-    std::vector<spatial_queries::KNN_Query::KNN_Result_Element> const& simplified_vec) {
-        std::unordered_set<unsigned int> simplified_set{};
-
-        for (const auto& s : simplified_vec) {
-            simplified_set.insert(s.id);
-        }
-
-        for (const auto& original : original_vec) {
-            if (simplified_set.contains(original.id)) {
-                true_positives++;
-            }
-        }
-
-        false_positives = static_cast<int>(original_vec.size()) - true_positives;
-        false_negatives = false_positives;
-    }
-
-    F1::F1(std::unordered_set<unsigned int> const& original_set, std::unordered_set<unsigned int> const& simplified_set) {
+    F1::F1(F1::query_type type, std::unordered_set<unsigned int> const& original_set,
+           std::unordered_set<unsigned int> const& simplified_set) {
 
         for (const auto& original : original_set) {
             if(simplified_set.contains(original)) {
@@ -29,6 +12,10 @@ namespace analytics {
         }
 
         false_negatives = static_cast<int>(original_set.size()) - true_positives;
+
+        if (type == F1::query_type::knn_query) {
+            false_positives = false_negatives;
+        }
     }
 
     double F1::calc_cum_F1_score(std::vector<F1> const& f1_values) {

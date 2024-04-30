@@ -2,7 +2,6 @@
 #include <iostream>
 #include <cmath>
 #include <algorithm>
-#include <numeric>
 #include <limits>
 #include "TRACE_Q.hpp"
 #include "MRPA.hpp"
@@ -11,6 +10,10 @@
 namespace trace_q {
 
     data_structures::Trajectory TRACE_Q::simplify(data_structures::Trajectory const& original_trajectory) const {
+        if (original_trajectory.size() <= 2) {
+            return original_trajectory;
+        }
+
         auto simplifications = mrpa(original_trajectory);
 
         auto query_objects = initialize_query_tests(original_trajectory);

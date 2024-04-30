@@ -84,9 +84,10 @@ namespace trajectory_data_handling {
 
                 file.close();
 
-                trajectory_data_handling::Trajectory_Manager::insert_trajectory(
-                        trajectory, trajectory_data_handling::db_table::original_trajectories);
-
+                if (trajectory.size() != 0) {
+                    trajectory_data_handling::Trajectory_Manager::insert_trajectory(
+                            trajectory, trajectory_data_handling::db_table::original_trajectories);
+                }
             } else {
                 throw std::runtime_error("Error opening file: " + dirEntry.path().string());
             }
