@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.28)
-
 add_executable(TRACE_Q_Benchmark
         TRACE_Q_Benchmark.cpp
         ../simp-algorithms/TRACE_Q.hpp
@@ -27,9 +25,6 @@ add_executable(TRACE_Q_Benchmark
         benchmark-query-objects/Benchmark_KNN_Query.hpp
 )
 target_link_libraries(TRACE_Q_Benchmark PRIVATE doctest::doctest_with_main "${PQXX_LIBRARIES}")
-
-include(../../doctest.cmake)
-include(../../libpqxx.cmake)
 
 
 add_test(NAME TRACE_Q_Benchmark COMMAND TRACE_Q_Benchmark)
