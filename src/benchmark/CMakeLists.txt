@@ -29,6 +29,7 @@ add_executable(TRACE_Q_Benchmark
 target_link_libraries(TRACE_Q_Benchmark PRIVATE doctest::doctest_with_main "${PQXX_LIBRARIES}")
 
 include(../../doctest.cmake)
+include(../../libpqxx.cmake)
 
 
 add_test(NAME TRACE_Q_Benchmark COMMAND TRACE_Q_Benchmark)
