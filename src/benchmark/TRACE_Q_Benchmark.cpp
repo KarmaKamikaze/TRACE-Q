@@ -117,9 +117,9 @@ TEST_CASE("TRACE-Q IS KNN NECESSARY?") {
     trajectory_data_handling::File_Manager::load_tdrive_dataset();
     auto query_objects = analytics::Benchmark::initialize_query_objects();
 
-    double resolution_scale = 2.0;
+    double resolution_scale = 1.5;
     double min_range_query_accuracy = 0.95;
-    double min_knn_query_accuracy = 0.95;
+    //double min_knn_query_accuracy = 0.95;
     int max_trajectories_in_batch = 8;
     int max_threads = 50;
     auto range_query_grid_density = 0.1;
@@ -133,9 +133,11 @@ TEST_CASE("TRACE-Q IS KNN NECESSARY?") {
 
     SUBCASE("TRACE-Q WITH KNN") {
 
+        double custom_min_range_query_accuracy = 0.86;
+        double custom_min_knn_query_accuracy = 0.77;
         bool custom_use_KNN_for_query_accuracy = true;
 
-        auto trace_q = trace_q::TRACE_Q{resolution_scale, min_range_query_accuracy, min_knn_query_accuracy,
+        auto trace_q = trace_q::TRACE_Q{resolution_scale, custom_min_range_query_accuracy, custom_min_knn_query_accuracy,
                                         max_trajectories_in_batch, max_threads,
                                         range_query_grid_density,
                                         knn_query_grid_density, windows_per_grid_point,
