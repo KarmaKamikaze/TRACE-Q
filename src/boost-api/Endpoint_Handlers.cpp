@@ -65,6 +65,14 @@ namespace api {
         return json_traj;
     }
 
+    double get_double_value(boost::json::value value) {
+        if(value.is_int64()) {
+            auto value_int = value.as_int64();
+            return static_cast<double>(value_int);
+        }
+        return value.as_double();
+    }
+
     /**
          This endpoint handles insertion of a trajectory into a specified database table. Works with JSON formatted as:
 
@@ -119,8 +127,8 @@ namespace api {
 
             for (auto& location_entry : locations_array) {
                 auto timestamp = location_entry.at("timestamp").as_string().c_str();
-                auto longitude = location_entry.at("longitude").as_double();
-                auto latitude = location_entry.at("latitude").as_double();
+                auto longitude = get_double_value(location_entry.at("longitude"));
+                auto latitude = get_double_value(location_entry.at("latitude"));
                 if (trajectory_data_handling::File_Manager::string_to_time(timestamp) == 0)
                     throw std::invalid_argument("Invalid date and time format.");
 
@@ -205,13 +213,13 @@ namespace api {
                                                    boost::json::object(); // Empty object if not present
 
             if (window_obj.contains("x_low"))
-                window.x_low = window_obj.at("x_low").as_double();
+                window.x_low = get_double_value(window_obj.at("x_low"));
             if (window_obj.contains("x_high"))
-                window.x_high = window_obj.at("x_high").as_double();
+                window.x_high = get_double_value(window_obj.at("x_high"));
             if (window_obj.contains("y_low"))
-                window.y_low = window_obj.at("y_low").as_double();
+                window.y_low = get_double_value(window_obj.at("y_low"));
             if (window_obj.contains("y_high"))
-                window.y_high = window_obj.at("y_high").as_double();
+                window.y_high = get_double_value(window_obj.at("y_high"));
             if (window_obj.contains("t_low"))
                 window.t_low = window_obj.at("t_low").as_int64();
             if (window_obj.contains("t_high"))
@@ -305,8 +313,8 @@ namespace api {
                 throw std::runtime_error("JSON object does not contain 'query_origin'");
 
             const boost::json::object &origin_object = json_object.at("query_origin").as_object();
-            query_origin.x = origin_object.at("x").as_double();
-            query_origin.y = origin_object.at("y").as_double();
+            query_origin.x = get_double_value(origin_object.at("x"));
+            query_origin.y = get_double_value(origin_object.at("y"));
             if (origin_object.contains("t_low"))
                 query_origin.t_low = origin_object.at("t_low").as_int64();
             if (origin_object.contains("t_high"))
@@ -455,17 +463,17 @@ namespace api {
             const boost::json::object &json_object = json_data.as_object();
 
             trace_q::TRACE_Q trace_q{
-                json_object.at("resolution_scale").as_double(),
-                json_object.at("min_range_query_accuracy").as_double(),
-                json_object.at("min_knn_query_accuracy").as_double(),
+                    get_double_value(json_object.at("resolution_scale")),
+                    get_double_value(json_object.at("min_range_query_accuracy")),
+                    get_double_value(json_object.at("min_knn_query_accuracy")),
                 static_cast<int>(json_object.at("max_trajectories_in_batch").as_int64()),
                 static_cast<int>(json_object.at("max_threads").as_int64()),
-                json_object.at("range_query_grid_density").as_double(),
-                json_object.at("knn_query_grid_density").as_double(),
+                    get_double_value(json_object.at("range_query_grid_density")),
+                    get_double_value(json_object.at("knn_query_grid_density")),
                 static_cast<int>(json_object.at("windows_per_grid_point").as_int64()),
-                json_object.at("window_expansion_rate").as_double(),
-                json_object.at("range_query_time_interval").as_double(),
-                json_object.at("knn_query_time_interval").as_double(),
+                    get_double_value(json_object.at("window_expansion_rate")),
+                    get_double_value(json_object.at("range_query_time_interval")),
+                    get_double_value(json_object.at("knn_query_time_interval")),
                 static_cast<int>(json_object.at("knn_k").as_int64()),
                 json_object.at("use_KNN_for_query_accuracy").as_bool()
             };
