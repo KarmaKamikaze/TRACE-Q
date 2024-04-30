@@ -424,14 +424,18 @@ namespace api {
 
          {
             "resolution_scale" : 2.0,
-            "min_query_accuracy" : 0.95,
-            "range_query_grid_density": 0.1,
-            "knn_query_grid_density": 0.1,
+            "min_range_query_accuracy" : 0.98,
+            "min_knn_query_accuracy" : 0.98,
+            "max_trajectories_in_batch" : 8,
+            "max_threads" : 50,
+            "range_query_grid_density": 0.05,
+            "knn_query_grid_density": 0.05,
             "windows_per_grid_point": 3,
             "window_expansion_rate" : 1.3,
             "range_query_time_interval" : 0.2,
-            "knn_query_time_interval" : 0.03,
-            "knn_k" : 10
+            "knn_query_time_interval" : 0.2,
+            "knn_k" : 10,
+            "use_KNN_for_query_accuracy" : true
         }
 
     */
@@ -452,14 +456,18 @@ namespace api {
 
             trace_q::TRACE_Q trace_q{
                 json_object.at("resolution_scale").as_double(),
-                json_object.at("min_query_accuracy").as_double(),
+                json_object.at("min_range_query_accuracy").as_double(),
+                json_object.at("min_knn_query_accuracy").as_double(),
+                static_cast<int>(json_object.at("max_trajectories_in_batch").as_int64()),
+                static_cast<int>(json_object.at("max_threads").as_int64()),
                 json_object.at("range_query_grid_density").as_double(),
                 json_object.at("knn_query_grid_density").as_double(),
                 static_cast<int>(json_object.at("windows_per_grid_point").as_int64()),
                 json_object.at("window_expansion_rate").as_double(),
                 json_object.at("range_query_time_interval").as_double(),
                 json_object.at("knn_query_time_interval").as_double(),
-                static_cast<int>(json_object.at("knn_k").as_int64())
+                static_cast<int>(json_object.at("knn_k").as_int64()),
+                json_object.at("use_KNN_for_query_accuracy").as_bool()
             };
 
             trace_q.run();
