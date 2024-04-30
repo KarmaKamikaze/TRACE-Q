@@ -18,14 +18,30 @@ namespace trace_q {
         simp_algorithms::MRPA mrpa{};
 
         /**
-         * The minimum query accuracy that the simplification method must uphold.
+         * The minimum range query accuracy that the simplification method must uphold.
          */
-        double min_query_accuracy{};
+        double min_range_query_accuracy{};
+
+        /**
+         * The minimum knn query accuracy that the simplification method must uphold.
+         */
+        double min_knn_query_accuracy{};
 
         /**
          * The maximum number of trajectories per batch that is able to run concurrently due to database connections.
          */
         int max_trajectories_in_batch{};
+
+        /**
+         * The maximum amount of threads that are allowed to run database client connections to the PostgreSQL database.
+         */
+        int max_threads{};
+
+        /**
+         * The maximum amount of client connections per used in KNN part of the initialize_query_tests defined by
+         * max_trajectories_in_batch and max_threads.
+         */
+        int max_connections_per_batch_simplification{};
 
         /**
          * The factor with which we will scale the grid for range queries.
@@ -94,16 +110,10 @@ namespace trace_q {
          */
         int knn_k{};
 
-
         /**
-         * Calculates the query error of a simplified trajectory on a set of query objects.
-         * This is more accurately a query accuracy, since it is a percentage queries that return correct results.
-         * @param trajectory Simplified trajectory
-         * @param query_objects Vector of query objects that define a query and contain the original trajectory's result
-         * @return Query accuracy
+         * Decides whether KNN queries should be utilized for determining the query accuracy.
          */
-        static double query_accuracy(data_structures::Trajectory const& trajectory,
-                                            std::vector<std::shared_ptr<spatial_queries::Query>> const& query_objects);
+        bool use_KNN_for_query_accuracy{};
 
         /**
          * A Minimum Bounding Rectangle for trajectory data.
@@ -116,6 +126,26 @@ namespace trace_q {
             unsigned long t_low{};
             unsigned long t_high{};
         };
+
+        /**
+         * Struct describing the f1-scores of range and knn queries performed on the simplified trajectory.
+         */
+        struct Query_Accuracy {
+            double range_f1{};
+            double knn_f1{};
+        };
+
+        /**
+         * Calculates the query error of a simplified trajectory on a set of query objects.
+         * This is more accurately a query accuracy, since it is a percentage queries that return correct results.
+         * @param trajectory Simplified trajectory
+         * @param query_objects Vector of query objects that define a query and contain the original trajectory's result
+         * @return Query accuracy
+         */
+        [[nodiscard]] Query_Accuracy query_accuracy(
+                data_structures::Trajectory const& trajectory,
+                std::vector<std::shared_ptr<spatial_queries::Query>> const& query_objects) const;
+
 
         /**
          * Calculates the Minimum Bounding Rectangle for a given trajectory.
@@ -154,23 +184,39 @@ namespace trace_q {
          * @return A shared pointer to a KNN query object that have been initialized with the given trajectory.
          */
         static std::shared_ptr<spatial_queries::KNN_Query_Test> knn_query_initialization(
+                unsigned int original_trajectory_id,
                 double x, double y, unsigned long t, MBR const& mbr, double time_interval_multiplier, int knn_k);
 
         /**
-         * This function calculates the lower and upper bounds of a range centered around a given value,
+         * This function calculates the lower and upper bounds of a window range centered around a given value,
          * considering the window expansion rate, grid density, and window number.
          *
-         * @param center The center value around which the range is calculated.
+         * @param center The center value around which the window range is calculated.
          * @param mbr_low The lower bound of the Minimum Bounding Rectangle (MBR) for the dimension.
          * @param mbr_high The upper bound of the Minimum Bounding Rectangle (MBR) for the dimension.
          * @param window_expansion_rate The rate at which the window expands with each window number.
          * @param grid_density The density of the grid, affecting the size of the window.
          * @param window_number The number of the window for which the range is calculated.
-         * @return A pair containing the lower and upper bounds of the calculated range.
+         * @return A pair containing the lower and upper bounds of the calculated window range.
          */
-         template<typename T>
-        static std::pair<T, T> calculate_window_range(
-                T center, T mbr_low, T mbr_high,
+        static std::pair<double, double> calculate_window_range(
+                double center, double mbr_low, double mbr_high,
+                double window_expansion_rate, double grid_density, int window_number);
+
+        /**
+         * This function calculates the lower and upper bounds of a time range centered around a given value,
+         * considering the window expansion rate, grid density, and window number.
+         *
+         * @param center The center value around which the time range is calculated.
+         * @param mbr_low The lower bound of the Minimum Bounding Rectangle (MBR) for the dimension.
+         * @param mbr_high The upper bound of the Minimum Bounding Rectangle (MBR) for the dimension.
+         * @param window_expansion_rate The rate at which the window expands with each window number.
+         * @param grid_density The density of the grid, affecting the size of the window.
+         * @param window_number The number of the window for which the range is calculated.
+         * @return A pair containing the lower and upper bounds of the calculated time range.
+         */
+        static std::pair<unsigned long, unsigned long> calculate_time_range(
+                unsigned long center, unsigned long mbr_low, unsigned long mbr_high,
                 double window_expansion_rate, double grid_density, int window_number);
 
         /**
@@ -198,7 +244,47 @@ namespace trace_q {
         /**
          * The TRACE_Q constructor that determines the query_amount based on the given parameters.
          * @param resolution_scale The MRPA resolution scale.
-         * @param min_query_accuracy The minimum query accuracy that the simplification method must uphold.
+         * @param min_range_query_accuracy The minimum range query accuracy that the simplification method must uphold.
+         * @param max_trajectories_in_batch The maximum number of trajectories per batch that is able to run
+         * concurrently due to database connections.
+         * @param max_threads The maximum amount of threads that are allowed to run database client connections to
+         * the PostgreSQL database.
+         * @param range_query_grid_density_multiplier The grid density factor for range queries,
+         * which describes how close points appear in the grid.
+         * @param windows_per_grid_point The amount of windows per point in the grid.
+         * @param window_expansion_rate The window scaling rate for each grid point.
+         * @param range_query_time_interval_multiplier The multiplier used to scale the time interval for each window
+         * in range queries.
+         * @param use_KNN_for_query_accuracy Decides whether KNN queries should be utilized for determining query accuracy.
+         */
+        TRACE_Q(double resolution_scale, double min_range_query_accuracy, int max_trajectories_in_batch, int max_threads,
+                double range_query_grid_density_multiplier,  int windows_per_grid_point,
+                double window_expansion_rate, double range_query_time_interval_multiplier, bool use_KNN_for_query_accuracy)
+                : mrpa(resolution_scale),
+                  min_range_query_accuracy(min_range_query_accuracy),
+                  max_trajectories_in_batch(max_trajectories_in_batch),
+                  max_threads(max_threads),
+                  max_connections_per_batch_simplification(max_threads / max_trajectories_in_batch),
+                  range_query_grid_expansion_factor(range_query_grid_density_multiplier * 0.8),
+                  range_query_grid_density(range_query_grid_density_multiplier),
+                  windows_per_grid_point(windows_per_grid_point),
+                  window_expansion_rate(window_expansion_rate),
+                  range_query_time_interval_multiplier(range_query_time_interval_multiplier),
+                  use_KNN_for_query_accuracy(use_KNN_for_query_accuracy) {
+            if (max_connections_per_batch_simplification == 0) {
+                throw std::invalid_argument("max_connections_per_batch_simplification is too low");
+            }
+        }
+
+        /**
+         * The TRACE_Q constructor, which includes KNN queries, that determines the query_amount based on the given parameters.
+         * @param resolution_scale The MRPA resolution scale.
+         * @param min_range_query_accuracy The minimum range query accuracy that the simplification method must uphold.
+         * @param min_knn_query_accuracy The minimum knn query accuracy that the simplification method must uphold.
+         * @param max_trajectories_in_batch The maximum number of trajectories per batch that is able to run
+         * concurrently due to database connections.
+         * @param max_threads The maximum amount of threads that are allowed to run database client connections to
+         * the PostgreSQL database.
          * @param range_query_grid_density_multiplier The grid density factor for range queries,
          * which describes how close points appear in the grid.
          * @param knn_query_grid_density_multiplier The grid density factor for KNN queries,
@@ -210,13 +296,19 @@ namespace trace_q {
          * @param knn_query_time_interval_multiplier The multiplier used to scale the time interval for each window
          * in KNN queries.
          * @param knn_k The K value for K-Nearest-Neighbour queries.
+         * @param use_KNN_for_query_accuracy Decides whether KNN queries should be utilized for determining query accuracy.
          */
-        TRACE_Q(double resolution_scale, double min_query_accuracy, double range_query_grid_density_multiplier,
+        TRACE_Q(double resolution_scale, double min_range_query_accuracy, double min_knn_query_accuracy, int max_trajectories_in_batch, int max_threads,
+                double range_query_grid_density_multiplier,
                 double knn_query_grid_density_multiplier,  int windows_per_grid_point,
                 double window_expansion_rate, double range_query_time_interval_multiplier,
-                double knn_query_time_interval_multiplier, int knn_k)
+                double knn_query_time_interval_multiplier, int knn_k, bool use_KNN_for_query_accuracy)
                 : mrpa(resolution_scale),
-                  min_query_accuracy(min_query_accuracy),
+                  min_range_query_accuracy(min_range_query_accuracy),
+                  min_knn_query_accuracy(min_knn_query_accuracy),
+                  max_trajectories_in_batch(max_trajectories_in_batch),
+                  max_threads(max_threads),
+                  max_connections_per_batch_simplification(max_threads / max_trajectories_in_batch),
                   range_query_grid_expansion_factor(range_query_grid_density_multiplier * 0.8),
                   knn_query_grid_expansion_factor(knn_query_grid_density_multiplier * 0.8),
                   range_query_grid_density(range_query_grid_density_multiplier),
@@ -225,11 +317,11 @@ namespace trace_q {
                   window_expansion_rate(window_expansion_rate),
                   range_query_time_interval_multiplier(range_query_time_interval_multiplier),
                   knn_query_time_interval_multiplier(knn_query_time_interval_multiplier),
-                  knn_k(knn_k) {
-            if (knn_query_time_interval_multiplier < 0.02) {
-                throw std::invalid_argument("knn_query_time_interval_multiplier was lower than allowed");
+                  knn_k(knn_k),
+                  use_KNN_for_query_accuracy(use_KNN_for_query_accuracy) {
+            if (max_connections_per_batch_simplification == 0) {
+                throw std::invalid_argument("max_connections_per_batch_simplification is too low");
             }
-            max_trajectories_in_batch = static_cast<int>(std::floor(80 / (1 / knn_query_time_interval_multiplier)));
         }
 
         /**

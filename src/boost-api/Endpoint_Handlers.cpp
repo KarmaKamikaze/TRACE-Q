@@ -221,7 +221,7 @@ namespace api {
                     trajectory_data_handling::Trajectory_Manager::get_table_name(db_table), window);
 
             boost::json::array ids_array{};
-            for (int id : ids) {
+            for (unsigned int id : ids) {
                 ids_array.push_back(id);
             }
 

@@ -7,17 +7,18 @@
 namespace spatial_queries {
 
     class Range_Query_Test : public Query {
+    private:
         /**
          * The window that describes the area of the range query.
          */
         Range_Query::Window window{};
 
+    public:
+
         /**
          * Describes whether the original trajectory is in the window.
          */
         bool original_in_window{};
-
-    public:
 
         /**
          * Range_Query constructor that determines if the original_trajectory is in the range query.

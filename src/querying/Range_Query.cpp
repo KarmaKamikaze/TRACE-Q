@@ -17,7 +17,7 @@ namespace spatial_queries {
                                    });
     }
 
-    std::vector<unsigned int> spatial_queries::Range_Query::get_ids_from_range_query(
+    std::unordered_set<unsigned int> spatial_queries::Range_Query::get_ids_from_range_query(
             std::string const& table, Window const& window) {
         std::stringstream query{};
         query << "SELECT DISTINCT trajectory_id FROM " << table << " WHERE 1=1 ";
@@ -49,9 +49,9 @@ namespace spatial_queries {
 
         txn.commit();
 
-        std::vector<unsigned int> v_ids{};
+        std::unordered_set<unsigned int> v_ids{};
         for (const auto& [id] : ids) {
-            v_ids.push_back(id);
+            v_ids.insert(id);
         }
 
         return v_ids;

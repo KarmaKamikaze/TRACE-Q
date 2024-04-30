@@ -23,7 +23,7 @@ namespace trajectory_data_handling {
 
         if (table == db_table::original_trajectories) {
             for (int i = 1; i < trajectory.size(); i++) {
-                if (!(trajectory[i] == trajectory[i - 1])) {
+                if (trajectory[i].timestamp != trajectory[i - 1].timestamp) {
                     std::stringstream query{};
                     query << "INSERT INTO " << table_name << "(trajectory_id, coordinates, time) " << " VALUES("
                           << trajectory.id << ", point(" << std::to_string(trajectory[i].longitude) << ", "
@@ -55,7 +55,7 @@ namespace trajectory_data_handling {
         std::stringstream query{};
 
         if(ids.empty()) {
-            query << "SELECT trajectory_id, coordinates, time FROM " << table_name << ";";
+            query << "SELECT trajectory_id, coordinates, time FROM " << table_name << " ORDER BY trajectory_id;";
         }
         else {
             query << "SELECT trajectory_id, coordinates, time FROM " << table_name << " WHERE trajectory_id IN (";
@@ -65,7 +65,7 @@ namespace trajectory_data_handling {
                     query << ",";
                 }
             }
-            query << ");";
+            query << ") ORDER BY trajectory_id;";
         }
 
         pqxx::connection c{connection_string};
