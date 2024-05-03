@@ -5,6 +5,8 @@
 #include "Benchmark.hpp"
 #include "benchmark-query-objects/Benchmark_Range_Query.hpp"
 #include "benchmark-query-objects/Benchmark_KNN_Query.hpp"
+#include "../trajectory_data_handling/Trajectory_Manager.hpp"
+#include "../trajectory_data_handling/File_Manager.hpp"
 
 namespace analytics {
 
@@ -100,6 +102,10 @@ namespace analytics {
     }
 
     std::vector<std::shared_ptr<Benchmark_Query>> Benchmark::initialize_query_objects() {
+
+
+        trajectory_data_handling::Trajectory_Manager::reset_all_data();
+        trajectory_data_handling::File_Manager::load_tdrive_dataset();
 
         auto points_on_axis = static_cast<int>(std::ceil(1 / grid_density));
         auto time_points = static_cast<int>(std::ceil(1 / time_interval));
@@ -287,6 +293,9 @@ namespace analytics {
 
     std::vector<std::shared_ptr<Benchmark_Query>> Benchmark::evil_initialize_query_objects() {
 
+        trajectory_data_handling::Trajectory_Manager::reset_all_data();
+        trajectory_data_handling::File_Manager::load_tdrive_dataset();
+
         auto points_on_axis = static_cast<int>(std::ceil(1 / grid_density));
 
         auto mbr = get_mbr();
@@ -361,6 +370,18 @@ namespace analytics {
 
         return query_objects;
 
+    }
+
+    logging::Logger Benchmark::get_logger() {
+        // Get the current time
+        auto now = std::chrono::system_clock::now();
+        auto in_time_t = std::chrono::system_clock::to_time_t(now);
+// Convert the current time to a formatted string (YYYYMMDD_HHMMSS)
+        std::stringstream time_ss;
+        time_ss << std::put_time(std::localtime(&in_time_t), "%Y%m%d_%H%M%S");
+        std::string timestamp = time_ss.str();
+
+        return logging::Logger{"../../logs", "/" + timestamp + ".txt"};;
     }
 
 }
