@@ -14,7 +14,7 @@ namespace analytics {
         false_negatives = static_cast<int>(original_set.size()) - true_positives;
 
         if (type == F1::query_type::knn_query) {
-            false_positives = false_negatives;
+            false_positives = static_cast<int>(simplified_set.size()) - true_positives;
         }
     }
 

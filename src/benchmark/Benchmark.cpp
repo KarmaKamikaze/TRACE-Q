@@ -11,12 +11,12 @@ namespace analytics {
 
     std::string Benchmark::connection_string{"user=postgres password=postgres host=localhost dbname=traceq port=5432"};
 
-    double Benchmark::grid_density{0.02};
+    double Benchmark::grid_density{0.005};
     double Benchmark::expansion_factor{grid_density * 0.8};
     int Benchmark::windows_per_grid_point{5};
     double Benchmark::window_expansion_rate{1.3};
     double Benchmark::time_interval{0.02};
-    int Benchmark::knn_k{50};
+    int Benchmark::knn_k{3};
     int Benchmark::max_connections{50}; // Don't touch
 
     MBR Benchmark::get_mbr() {
@@ -133,10 +133,16 @@ namespace analytics {
 
                     if (query_count > max_connections) {
                         for (auto & fut : range_futures) {
-                            query_objects.push_back(std::make_shared<Benchmark_Range_Query>(fut.get()));
+                            auto fut_res = fut.get();
+                            if (!fut_res.query_result_ids.empty()) {
+                                query_objects.push_back(std::make_shared<Benchmark_Range_Query>(fut_res));
+                            }
                         }
                         for (auto & fut : knn_futures) {
-                            query_objects.push_back(std::make_shared<Benchmark_KNN_Query>(fut.get()));
+                            auto fut_res = fut.get();
+                            if (!fut_res.query_result_ids.empty()) {
+                                query_objects.push_back(std::make_shared<Benchmark_KNN_Query>(fut_res));
+                            }
                         }
                         range_futures.clear();
                         knn_futures.clear();
@@ -149,10 +155,16 @@ namespace analytics {
         }
 
         for (auto & fut : range_futures) {
-            query_objects.push_back(std::make_shared<Benchmark_Range_Query>(fut.get()));
+            auto fut_res = fut.get();
+            if (!fut_res.query_result_ids.empty()) {
+                query_objects.push_back(std::make_shared<Benchmark_Range_Query>(fut_res));
+            }
         }
         for (auto & fut : knn_futures) {
-            query_objects.push_back(std::make_shared<Benchmark_KNN_Query>(fut.get()));
+            auto fut_res = fut.get();
+            if (!fut_res.query_result_ids.empty()) {
+                query_objects.push_back(std::make_shared<Benchmark_KNN_Query>(fut_res));
+            }
         }
 
         return query_objects;
@@ -249,7 +261,7 @@ namespace analytics {
 
         std::stringstream query{};
 
-        query << "SELECT CAST(o_count AS float) / CAST(s_count AS float) AS compression_ratio"
+        query << "SELECT CAST(o_count AS float) / CAST(s_count AS float) AS compression_ratio "
                  "FROM (SELECT COUNT(*) AS o_count FROM original_trajectories) t1_count, "
                  "(SELECT COUNT(*) AS s_count FROM simplified_trajectories) t2_count";
 
@@ -260,6 +272,96 @@ namespace analytics {
         txn.commit();
 
         return query_result["compression_ratio"].as<double>();
+    }
+
+    spatial_queries::Range_Query::Window Benchmark::create_window_from_long_lat(double x_center, double y_center) {
+
+        double x_low = x_center - (1/(111.320 * cos(y_center*(std::numbers::pi/180))));
+        double x_high = x_center + (1/(111.320 * cos(y_center*(std::numbers::pi/180))));
+        double y_low = y_center - (1/110.574);
+        double y_high = y_center + (1/110.574);
+
+        return spatial_queries::Range_Query::Window{x_low, x_high, y_low, y_high,
+                                                    std::numeric_limits<unsigned long>::min(),
+                                                    std::numeric_limits<unsigned long>::max()};
+    }
+
+    std::vector<std::shared_ptr<Benchmark_Query>> Benchmark::evil_initialize_query_objects() {
+
+        auto points_on_axis = static_cast<int>(std::ceil(1 / grid_density));
+
+        auto mbr = get_mbr();
+
+        std::vector<std::future<Benchmark_Range_Query>> range_futures{};
+        std::vector<std::future<Benchmark_KNN_Query>> knn_futures{};
+
+        std::vector<std::shared_ptr<Benchmark_Query>> query_objects{};
+        int query_count = 0;
+
+        for (int x_point = 0; x_point <= points_on_axis; x_point++) {
+            auto x_coord = mbr.x_low + x_point * grid_density * (mbr.x_high - mbr.x_low);
+            for (int y_point = 0; y_point <= points_on_axis; y_point++) {
+                auto y_coord = mbr.y_low + y_point * grid_density * (mbr.y_high - mbr.y_low);
+
+                spatial_queries::Range_Query::Window window = create_window_from_long_lat(x_coord, y_coord);
+                range_futures.emplace_back(std::async(std::launch::async, [window](){
+                    auto original_res = spatial_queries::Range_Query::get_ids_from_range_query("original_trajectories", window);
+
+                    return Benchmark_Range_Query{original_res, window};
+                }));
+                query_count++;
+
+                spatial_queries::KNN_Query::KNN_Origin origin{x_coord, y_coord};
+                int k = knn_k;
+                knn_futures.emplace_back(std::future<Benchmark_KNN_Query>{std::async(std::launch::async, [origin, k](){
+                    auto original_res = spatial_queries::KNN_Query::get_ids_from_knn("original_trajectories", k, origin);
+
+                    std::unordered_set<unsigned int> original_set{};
+
+                    for (const auto& original : original_res) {
+                        original_set.insert(original.id);
+                    }
+
+                    return Benchmark_KNN_Query{original_set, origin};
+                })});
+
+                query_count++;
+
+                if (query_count > max_connections) {
+                    for (auto & fut : range_futures) {
+                        auto fut_res = fut.get();
+                        if (!fut_res.query_result_ids.empty()) {
+                            query_objects.push_back(std::make_shared<Benchmark_Range_Query>(fut_res));
+                        }
+                    }
+                    for (auto & fut : knn_futures) {
+                        auto fut_res = fut.get();
+                        if (!fut_res.query_result_ids.empty()) {
+                            query_objects.push_back(std::make_shared<Benchmark_KNN_Query>(fut_res));
+                        }
+                    }
+                    range_futures.clear();
+                    knn_futures.clear();
+                    query_count = 0;
+                }
+            }
+        }
+
+        for (auto & fut : range_futures) {
+            auto fut_res = fut.get();
+            if (!fut_res.query_result_ids.empty()) {
+                query_objects.push_back(std::make_shared<Benchmark_Range_Query>(fut_res));
+            }
+        }
+        for (auto & fut : knn_futures) {
+            auto fut_res = fut.get();
+            if (!fut_res.query_result_ids.empty()) {
+                query_objects.push_back(std::make_shared<Benchmark_KNN_Query>(fut_res));
+            }
+        }
+
+        return query_objects;
+
     }
 
 }
