@@ -17,7 +17,7 @@ TEST_CASE("TRACE_Q Window expansion rate benchmarking") {
     std::stringstream time_ss;
     time_ss << std::put_time(std::localtime(&in_time_t), "%Y%m%d_%H%M%S");
     std::string timestamp = time_ss.str();
-    auto logger = logging::Logger{"../../logs/" + timestamp + ".txt"};
+    auto logger = logging::Logger{"../../logs", "/" + timestamp + ".txt"};
 
     auto query_objects = analytics::Benchmark::initialize_query_objects();
 
@@ -141,7 +141,7 @@ TEST_CASE("TRACE-Q KNN K benchmarking") {
     std::stringstream time_ss;
     time_ss << std::put_time(std::localtime(&in_time_t), "%Y%m%d_%H%M%S");
     std::string timestamp = time_ss.str();
-    auto logger = logging::Logger{"../../logs/" + timestamp + ".txt"};
+    auto logger = logging::Logger{"../../logs", "/" + timestamp + ".txt"};
 
     auto query_objects = analytics::Benchmark::initialize_query_objects();
 
@@ -261,7 +261,7 @@ TEST_CASE("TRACE-Q IS KNN NECESSARY?") {
     std::stringstream time_ss;
     time_ss << std::put_time(std::localtime(&in_time_t), "%Y%m%d_%H%M%S");
     std::string timestamp = time_ss.str();
-    auto logger = logging::Logger{"../../logs/" + timestamp + ".txt"};
+    auto logger = logging::Logger{"../../logs", "/" + timestamp + ".txt"};
 
     auto query_objects = analytics::Benchmark::initialize_query_objects();
 
@@ -350,7 +350,7 @@ TEST_CASE("TRACE-Q VS RL4QDTS") {
     std::stringstream time_ss;
     time_ss << std::put_time(std::localtime(&in_time_t), "%Y%m%d_%H%M%S");
     std::string timestamp = time_ss.str();
-    auto logger = logging::Logger{"../../logs/" + timestamp + ".txt"};
+    auto logger = logging::Logger{"../../logs", "/" + timestamp + ".txt"};
 
     auto query_objects = analytics::Benchmark::evil_initialize_query_objects(); // This is where the magic happens
 
@@ -407,7 +407,7 @@ TEST_CASE("TRACE-Q Hardcore Query Accuracy") {
     std::stringstream time_ss;
     time_ss << std::put_time(std::localtime(&in_time_t), "%Y%m%d_%H%M%S");
     std::string timestamp = time_ss.str();
-    auto logger = logging::Logger{"../../logs/" + timestamp + ".txt"};
+    auto logger = logging::Logger{"../../logs", "/" + timestamp + ".txt"};
 
     auto query_objects = analytics::Benchmark::initialize_query_objects();
 

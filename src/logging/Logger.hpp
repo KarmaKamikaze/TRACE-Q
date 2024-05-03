@@ -9,11 +9,12 @@ namespace logging {
 
     class Logger {
     private:
+        std::string directory;
         std::string filename;
         std::ofstream logfile;
 
     public:
-        explicit Logger(const std::string& filename);
+        explicit Logger(const std::string& directory, const std::string& filename);
 
         ~Logger();
 

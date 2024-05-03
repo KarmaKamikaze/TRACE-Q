@@ -6,12 +6,11 @@
 #include "benchmark-query-objects/Benchmark_Range_Query.hpp"
 #include "benchmark-query-objects/Benchmark_KNN_Query.hpp"
 
-
 namespace analytics {
 
     std::string Benchmark::connection_string{"user=postgres password=postgres host=localhost dbname=traceq port=5432"};
 
-    double Benchmark::grid_density{0.005};
+    double Benchmark::grid_density{0.02};
     double Benchmark::expansion_factor{grid_density * 0.8};
     int Benchmark::windows_per_grid_point{5};
     double Benchmark::window_expansion_rate{1.3};
