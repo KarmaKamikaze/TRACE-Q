@@ -50,6 +50,13 @@ namespace trajectory_data_handling {
     }
 
     void File_Manager::load_tdrive_dataset() {
+
+        // The following values are used for data-cleaning in order to remove outliers.
+        auto min_accepted_latitude = 30.69;
+        auto max_accepted_latitude = 46.65;
+        auto min_accepted_longitude = 104.15;
+        auto max_accepted_longitude = 126.93;
+
         for (const auto& dirEntry : recursive_directory_iterator(TDRIVE_PATH))  {
             std::ifstream file(dirEntry.path());
 
@@ -73,10 +80,14 @@ namespace trajectory_data_handling {
                         if (trajectory.id == 0) {
                             trajectory.id = std::stoi(id);
                         }
-                        location.timestamp = File_Manager::string_to_time(timestamp);
-                        location.longitude = std::stod(longitude);
-                        location.latitude = std::stod(latitude);
-                        trajectory.locations.push_back(location);
+                            location.timestamp = File_Manager::string_to_time(timestamp);
+                            location.longitude = std::stod(longitude);
+                            location.latitude = std::stod(latitude);
+                            if (location.latitude >= min_accepted_latitude and location.latitude <= max_accepted_latitude
+                                and location.longitude >= min_accepted_longitude and location.longitude <= max_accepted_longitude) {
+                                    trajectory.locations.push_back(location);
+                            }
+
                     } else {
                         std::cerr << "Error reading line: " << line << '\n';
                     }

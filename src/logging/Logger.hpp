@@ -20,7 +20,7 @@ namespace logging {
         template <typename T>
         Logger& operator<<(const T& value) {
             if (logfile.is_open()) {
-                logfile << value;
+                logfile << value << "\n";
             }
             return *this;
         }

@@ -3,11 +3,21 @@
 #include "../trajectory_data_handling/Trajectory_Manager.hpp"
 #include "../trajectory_data_handling/File_Manager.hpp"
 #include "Benchmark.hpp"
+#include "../logging/Logger.hpp"
 
 TEST_CASE("TRACE_Q Window expansion rate benchmarking") {
 
     trajectory_data_handling::Trajectory_Manager::reset_all_data();
     trajectory_data_handling::File_Manager::load_tdrive_dataset();
+
+    // Get the current time
+    auto now = std::chrono::system_clock::now();
+    auto in_time_t = std::chrono::system_clock::to_time_t(now);
+    // Convert the current time to a formatted string (YYYYMMDD_HHMMSS)
+    std::stringstream time_ss;
+    time_ss << std::put_time(std::localtime(&in_time_t), "%Y%m%d_%H%M%S");
+    std::string timestamp = time_ss.str();
+    auto logger = logging::Logger{"../../logs/" + timestamp + ".txt"};
 
     auto query_objects = analytics::Benchmark::initialize_query_objects();
 
@@ -40,11 +50,14 @@ TEST_CASE("TRACE_Q Window expansion rate benchmarking") {
 
         auto query_accuracy = analytics::Benchmark::benchmark_query_accuracy(query_objects);
 
-        std::cout << "TRACE-Q Runtime vs Query Accuracy - Window expansion rate = 1.2" << std::endl;
-        std::cout << "Runtime: " << time / 1000 << " s\n";
-        std::cout << "Range Query Accuracy: " << query_accuracy.range_f1 << "\n";
-        std::cout << "KNN Query Accuracy: " << query_accuracy.knn_f1 << "\n";
-        std::cout << "Compression Ratio: " << analytics::Benchmark::get_compression_ratio() << std::endl;
+        std::stringstream log;
+
+        log << "TRACE-Q Runtime vs Query Accuracy - Window expansion rate = 1.2" << "\n";
+        log << "Runtime: " << time / 1000 << " s\n";
+        log << "Range Query Accuracy: " << query_accuracy.range_f1 << "\n";
+        log << "KNN Query Accuracy: " << query_accuracy.knn_f1 << "\n";
+        log << "Compression Ratio: " << analytics::Benchmark::get_compression_ratio() << "\n";
+        logger << log.str();
 
         // Teardown
         trajectory_data_handling::Trajectory_Manager::reset_all_data();
@@ -66,11 +79,14 @@ TEST_CASE("TRACE_Q Window expansion rate benchmarking") {
 
         auto query_accuracy = analytics::Benchmark::benchmark_query_accuracy(query_objects);
 
-        std::cout << "TRACE-Q Runtime vs Query Accuracy - Window expansion rate = 1.3" << std::endl;
-        std::cout << "Runtime: " << time / 1000 << " s\n";
-        std::cout << "Range Query Accuracy: " << query_accuracy.range_f1 << "\n";
-        std::cout << "KNN Query Accuracy: " << query_accuracy.knn_f1 << "\n";
-        std::cout << "Compression Ratio: " << analytics::Benchmark::get_compression_ratio() << std::endl;
+        std::stringstream log;
+
+        log << "TRACE-Q Runtime vs Query Accuracy - Window expansion rate = 1.3" << "\n";
+        log << "Runtime: " << time / 1000 << " s\n";
+        log << "Range Query Accuracy: " << query_accuracy.range_f1 << "\n";
+        log << "KNN Query Accuracy: " << query_accuracy.knn_f1 << "\n";
+        log << "Compression Ratio: " << analytics::Benchmark::get_compression_ratio() << "\n";
+        logger << log.str();
 
         // Teardown
         trajectory_data_handling::Trajectory_Manager::reset_all_data();
@@ -92,11 +108,14 @@ TEST_CASE("TRACE_Q Window expansion rate benchmarking") {
 
         auto query_accuracy = analytics::Benchmark::benchmark_query_accuracy(query_objects);
 
-        std::cout << "TRACE-Q Runtime vs Query Accuracy - Window expansion rate = 1.5" << std::endl;
-        std::cout << "Runtime: " << time / 1000 << " s\n";
-        std::cout << "Range Query Accuracy: " << query_accuracy.range_f1 << "\n";
-        std::cout << "KNN Query Accuracy: " << query_accuracy.knn_f1 << "\n";
-        std::cout << "Compression Ratio: " << analytics::Benchmark::get_compression_ratio() << std::endl;
+        std::stringstream log;
+
+        log << "TRACE-Q Runtime vs Query Accuracy - Window expansion rate = 1.5" << "\n";
+        log << "Runtime: " << time / 1000 << " s\n";
+        log << "Range Query Accuracy: " << query_accuracy.range_f1 << "\n";
+        log << "KNN Query Accuracy: " << query_accuracy.knn_f1 << "\n";
+        log << "Compression Ratio: " << analytics::Benchmark::get_compression_ratio() << "\n";
+        logger << log.str();
 
         // Teardown
         trajectory_data_handling::Trajectory_Manager::reset_all_data();
@@ -114,6 +133,16 @@ TEST_CASE("TRACE-Q KNN K benchmarking") {
 
     trajectory_data_handling::Trajectory_Manager::reset_all_data();
     trajectory_data_handling::File_Manager::load_tdrive_dataset();
+
+    // Get the current time
+    auto now = std::chrono::system_clock::now();
+    auto in_time_t = std::chrono::system_clock::to_time_t(now);
+    // Convert the current time to a formatted string (YYYYMMDD_HHMMSS)
+    std::stringstream time_ss;
+    time_ss << std::put_time(std::localtime(&in_time_t), "%Y%m%d_%H%M%S");
+    std::string timestamp = time_ss.str();
+    auto logger = logging::Logger{"../../logs/" + timestamp + ".txt"};
+
     auto query_objects = analytics::Benchmark::initialize_query_objects();
 
     double resolution_scale = 2.0;
@@ -145,11 +174,14 @@ TEST_CASE("TRACE-Q KNN K benchmarking") {
 
         auto query_accuracy = analytics::Benchmark::benchmark_query_accuracy(query_objects);
 
-        std::cout << "TRACE-Q Runtime vs Query Accuracy - KNN K = 1" << std::endl;
-        std::cout << "Runtime: " << time / 1000 << " s\n";
-        std::cout << "Range Query Accuracy: " << query_accuracy.range_f1 << "\n";
-        std::cout << "KNN Query Accuracy: " << query_accuracy.knn_f1 << "\n";
-        std::cout << "Compression Ratio: " << analytics::Benchmark::get_compression_ratio() << std::endl;
+        std::stringstream log;
+
+        log << "TRACE-Q Runtime vs Query Accuracy - KNN K = 1" << "\n";
+        log << "Runtime: " << time / 1000 << " s\n";
+        log << "Range Query Accuracy: " << query_accuracy.range_f1 << "\n";
+        log << "KNN Query Accuracy: " << query_accuracy.knn_f1 << "\n";
+        log << "Compression Ratio: " << analytics::Benchmark::get_compression_ratio() << "\n";
+        logger << log.str();
 
         // Teardown
         trajectory_data_handling::Trajectory_Manager::reset_all_data();
@@ -170,11 +202,14 @@ TEST_CASE("TRACE-Q KNN K benchmarking") {
 
         auto query_accuracy = analytics::Benchmark::benchmark_query_accuracy(query_objects);
 
-        std::cout << "TRACE-Q Runtime vs Query Accuracy - KNN K = 10" << std::endl;
-        std::cout << "Runtime: " << time / 1000 << " s\n";
-        std::cout << "Range Query Accuracy: " << query_accuracy.range_f1 << "\n";
-        std::cout << "KNN Query Accuracy: " << query_accuracy.knn_f1 << "\n";
-        std::cout << "Compression Ratio: " << analytics::Benchmark::get_compression_ratio() << std::endl;
+        std::stringstream log;
+
+        log << "TRACE-Q Runtime vs Query Accuracy - KNN K = 10" << "\n";
+        log << "Runtime: " << time / 1000 << " s\n";
+        log << "Range Query Accuracy: " << query_accuracy.range_f1 << "\n";
+        log << "KNN Query Accuracy: " << query_accuracy.knn_f1 << "\n";
+        log << "Compression Ratio: " << analytics::Benchmark::get_compression_ratio() << "\n";
+        logger << log.str();
 
         // Teardown
         trajectory_data_handling::Trajectory_Manager::reset_all_data();
@@ -195,11 +230,14 @@ TEST_CASE("TRACE-Q KNN K benchmarking") {
 
         auto query_accuracy = analytics::Benchmark::benchmark_query_accuracy(query_objects);
 
-        std::cout << "TRACE-Q Runtime vs Query Accuracy - KNN K = 50" << std::endl;
-        std::cout << "Runtime: " << time / 1000 << " s\n";
-        std::cout << "Range Query Accuracy: " << query_accuracy.range_f1 << "\n";
-        std::cout << "KNN Query Accuracy: " << query_accuracy.knn_f1 << "\n";
-        std::cout << "Compression Ratio: " << analytics::Benchmark::get_compression_ratio() << std::endl;
+        std::stringstream log;
+
+        log << "TRACE-Q Runtime vs Query Accuracy - KNN K = 50" << "\n";
+        log << "Runtime: " << time / 1000 << " s\n";
+        log << "Range Query Accuracy: " << query_accuracy.range_f1 << "\n";
+        log << "KNN Query Accuracy: " << query_accuracy.knn_f1 << "\n";
+        log << "Compression Ratio: " << analytics::Benchmark::get_compression_ratio() << "\n";
+        logger << log.str();
 
         // Teardown
         trajectory_data_handling::Trajectory_Manager::reset_all_data();
@@ -215,6 +253,16 @@ TEST_CASE("TRACE-Q IS KNN NECESSARY?") {
 
     trajectory_data_handling::Trajectory_Manager::reset_all_data();
     trajectory_data_handling::File_Manager::load_tdrive_dataset();
+
+    // Get the current time
+    auto now = std::chrono::system_clock::now();
+    auto in_time_t = std::chrono::system_clock::to_time_t(now);
+    // Convert the current time to a formatted string (YYYYMMDD_HHMMSS)
+    std::stringstream time_ss;
+    time_ss << std::put_time(std::localtime(&in_time_t), "%Y%m%d_%H%M%S");
+    std::string timestamp = time_ss.str();
+    auto logger = logging::Logger{"../../logs/" + timestamp + ".txt"};
+
     auto query_objects = analytics::Benchmark::initialize_query_objects();
 
     double resolution_scale = 1.3;
@@ -248,11 +296,14 @@ TEST_CASE("TRACE-Q IS KNN NECESSARY?") {
 
         auto query_accuracy = analytics::Benchmark::benchmark_query_accuracy(query_objects);
 
-        std::cout << "TRACE-Q WITH KNN" << std::endl;
-        std::cout << "Runtime: " << time / 1000 << " s\n";
-        std::cout << "Range Query Accuracy: " << query_accuracy.range_f1 << "\n";
-        std::cout << "KNN Query Accuracy: " << query_accuracy.knn_f1 << "\n";
-        std::cout << "Compression Ratio: " << analytics::Benchmark::get_compression_ratio() << std::endl;
+        std::stringstream log;
+
+        log << "TRACE-Q WITH KNN" << "\n";
+        log << "Runtime: " << time / 1000 << " s\n";
+        log << "Range Query Accuracy: " << query_accuracy.range_f1 << "\n";
+        log << "KNN Query Accuracy: " << query_accuracy.knn_f1 << "\n";
+        log << "Compression Ratio: " << analytics::Benchmark::get_compression_ratio() << "\n";
+        logger << log.str();
 
         // Teardown
         trajectory_data_handling::Trajectory_Manager::reset_all_data();
@@ -271,11 +322,14 @@ TEST_CASE("TRACE-Q IS KNN NECESSARY?") {
 
         auto query_accuracy = analytics::Benchmark::benchmark_query_accuracy(query_objects);
 
-        std::cout << "TRACE-Q WITHOUT KNN" << std::endl;
-        std::cout << "Runtime: " << time / 1000 << " s\n";
-        std::cout << "Range Query Accuracy: " << query_accuracy.range_f1 << "\n";
-        std::cout << "KNN Query Accuracy: " << query_accuracy.knn_f1 << "\n";
-        std::cout << "Compression Ratio: " << analytics::Benchmark::get_compression_ratio() << std::endl;
+        std::stringstream log;
+
+        log << "TRACE-Q WITHOUT KNN" << std::endl;
+        log << "Runtime: " << time / 1000 << " s\n";
+        log << "Range Query Accuracy: " << query_accuracy.range_f1 << "\n";
+        log << "KNN Query Accuracy: " << query_accuracy.knn_f1 << "\n";
+        log << "Compression Ratio: " << analytics::Benchmark::get_compression_ratio() << std::endl;
+        logger << log.str();
 
         // Teardown
         trajectory_data_handling::Trajectory_Manager::reset_all_data();
@@ -288,6 +342,16 @@ TEST_CASE("TRACE-Q VS RL4QDTS") {
 
     trajectory_data_handling::Trajectory_Manager::reset_all_data();
     trajectory_data_handling::File_Manager::load_tdrive_dataset();
+
+    // Get the current time
+    auto now = std::chrono::system_clock::now();
+    auto in_time_t = std::chrono::system_clock::to_time_t(now);
+    // Convert the current time to a formatted string (YYYYMMDD_HHMMSS)
+    std::stringstream time_ss;
+    time_ss << std::put_time(std::localtime(&in_time_t), "%Y%m%d_%H%M%S");
+    std::string timestamp = time_ss.str();
+    auto logger = logging::Logger{"../../logs/" + timestamp + ".txt"};
+
     auto query_objects = analytics::Benchmark::evil_initialize_query_objects(); // This is where the magic happens
 
     double resolution_scale = 1.3;
@@ -316,11 +380,14 @@ TEST_CASE("TRACE-Q VS RL4QDTS") {
 
     auto query_accuracy = analytics::Benchmark::benchmark_query_accuracy(query_objects);
 
-    std::cout << "TRACE-Q VS RL4QDTS" << std::endl;
-    std::cout << "Runtime: " << time / 1000 << " s\n";
-    std::cout << "Range Query Accuracy: " << query_accuracy.range_f1 << "\n";
-    std::cout << "KNN Query Accuracy: " << query_accuracy.knn_f1 << "\n";
-    std::cout << "Compression Ratio: " << analytics::Benchmark::get_compression_ratio() << std::endl;
+    std::stringstream log;
+
+    log << "TRACE-Q VS RL4QDTS" << "\n";
+    log << "Runtime: " << time / 1000 << " s\n";
+    log << "Range Query Accuracy: " << query_accuracy.range_f1 << "\n";
+    log << "KNN Query Accuracy: " << query_accuracy.knn_f1 << "\n";
+    log << "Compression Ratio: " << analytics::Benchmark::get_compression_ratio() << "\n";
+    logger << log.str();
 
     // Teardown
     trajectory_data_handling::Trajectory_Manager::reset_all_data();
@@ -332,6 +399,15 @@ TEST_CASE("TRACE-Q Hardcore Query Accuracy") {
 
     trajectory_data_handling::Trajectory_Manager::reset_all_data();
     trajectory_data_handling::File_Manager::load_tdrive_dataset();
+
+    // Get the current time
+    auto now = std::chrono::system_clock::now();
+    auto in_time_t = std::chrono::system_clock::to_time_t(now);
+    // Convert the current time to a formatted string (YYYYMMDD_HHMMSS)
+    std::stringstream time_ss;
+    time_ss << std::put_time(std::localtime(&in_time_t), "%Y%m%d_%H%M%S");
+    std::string timestamp = time_ss.str();
+    auto logger = logging::Logger{"../../logs/" + timestamp + ".txt"};
 
     auto query_objects = analytics::Benchmark::initialize_query_objects();
 
@@ -361,11 +437,14 @@ TEST_CASE("TRACE-Q Hardcore Query Accuracy") {
 
     auto query_accuracy = analytics::Benchmark::benchmark_query_accuracy(query_objects);
 
-    std::cout << "TRACE-Q Hardcore mode (Enemies deal more damage, your hunger depletes faster, query accuracy is very unforgiving, and your save file is deleted if you die.)" << std::endl;
-    std::cout << "Runtime: " << time / 1000 << " s\n";
-    std::cout << "Range Query Accuracy: " << query_accuracy.range_f1 << "\n";
-    std::cout << "KNN Query Accuracy: " << query_accuracy.knn_f1 << "\n";
-    std::cout << "Compression Ratio: " << analytics::Benchmark::get_compression_ratio() << std::endl;
+    std::stringstream log;
+
+    log << "TRACE-Q Hardcore mode (Enemies deal more damage, your hunger depletes faster, query accuracy is very unforgiving, and your save file is deleted if you die.)" << "\n";
+    log << "Runtime: " << time / 1000 << " s\n";
+    log << "Range Query Accuracy: " << query_accuracy.range_f1 << "\n";
+    log << "KNN Query Accuracy: " << query_accuracy.knn_f1 << "\n";
+    log << "Compression Ratio: " << analytics::Benchmark::get_compression_ratio() << "\n";
+    logger << log.str();
 
     // Teardown
     trajectory_data_handling::Trajectory_Manager::reset_all_data();

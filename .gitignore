@@ -110,3 +110,4 @@ project.lock.json
 #####
 
 external/
+logs/

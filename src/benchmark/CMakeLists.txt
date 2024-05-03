@@ -16,6 +16,8 @@ add_executable(TRACE_Q_Benchmark
         ../querying/Range_Query.cpp
         ../querying/KNN_Query.hpp
         ../querying/KNN_Query.cpp
+        ../logging/Logger.hpp
+        ../logging/Logger.cpp
         Benchmark.hpp
         Benchmark.cpp
         F1.hpp
