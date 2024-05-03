@@ -13,7 +13,7 @@ namespace analytics {
     double Benchmark::grid_density{0.02};
     double Benchmark::expansion_factor{grid_density * 0.8};
     int Benchmark::windows_per_grid_point{5};
-    double Benchmark::window_expansion_rate{1.3};
+    double Benchmark::window_expansion_rate{1.2};
     double Benchmark::time_interval{0.02};
     int Benchmark::knn_k{3};
     int Benchmark::max_connections{50}; // Don't touch
