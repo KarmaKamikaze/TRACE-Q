@@ -14,4 +14,5 @@ target_link_libraries(TRACE_Q
             querying
             boost-api
             logging
+            traceq_benchmarks
 )

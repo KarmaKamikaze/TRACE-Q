@@ -165,7 +165,7 @@ namespace trajectory_data_handling {
         txn.exec0("DROP TABLE IF EXISTS simplified_trajectories;");
 
         txn.commit();
-        create_database();
+        create_simplified_database();
     }
 
     void Trajectory_Manager::add_query_file_to_transaction(std::string const& query_file_path,

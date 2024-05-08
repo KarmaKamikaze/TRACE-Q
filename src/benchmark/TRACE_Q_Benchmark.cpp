@@ -1,5 +1,4 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <doctest/doctest.h>
 #include "TRACE_Q_Benchmark.hpp"
 #include "../simp-algorithms/TRACE_Q.hpp"
 #include "../trajectory_data_handling/Trajectory_Manager.hpp"
