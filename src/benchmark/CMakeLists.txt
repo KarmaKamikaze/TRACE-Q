@@ -11,7 +11,7 @@ target_sources(traceq_benchmarks
         ${CMAKE_CURRENT_LIST_DIR}/Benchmark.hpp
 )
 
-target_link_libraries(traceq_benchmarks "${PQXX_LIBRARIES}" logging)
+target_link_libraries(traceq_benchmarks "${PQXX_LIBRARIES}" logging trajectory_data_handling)
 
 target_include_directories(traceq_benchmarks
         PUBLIC

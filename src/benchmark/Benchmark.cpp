@@ -1,11 +1,9 @@
 #include <pqxx/pqxx>
 #include <cmath>
 #include <future>
-#include <memory>
 #include "Benchmark.hpp"
 #include "benchmark-query-objects/Benchmark_Range_Query.hpp"
 #include "benchmark-query-objects/Benchmark_KNN_Query.hpp"
-#include "../trajectory_data_handling/Trajectory_Manager.hpp"
 #include "../trajectory_data_handling/File_Manager.hpp"
 
 namespace analytics {
