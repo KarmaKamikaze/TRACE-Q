@@ -22,6 +22,7 @@ namespace logging {
         Logger& operator<<(const T& value) {
             if (logfile.is_open()) {
                 logfile << value << "\n";
+                std::cout << value << std::endl;
             }
             return *this;
         }

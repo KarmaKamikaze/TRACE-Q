@@ -1,4 +1,5 @@
 add_executable(TRACE_Q_Benchmark
+        TRACE_Q_Benchmark.hpp
         TRACE_Q_Benchmark.cpp
         ../simp-algorithms/TRACE_Q.hpp
         ../simp-algorithms/TRACE_Q.cpp
