@@ -1053,10 +1053,12 @@ namespace analytics {
 
 
     void TRACE_Q_Benchmark::run_mrpa(simp_algorithms::MRPA mrpa, std::vector<unsigned int> const & all_ids, double mrpa_error) {
+        using enum trajectory_data_handling::db_table;
+
         for (const auto& id : all_ids) {
-            auto trajectory = trajectory_data_handling::Trajectory_Manager::load_into_data_structure(trajectory_data_handling::db_table::original_trajectories, {id}).front();
+            auto trajectory = trajectory_data_handling::Trajectory_Manager::load_into_data_structure(original_trajectories, {id}).front();
             if (trajectory.size() <= 2) {
-                trajectory_data_handling::Trajectory_Manager::insert_trajectory(trajectory, trajectory_data_handling::db_table::simplified_trajectories);
+                trajectory_data_handling::Trajectory_Manager::insert_trajectory(trajectory, simplified_trajectories);
                 continue;
             }
 
@@ -1066,11 +1068,11 @@ namespace analytics {
                 std::cout << simp.size() << " " << error_tol << std::endl;
 
                 if (error_tol > mrpa_error) {
-                    trajectory_data_handling::Trajectory_Manager::insert_trajectory(simp, trajectory_data_handling::db_table::simplified_trajectories);
+                    trajectory_data_handling::Trajectory_Manager::insert_trajectory(simp, simplified_trajectories);
                     break;
                 }
             }
-            trajectory_data_handling::Trajectory_Manager::insert_trajectory(trajectory, trajectory_data_handling::db_table::simplified_trajectories);
+            trajectory_data_handling::Trajectory_Manager::insert_trajectory(trajectory, simplified_trajectories);
         }
     }
 
