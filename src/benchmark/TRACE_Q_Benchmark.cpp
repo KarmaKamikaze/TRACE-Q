@@ -21,14 +21,20 @@ namespace analytics {
 
         const auto query_objects = analytics::Benchmark::initialize_query_objects();
 
-        traceq_is_knn_necessary(query_objects, file_logger);
-        traceq_window_expansion_rate(query_objects, file_logger);
-        traceq_range_query_density_and_time_interval(query_objects, file_logger);
-        traceq_knn_query_density_and_time_interval(query_objects, file_logger);
-        traceq_knn_k(query_objects, file_logger);
-        //traceq_hardcore_query_accuracy(query_objects, file_logger);
-        //mrpa_benchmark(query_objects, file_logger);
+        TRACE_Q_Benchmark::traceq_is_knn_necessary(query_objects, file_logger);
+        TRACE_Q_Benchmark::traceq_window_expansion_rate(query_objects, file_logger);
+        TRACE_Q_Benchmark::traceq_range_query_density_and_time_interval(query_objects, file_logger);
+        TRACE_Q_Benchmark::traceq_knn_query_density_and_time_interval(query_objects, file_logger);
+        TRACE_Q_Benchmark::traceq_knn_k(query_objects, file_logger);
+    }
 
+    void TRACE_Q_Benchmark::run_traceq_vs_mrpa(int amount_of_test_trajectory) {
+        auto file_logger = analytics::Benchmark::get_logger();
+
+        std::cout << "TRACE-Q vs MRPA Benchmarks" << std::endl;
+
+        TRACE_Q_Benchmark::traceq_hardcore_query_accuracy(amount_of_test_trajectory, file_logger);
+        TRACE_Q_Benchmark::mrpa_benchmark(amount_of_test_trajectory, file_logger);
     }
 
     void TRACE_Q_Benchmark::traceq_is_knn_necessary(std::vector<std::shared_ptr<Benchmark_Query>> const& query_objects,
@@ -919,183 +925,130 @@ namespace analytics {
 
     }
 
-    void traceq_hardcore_query_accuracy(std::vector<std::shared_ptr<Benchmark_Query>> const& query_objects,
-                                        logging::Logger & logger) {
+    void TRACE_Q_Benchmark::traceq_hardcore_query_accuracy(int amount_of_test_trajectories, logging::Logger & logger) {
 
         std::cout << "TRACE-Q Hardcore Query Accuracy" << std::endl;
 
-        trajectory_data_handling::Trajectory_Manager::reset_simplified_data();
+        auto tests_per_min_accuracy = 3;
 
-        double resolution_scale = 1.1;
-        double min_range_query_accuracy = 0.95;
-        double min_knn_query_accuracy = 0.95;
-        int max_trajectories_in_batch = 8;
-        int max_threads = 50;
-        auto range_query_grid_density = 0.1;
-        auto knn_query_grid_density = 0.1;
-        int windows_per_grid_point = 3;
-        double window_expansion_rate = 1.3;
-        double range_query_time_interval_multiplier = 0.1;
-        double knn_query_time_interval_multiplier = 0.1;
-        int knn_k = 10;
-        bool use_KNN_for_query_accuracy = true;
+        auto custom_min_range_query_accuracy = 0.98;
+        auto custom_min_knn_query_accuracy = 0.98;
 
-        auto trace_q = trace_q::TRACE_Q{resolution_scale, min_range_query_accuracy, min_knn_query_accuracy,
-                                        max_trajectories_in_batch, max_threads,
-                                        range_query_grid_density,
-                                        knn_query_grid_density, windows_per_grid_point,
-                                        window_expansion_rate, range_query_time_interval_multiplier,
-                                        knn_query_time_interval_multiplier, knn_k,
-                                        use_KNN_for_query_accuracy};
+        TRACE_Q_Benchmark::run_traceq_hardcore_benchmark(custom_min_range_query_accuracy, custom_min_knn_query_accuracy,
+                                                         amount_of_test_trajectories, tests_per_min_accuracy, logger);
 
-        auto time = analytics::Benchmark::function_time([&trace_q]() { trace_q.run(); });
+        custom_min_range_query_accuracy = 0.95;
+        custom_min_knn_query_accuracy = 0.95;
+        TRACE_Q_Benchmark::run_traceq_hardcore_benchmark(custom_min_range_query_accuracy, custom_min_knn_query_accuracy,
+                                                         amount_of_test_trajectories, tests_per_min_accuracy, logger);
 
-        auto query_accuracy = analytics::Benchmark::benchmark_query_accuracy(query_objects);
+        custom_min_range_query_accuracy = 0.90;
+        custom_min_knn_query_accuracy = 0.90;
+        TRACE_Q_Benchmark::run_traceq_hardcore_benchmark(custom_min_range_query_accuracy, custom_min_knn_query_accuracy,
+                                                         amount_of_test_trajectories, tests_per_min_accuracy, logger);
 
-        std::stringstream log;
+        custom_min_range_query_accuracy = 0.80;
+        custom_min_knn_query_accuracy = 0.80;
+        TRACE_Q_Benchmark::run_traceq_hardcore_benchmark(custom_min_range_query_accuracy, custom_min_knn_query_accuracy,
+                                                         amount_of_test_trajectories, tests_per_min_accuracy, logger);
 
-        log << "TRACE-Q Hardcore mode (Enemies deal more damage, your hunger depletes faster, query accuracy is very unforgiving, and your save file is deleted if you die.)\n";
-        log << "Parameters:\n";
-        log << "Resolution Scale: " << std::to_string(resolution_scale) << "\n";
-        log << "Min Range Query Accuracy: " << std::to_string(min_range_query_accuracy) << "\n";
-        log << "Min KNN Query Accuracy: " << std::to_string(min_knn_query_accuracy) << "\n";
-        log << "Max Trajectories In Batch: " << std::to_string(max_trajectories_in_batch) << "\n";
-        log << "Max Threads: " << std::to_string(max_threads) << "\n";
-        log << "Range Query Grid Density: " << std::to_string(range_query_grid_density) << "\n";
-        log << "KNN Query Grid Density: " << std::to_string(knn_query_grid_density) << "\n";
-        log << "Windows Per Grid Point: " << std::to_string(windows_per_grid_point) << "\n";
-        log << "Window Expansion Rate: " << std::to_string(window_expansion_rate) << "\n";
-        log << "Range Query Time Interval Multiplier: " << std::to_string(range_query_time_interval_multiplier) << "\n";
-        log << "Range KNN Time Interval Multiplier: " << std::to_string(knn_query_time_interval_multiplier) << "\n";
-        log << "KNN K: " << std::to_string(knn_k) << "\n";
-        log << "Use KNN For Query Accuracy: " << std::to_string(use_KNN_for_query_accuracy) << "\n";
-        log << "Benchmark:\n";
-        log << "Runtime: " << time / 1000 << " s\n";
-        log << "Range Query Accuracy: " << query_accuracy.range_f1 << "\n";
-        log << "KNN Query Accuracy: " << query_accuracy.knn_f1 << "\n";
-        log << "Compression Ratio: " << analytics::Benchmark::get_compression_ratio() << "\n";
-        logger << log.str();
+        custom_min_range_query_accuracy = 0.70;
+        custom_min_knn_query_accuracy = 0.70;
+        TRACE_Q_Benchmark::run_traceq_hardcore_benchmark(custom_min_range_query_accuracy, custom_min_knn_query_accuracy,
+                                                         amount_of_test_trajectories, tests_per_min_accuracy, logger);
+    }
 
-        // Teardown
-        trajectory_data_handling::Trajectory_Manager::reset_simplified_data();
+    void TRACE_Q_Benchmark::run_traceq_hardcore_benchmark(double min_range_query_accuracy, double min_knn_query_accuracy,
+                                                          int amount_of_test_trajectories, int tests_per_accuracy,
+                                                          logging::Logger & logger) {
+        for (int i = 0; i < tests_per_accuracy; ++i) {
+            trajectory_data_handling::Trajectory_Manager::reset_all_data();
+            trajectory_data_handling::File_Manager::load_tdrive_dataset(amount_of_test_trajectories);
+
+            const auto query_objects = analytics::Benchmark::initialize_query_objects();
+
+            double resolution_scale = 1.1;
+            //double min_range_query_accuracy = 0.95;
+            //double min_knn_query_accuracy = 0.95;
+            int max_trajectories_in_batch = 8;
+            int max_threads = 50;
+            auto range_query_grid_density = 0.1;
+            auto knn_query_grid_density = 0.1;
+            int windows_per_grid_point = 3;
+            double window_expansion_rate = 1.3;
+            double range_query_time_interval_multiplier = 0.1;
+            double knn_query_time_interval_multiplier = 0.1;
+            int knn_k = 10;
+            bool use_KNN_for_query_accuracy = true;
+
+            auto trace_q = trace_q::TRACE_Q{resolution_scale, min_range_query_accuracy, min_knn_query_accuracy,
+                                            max_trajectories_in_batch, max_threads,
+                                            range_query_grid_density,
+                                            knn_query_grid_density, windows_per_grid_point,
+                                            window_expansion_rate, range_query_time_interval_multiplier,
+                                            knn_query_time_interval_multiplier, knn_k,
+                                            use_KNN_for_query_accuracy};
+
+            auto time = analytics::Benchmark::function_time([&trace_q]() { trace_q.run(); });
+
+            auto query_accuracy = analytics::Benchmark::benchmark_query_accuracy(query_objects);
+
+            std::stringstream log;
+
+            log << "TRACE-Q Hardcore mode (Enemies deal more damage, your hunger depletes faster, query accuracy is very unforgiving, and your save file is deleted if you die.)\n";
+            log << "Run " << i << ", Minimum Accuracy: " << min_range_query_accuracy << "\n";
+            log << "Parameters:\n";
+            log << "Resolution Scale: " << std::to_string(resolution_scale) << "\n";
+            log << "Min Range Query Accuracy: " << std::to_string(min_range_query_accuracy) << "\n";
+            log << "Min KNN Query Accuracy: " << std::to_string(min_knn_query_accuracy) << "\n";
+            log << "Max Trajectories In Batch: " << std::to_string(max_trajectories_in_batch) << "\n";
+            log << "Max Threads: " << std::to_string(max_threads) << "\n";
+            log << "Range Query Grid Density: " << std::to_string(range_query_grid_density) << "\n";
+            log << "KNN Query Grid Density: " << std::to_string(knn_query_grid_density) << "\n";
+            log << "Windows Per Grid Point: " << std::to_string(windows_per_grid_point) << "\n";
+            log << "Window Expansion Rate: " << std::to_string(window_expansion_rate) << "\n";
+            log << "Range Query Time Interval Multiplier: " << std::to_string(range_query_time_interval_multiplier) << "\n";
+            log << "Range KNN Time Interval Multiplier: " << std::to_string(knn_query_time_interval_multiplier) << "\n";
+            log << "KNN K: " << std::to_string(knn_k) << "\n";
+            log << "Use KNN For Query Accuracy: " << std::to_string(use_KNN_for_query_accuracy) << "\n";
+            log << "Benchmark:\n";
+            log << "Runtime: " << time / 1000 << " s\n";
+            log << "Range Query Accuracy: " << query_accuracy.range_f1 << "\n";
+            log << "KNN Query Accuracy: " << query_accuracy.knn_f1 << "\n";
+            log << "Compression Ratio: " << analytics::Benchmark::get_compression_ratio() << "\n";
+            logger << log.str();
+        }
     }
 
 
-    void TRACE_Q_Benchmark::mrpa_benchmark(std::vector<std::shared_ptr<Benchmark_Query>> const& query_objects,
-                        logging::Logger & logger) {
+    void TRACE_Q_Benchmark::mrpa_benchmark(int amount_of_test_trajectories, logging::Logger & logger) {
         std::cout << "TEST CASE: MRPA benchmarking" << std::endl;
-        trajectory_data_handling::Trajectory_Manager::reset_simplified_data();
 
+        auto tests_per_min_accuracy = 3;
         double resolution_scale = 1.1;
 
         auto mrpa = simp_algorithms::MRPA{resolution_scale};
 
-        auto all_ids = trajectory_data_handling::Trajectory_Manager::db_get_all_trajectory_ids(trajectory_data_handling::db_table::original_trajectories);
+        auto mrpa_error = 0.999;
+        run_mrpa_benchmark(mrpa_error, amount_of_test_trajectories, tests_per_min_accuracy, mrpa,
+                           resolution_scale, logger);
 
-        //SUBCASE MRPA - Error = 0.995
+        mrpa_error = 0.998;
+        run_mrpa_benchmark(mrpa_error, amount_of_test_trajectories, tests_per_min_accuracy, mrpa,
+                           resolution_scale, logger);
 
-        auto mrpa_error1 = 0.995;
+        mrpa_error = 0.9965;
+        run_mrpa_benchmark(mrpa_error, amount_of_test_trajectories, tests_per_min_accuracy, mrpa,
+                           resolution_scale, logger);
 
-        auto time1 = analytics::Benchmark::function_time([&mrpa, &all_ids, mrpa_error1]() {run_mrpa(mrpa, all_ids, mrpa_error1); });
-        auto query_accuracy1 = analytics::Benchmark::benchmark_query_accuracy(query_objects);
+        mrpa_error = 0.995;
+        run_mrpa_benchmark(mrpa_error, amount_of_test_trajectories, tests_per_min_accuracy, mrpa,
+                           resolution_scale, logger);
 
-        std::stringstream log1;
+        mrpa_error = 0.994;
+        run_mrpa_benchmark(mrpa_error, amount_of_test_trajectories, tests_per_min_accuracy, mrpa,
+                           resolution_scale, logger);
 
-        log1 << "MRPA - Error = 0.995\n";
-        log1 << "Resolution Scale: " << std::to_string(resolution_scale) << "\n";
-        log1 << "Benchmark:\n";
-        log1 << "Runtime: " << time1 / 1000 << " s\n";
-        log1 << "Range Query Accuracy: " << query_accuracy1.range_f1 << "\n";
-        log1 << "KNN Query Accuracy: " << query_accuracy1.knn_f1 << "\n";
-        log1 << "Compression Ratio: " << analytics::Benchmark::get_compression_ratio() << "\n";
-        logger << log1.str();
-
-        // Teardown
-        trajectory_data_handling::Trajectory_Manager::reset_simplified_data();
-
-        //SUBCASE MRPA - Error = 0.996
-
-        auto mrpa_error2 = 0.996;
-
-        auto time2 = analytics::Benchmark::function_time([&mrpa, &all_ids, mrpa_error2]() {run_mrpa(mrpa, all_ids, mrpa_error2); });
-        auto query_accuracy2 = analytics::Benchmark::benchmark_query_accuracy(query_objects);
-
-        std::stringstream log2;
-
-        log2 << "MRPA - Error = 0.996\n";
-        log2 << "Resolution Scale: " << std::to_string(resolution_scale) << "\n";
-        log2 << "Benchmark:\n";
-        log2 << "Runtime: " << time2 / 1000 << " s\n";
-        log2 << "Range Query Accuracy: " << query_accuracy2.range_f1 << "\n";
-        log2 << "KNN Query Accuracy: " << query_accuracy2.knn_f1 << "\n";
-        log2 << "Compression Ratio: " << analytics::Benchmark::get_compression_ratio() << "\n";
-        logger << log2.str();
-
-        // Teardown
-        trajectory_data_handling::Trajectory_Manager::reset_simplified_data();
-
-        //SUBCASE MRPA - Error = 0.9975
-
-        auto mrpa_error3 = 0.9975;
-
-        auto time3 = analytics::Benchmark::function_time([&mrpa, &all_ids, mrpa_error3]() {run_mrpa(mrpa, all_ids, mrpa_error3); });
-        auto query_accuracy3 = analytics::Benchmark::benchmark_query_accuracy(query_objects);
-
-        std::stringstream log3;
-
-        log3 << "MRPA - Error = 0.9975\n";
-        log3 << "Resolution Scale: " << std::to_string(resolution_scale) << "\n";
-        log3 << "Benchmark:\n";
-        log3 << "Runtime: " << time3 / 1000 << " s\n";
-        log3 << "Range Query Accuracy: " << query_accuracy3.range_f1 << "\n";
-        log3 << "KNN Query Accuracy: " << query_accuracy3.knn_f1 << "\n";
-        log3 << "Compression Ratio: " << analytics::Benchmark::get_compression_ratio() << "\n";
-        logger << log3.str();
-
-        // Teardown
-        trajectory_data_handling::Trajectory_Manager::reset_simplified_data();
-
-        //SUBCASE MRPA - Error = 0.9985
-
-        auto mrpa_error4 = 0.9985;
-
-        auto time4 = analytics::Benchmark::function_time([&mrpa, &all_ids, mrpa_error4]() {run_mrpa(mrpa, all_ids, mrpa_error4); });
-        auto query_accuracy4 = analytics::Benchmark::benchmark_query_accuracy(query_objects);
-
-        std::stringstream log4;
-
-        log4 << "MRPA - Error = 0.9985\n";
-        log4 << "Resolution Scale: " << std::to_string(resolution_scale) << "\n";
-        log4 << "Benchmark:\n";
-        log4 << "Runtime: " << time4 / 1000 << " s\n";
-        log4 << "Range Query Accuracy: " << query_accuracy4.range_f1 << "\n";
-        log4 << "KNN Query Accuracy: " << query_accuracy4.knn_f1 << "\n";
-        log4 << "Compression Ratio: " << analytics::Benchmark::get_compression_ratio() << "\n";
-        logger << log4.str();
-
-        // Teardown
-        trajectory_data_handling::Trajectory_Manager::reset_simplified_data();
-
-        //SUBCASE MRPA - Error = 0.999
-
-        auto mrpa_error5 = 0.999;
-
-        auto time5 = analytics::Benchmark::function_time([&mrpa, &all_ids, mrpa_error5]() {run_mrpa(mrpa, all_ids, mrpa_error5); });
-        auto query_accuracy5 = analytics::Benchmark::benchmark_query_accuracy(query_objects);
-
-        std::stringstream log5;
-
-        log5 << "MRPA - Error = 0.999\n";
-        log5 << "Resolution Scale: " << std::to_string(resolution_scale) << "\n";
-        log5 << "Benchmark:\n";
-        log5 << "Runtime: " << time5 / 1000 << " s\n";
-        log5 << "Range Query Accuracy: " << query_accuracy5.range_f1 << "\n";
-        log5 << "KNN Query Accuracy: " << query_accuracy5.knn_f1 << "\n";
-        log5 << "Compression Ratio: " << analytics::Benchmark::get_compression_ratio() << "\n";
-        logger << log5.str();
-
-        // Teardown
-        trajectory_data_handling::Trajectory_Manager::reset_simplified_data();
     }
 
 
@@ -1118,6 +1071,33 @@ namespace analytics {
                 }
             }
             trajectory_data_handling::Trajectory_Manager::insert_trajectory(trajectory, trajectory_data_handling::db_table::simplified_trajectories);
+        }
+    }
+
+    void TRACE_Q_Benchmark::run_mrpa_benchmark(double mrpa_error, int amount_of_test_trajectories,
+                                               int tests_per_accuracy, simp_algorithms::MRPA const& mrpa,
+                                               double resolution_scale, logging::Logger & logger) {
+        for (int i = 0; i < tests_per_accuracy; ++i) {
+            trajectory_data_handling::Trajectory_Manager::reset_all_data();
+            trajectory_data_handling::File_Manager::load_tdrive_dataset(amount_of_test_trajectories);
+
+            const auto query_objects = analytics::Benchmark::initialize_query_objects();
+
+            auto all_ids = trajectory_data_handling::Trajectory_Manager::db_get_all_trajectory_ids(trajectory_data_handling::db_table::original_trajectories);
+
+            auto time = analytics::Benchmark::function_time([&mrpa, &all_ids, mrpa_error]() {run_mrpa(mrpa, all_ids, mrpa_error); });
+            auto query_accuracy = analytics::Benchmark::benchmark_query_accuracy(query_objects);
+
+            std::stringstream log;
+
+            log << "MRPA - Run " << i << ", Error = " << mrpa_error << "\n";
+            log << "Resolution Scale: " << std::to_string(resolution_scale) << "\n";
+            log << "Benchmark:\n";
+            log << "Runtime: " << time / 1000 << " s\n";
+            log << "Range Query Accuracy: " << query_accuracy.range_f1 << "\n";
+            log << "KNN Query Accuracy: " << query_accuracy.knn_f1 << "\n";
+            log << "Compression Ratio: " << analytics::Benchmark::get_compression_ratio() << "\n";
+            logger << log.str();
         }
     }
 

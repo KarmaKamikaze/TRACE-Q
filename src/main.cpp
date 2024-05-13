@@ -14,7 +14,8 @@ int main(int argc, char* argv[]) {
             trajectory_data_handling::Trajectory_Manager::reset_all_data();
         }
         if (argv[i] == std::string("--benchmark")) {
-            analytics::TRACE_Q_Benchmark::run_traceq_benchmarks(50);
+            analytics::TRACE_Q_Benchmark::run_traceq_benchmarks(200);
+            analytics::TRACE_Q_Benchmark::run_traceq_vs_mrpa(500);
             return 0;
         }
     }
