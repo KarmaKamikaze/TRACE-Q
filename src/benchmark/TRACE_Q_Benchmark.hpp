@@ -9,8 +9,8 @@
 namespace analytics {
 
     struct TRACE_Q_Benchmark {
-        static void run_traceq_benchmarks();
-        static void traceq_is_knn_neccesary(std::vector<std::shared_ptr<Benchmark_Query>> const& query_objects,
+        static void run_traceq_benchmarks(int amount_of_test_trajectories = 0);
+        static void traceq_is_knn_necessary(std::vector<std::shared_ptr<Benchmark_Query>> const& query_objects,
                                             logging::Logger & logger);
         static void traceq_window_expansion_rate(std::vector<std::shared_ptr<Benchmark_Query>> const& query_objects,
                                                  logging::Logger & logger);

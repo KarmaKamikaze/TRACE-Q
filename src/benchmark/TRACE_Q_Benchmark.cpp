@@ -7,7 +7,7 @@
 
 namespace analytics {
 
-    void TRACE_Q_Benchmark::run_traceq_benchmarks() {
+    void TRACE_Q_Benchmark::run_traceq_benchmarks(int amount_of_test_trajectories) {
 
         /*
          * The TRACE-Q benchmark tests assume that the dataset consist of 50 trajectories.
@@ -15,13 +15,13 @@ namespace analytics {
 
         auto file_logger = analytics::Benchmark::get_logger();
         trajectory_data_handling::Trajectory_Manager::reset_all_data();
-        trajectory_data_handling::File_Manager::load_tdrive_dataset();
+        trajectory_data_handling::File_Manager::load_tdrive_dataset(amount_of_test_trajectories);
 
         std::cout << "TRACE-Q Benchmark" << std::endl;
 
         const auto query_objects = analytics::Benchmark::initialize_query_objects();
 
-        traceq_is_knn_neccesary(query_objects, file_logger);
+        traceq_is_knn_necessary(query_objects, file_logger);
         traceq_window_expansion_rate(query_objects, file_logger);
         traceq_range_query_density_and_time_interval(query_objects, file_logger);
         traceq_knn_query_density_and_time_interval(query_objects, file_logger);
@@ -31,7 +31,7 @@ namespace analytics {
 
     }
 
-    void TRACE_Q_Benchmark::traceq_is_knn_neccesary(std::vector<std::shared_ptr<Benchmark_Query>> const& query_objects,
+    void TRACE_Q_Benchmark::traceq_is_knn_necessary(std::vector<std::shared_ptr<Benchmark_Query>> const& query_objects,
                                                     logging::Logger & logger) {
 
         std::cout << "TEST CASE: TRACE-Q IS KNN NECESSARY?" << std::endl;

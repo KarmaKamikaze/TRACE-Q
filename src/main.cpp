@@ -13,8 +13,8 @@ int main(int argc, char* argv[]) {
         if (argv[i] == std::string{"--reset"}) {
             trajectory_data_handling::Trajectory_Manager::reset_all_data();
         }
-        if (argv[i] == std::string("--tests")) {
-            analytics::TRACE_Q_Benchmark::run_traceq_benchmarks();
+        if (argv[i] == std::string("--benchmark")) {
+            analytics::TRACE_Q_Benchmark::run_traceq_benchmarks(50);
             return 0;
         }
     }
