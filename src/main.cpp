@@ -5,25 +5,32 @@
 #include "TRACE_Q.hpp"
 #include "Start_API.hpp"
 #include "Endpoint_Handlers.hpp"
+#include "benchmark/TRACE_Q_Benchmark.hpp"
 
 int main(int argc, char* argv[]) {
     
     for(int i = 1; i < argc; i++) {
-        if(argv[i] == std::string{"--reset"}) {
+        if (argv[i] == std::string{"--reset"}) {
             trajectory_data_handling::Trajectory_Manager::reset_all_data();
+        }
+        if (argv[i] == std::string("--benchmark")) {
+            analytics::TRACE_Q_Benchmark::run_traceq_benchmarks(200);
+            analytics::TRACE_Q_Benchmark::run_traceq_vs_mrpa(500);
+            return 0;
         }
     }
 
     // TRACE-Q test
     trajectory_data_handling::Trajectory_Manager::reset_all_data();
     trajectory_data_handling::File_Manager::load_tdrive_dataset();
+    //trajectory_data_handling::File_Manager::load_geolife_dataset();
 
-    auto trace_q = trace_q::TRACE_Q{2, 0.98, 0.98, 8, 50,0.05, 0.05, 3, 1.3, 0.05, 0.05, 10, true};
+    //auto trace_q = trace_q::TRACE_Q{1.3, 0.98, 0.98, 8, 50, 0.05, 0.05, 3, 1.3, 0.05, 0.05, 3, true};
     //auto trace_q_no_knn = trace_q::TRACE_Q{2, 0.95, 8, 50, 0.05, 4, 1.3, 0.05, false};
-    trace_q.run();
+    //trace_q.run();
     //trace_q_no_knn.run();
 
-
+/*
     // Define and populate endpoints map
     std::map<std::string, api::RequestHandler> endpoints;
 
@@ -44,6 +51,6 @@ int main(int argc, char* argv[]) {
     // Run the server
     std::cout << "The server is now running and you are ready to perform API calls." << std::endl;
     api::run(acceptor, endpoints);
-
+*/
     return 0;
 }

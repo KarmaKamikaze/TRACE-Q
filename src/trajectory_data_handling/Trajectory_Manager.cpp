@@ -137,6 +137,15 @@ namespace trajectory_data_handling {
         txn.commit();
     }
 
+    void Trajectory_Manager::create_simplified_database() {
+        pqxx::connection c{connection_string};
+        pqxx::work txn{c};
+
+        add_query_file_to_transaction("../../sql/create_table_simplified.sql", txn);
+
+        txn.commit();
+    }
+
     void Trajectory_Manager::reset_all_data() {
         pqxx::connection c{connection_string};
         pqxx::work txn{c};
@@ -147,6 +156,16 @@ namespace trajectory_data_handling {
 
         txn.commit();
         create_database();
+    }
+
+    void Trajectory_Manager::reset_simplified_data() {
+        pqxx::connection c{connection_string};
+        pqxx::work txn{c};
+        txn.exec0("DROP INDEX IF EXISTS simplified_trajectories_index;");
+        txn.exec0("DROP TABLE IF EXISTS simplified_trajectories;");
+
+        txn.commit();
+        create_simplified_database();
     }
 
     void Trajectory_Manager::add_query_file_to_transaction(std::string const& query_file_path,

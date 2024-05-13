@@ -118,6 +118,8 @@ namespace simp_algorithms {
          * @return A list of simplified trajectories with decreasing resolution.
          */
         std::vector<Trajectory> operator()(Trajectory const& trajectory) const;
+
+        std::vector<std::pair<Trajectory, double>> run_get_error_tolerances(Trajectory const& trajectory) const;
     };
 
 } // simp_algorithms

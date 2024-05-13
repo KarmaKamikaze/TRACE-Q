@@ -10,6 +10,36 @@
 
 namespace simp_algorithms {
 
+    std::vector<std::pair<data_structures::Trajectory, double>> MRPA::run_get_error_tolerances(data_structures::Trajectory const& trajectory) const {
+        if(resolution_scale > static_cast<double>(trajectory.size())) {
+            throw std::invalid_argument("resolution_scale is larger than the trajectory's size");
+        }
+
+        std::vector<std::pair<Trajectory, double>> result{};
+        auto error_tolerances = MRPA::error_tolerance_init(trajectory);
+
+        auto largest_error_tolerance = error_tolerances.back();
+        auto first_tree = init_tree(trajectory, error_tolerances[0], error_tolerances[1]);
+        auto first_approx = approximate(trajectory, first_tree, error_tolerances[0]);
+        result.emplace_back(first_approx, 1-(error_tolerances[0]/largest_error_tolerance));
+
+        for (int i = 1; i < error_tolerances.size(); ++i) {
+            auto tree = apply_error_tolerance_scale_to_tree(result.back().first, i, error_tolerances);
+            auto approximation = approximate(result.back().first, tree, error_tolerances[i]);
+            result.emplace_back(approximation, 1-(error_tolerances[i]/largest_error_tolerance));
+        }
+
+        // Remove duplicates that may occur with very small resolution scales
+        for (auto i = static_cast<int>(result.size() - 1); i > 0; i--) {
+            if (result[i].first.size() == result[i - 1].first.size()) {
+                result.erase(std::begin(result) + i);
+            }
+        }
+
+        return result;
+
+    }
+
     std::vector<data_structures::Trajectory> MRPA::operator()(Trajectory const& trajectory) const {
         if(resolution_scale > static_cast<double>(trajectory.size())) {
             throw std::invalid_argument("resolution_scale is larger than the trajectory's size");
@@ -66,9 +96,12 @@ namespace simp_algorithms {
             }
 
             error_tolerance *= 1 / (resolution - 1);
-            result.emplace_back(error_tolerance);
+            if (result.empty() || result.back() != error_tolerance) {
+                result.emplace_back(error_tolerance);
+            }
         }
 
+        std::ranges::sort(result);
         return result;
     }
 

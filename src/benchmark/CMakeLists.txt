@@ -1,30 +1,24 @@
-add_executable(TRACE_Q_Benchmark
-        TRACE_Q_Benchmark.cpp
-        ../simp-algorithms/TRACE_Q.hpp
-        ../simp-algorithms/TRACE_Q.cpp
-        ../trajectory_data_handling/Trajectory_Manager.hpp
-        ../trajectory_data_handling/Trajectory_Manager.cpp
-        ../trajectory_data_handling/File_Manager.hpp
-        ../trajectory_data_handling/File_Manager.cpp
-        ../simp-algorithms/MRPA.hpp
-        ../simp-algorithms/MRPA.cpp
-        ../querying/Range_Query_Test.hpp
-        ../querying/Range_Query_Test.cpp
-        ../querying/KNN_Query_Test.hpp
-        ../querying/KNN_Query_Test.cpp
-        ../querying/Range_Query.hpp
-        ../querying/Range_Query.cpp
-        ../querying/KNN_Query.hpp
-        ../querying/KNN_Query.cpp
-        Benchmark.hpp
-        Benchmark.cpp
-        F1.hpp
-        F1.cpp
-        benchmark-query-objects/Benchmark_Query.hpp
-        benchmark-query-objects/Benchmark_Range_Query.hpp
-        benchmark-query-objects/Benchmark_KNN_Query.hpp
+add_library(traceq_benchmarks "")
+
+target_sources(traceq_benchmarks
+        PRIVATE
+        ${CMAKE_CURRENT_LIST_DIR}/TRACE_Q_Benchmark.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/F1.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/Benchmark.cpp
+        PUBLIC
+        ${CMAKE_CURRENT_LIST_DIR}/TRACE_Q_Benchmark.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/F1.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/Benchmark.hpp
 )
-target_link_libraries(TRACE_Q_Benchmark PRIVATE doctest::doctest_with_main "${PQXX_LIBRARIES}")
 
+target_link_libraries(traceq_benchmarks
+        "${PQXX_LIBRARIES}"
+        logging
+        trajectory_data_handling
+        simp-algorithms
+)
 
-add_test(NAME TRACE_Q_Benchmark COMMAND TRACE_Q_Benchmark)
+target_include_directories(traceq_benchmarks
+        PUBLIC
+        ${CMAKE_CURRENT_LIST_DIR}
+)

@@ -48,9 +48,19 @@ namespace trajectory_data_handling {
         static void create_database();
 
         /**
+         * Constructs only the simplified table and index.
+         */
+        static void create_simplified_database();
+
+        /**
          * Drops all tables and indexes, whereafter it calls create_database to reconstruct the tables.
          */
         static void reset_all_data();
+
+        /**
+         * Drops only the simplified table and index, whereafter it calls create_simplified_database to reconstruct the tables.
+         */
+        static void reset_simplified_data();
 
         /**
          * Extracts all trajectory IDs from the given table.

@@ -9,6 +9,7 @@
 #include "benchmark-query-objects/Benchmark_Query.hpp"
 #include "benchmark-query-objects/Benchmark_Range_Query.hpp"
 #include "benchmark-query-objects/Benchmark_KNN_Query.hpp"
+#include "../logging/Logger.hpp"
 
 namespace analytics {
 
@@ -50,6 +51,9 @@ namespace analytics {
                 unsigned long center, unsigned long mbr_low, unsigned long mbr_high,
                 double w_expansion_rate, double w_grid_density, int window_number);
         static double get_compression_ratio();
+        static spatial_queries::Range_Query::Window create_window_from_long_lat(double x_center, double y_center);
+        static std::vector<std::shared_ptr<Benchmark_Query>> evil_initialize_query_objects();
+        static logging::Logger get_logger();
 
         /**
          * This function takes a function and its parameters and times how long times it takes to execute it.

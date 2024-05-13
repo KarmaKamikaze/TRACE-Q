@@ -23,22 +23,22 @@ namespace spatial_queries {
         query << "SELECT DISTINCT trajectory_id FROM " << table << " WHERE 1=1 ";
 
         if (window.x_high != std::numeric_limits<double>::max()) {
-            query << " AND coordinates[0]<=" << window.x_high;
+            query << " AND coordinates[0]<=" << std::to_string(window.x_high);
         }
         if (window.x_low != std::numeric_limits<double>::min()) {
-            query << " AND coordinates[0]>=" << window.x_low;
+            query << " AND coordinates[0]>=" << std::to_string(window.x_low);
         }
         if (window.y_high != std::numeric_limits<double>::max()) {
-            query << " AND coordinates[1]<=" << window.y_high;
+            query << " AND coordinates[1]<=" << std::to_string(window.y_high);
         }
         if (window.y_low != std::numeric_limits<double>::min()) {
-            query << " AND coordinates[1]>=" << window.y_low;
+            query << " AND coordinates[1]>=" << std::to_string(window.y_low);
         }
         if (window.t_high != std::numeric_limits<unsigned long>::max()) {
-            query << " AND time<=" << window.t_high;
+            query << " AND time<=" << std::to_string(window.t_high);
         }
         if (window.t_low != std::numeric_limits<unsigned long>::min()) {
-            query << " AND time>=" << window.t_low;
+            query << " AND time>=" << std::to_string(window.t_low);
         }
         query << ";";
 
