@@ -18,6 +18,7 @@ namespace analytics {
         trajectory_data_handling::File_Manager::load_tdrive_dataset(amount_of_test_trajectories);
 
         std::cout << "TRACE-Q Benchmark" << std::endl;
+        std::cout << "Amount of test trajectories used: " << std::to_string(amount_of_test_trajectories) << "\n" << std::endl;
 
         const auto query_objects = analytics::Benchmark::initialize_query_objects();
 
@@ -28,13 +29,14 @@ namespace analytics {
         TRACE_Q_Benchmark::traceq_knn_k(query_objects, file_logger);
     }
 
-    void TRACE_Q_Benchmark::run_traceq_vs_mrpa(int amount_of_test_trajectory) {
+    void TRACE_Q_Benchmark::run_traceq_vs_mrpa(int amount_of_test_trajectories) {
         auto file_logger = analytics::Benchmark::get_logger();
 
         std::cout << "TRACE-Q vs MRPA Benchmarks" << std::endl;
+        std::cout << "Amount of test trajectories used: " << std::to_string(amount_of_test_trajectories) << "\n" << std::endl;
 
-        TRACE_Q_Benchmark::traceq_hardcore_query_accuracy(amount_of_test_trajectory, file_logger);
-        TRACE_Q_Benchmark::mrpa_benchmark(amount_of_test_trajectory, file_logger);
+        TRACE_Q_Benchmark::traceq_hardcore_query_accuracy(amount_of_test_trajectories, file_logger);
+        TRACE_Q_Benchmark::mrpa_benchmark(amount_of_test_trajectories, file_logger);
     }
 
     void TRACE_Q_Benchmark::traceq_is_knn_necessary(std::vector<std::shared_ptr<Benchmark_Query>> const& query_objects,
