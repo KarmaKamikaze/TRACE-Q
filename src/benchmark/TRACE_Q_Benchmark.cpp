@@ -1067,8 +1067,6 @@ namespace analytics {
             auto simplifications = mrpa.run_get_error_tolerances(trajectory);
             std::ranges::reverse(simplifications);
             for (const auto& [simp, error_tol] : simplifications) {
-                std::cout << simp.size() << " " << error_tol << std::endl;
-
                 if (error_tol > mrpa_error) {
                     trajectory_data_handling::Trajectory_Manager::insert_trajectory(simp, simplified_trajectories);
                     break;
