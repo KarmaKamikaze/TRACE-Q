@@ -10,7 +10,7 @@ namespace analytics {
 
     struct TRACE_Q_Benchmark {
         static void run_traceq_benchmarks(int amount_of_test_trajectories = 0);
-        static void run_traceq_vs_mrpa(int amount_of_test_trajectory = 0);
+        static void run_traceq_vs_mrpa(int amount_of_test_trajectories = 0);
         static void run_traceq_hardcore_benchmark(double min_range_query_accuracy, double min_knn_query_accuracy,
                                                   int amount_of_test_trajectories, int tests_per_accuracy,
                                                   logging::Logger & logger);
