@@ -17,8 +17,8 @@ namespace analytics {
         trajectory_data_handling::Trajectory_Manager::reset_all_data();
         trajectory_data_handling::File_Manager::load_tdrive_dataset(amount_of_test_trajectories);
 
-        std::cout << "TRACE-Q Benchmark" << std::endl;
-        std::cout << "Amount of test trajectories used: " << std::to_string(amount_of_test_trajectories) << "\n" << std::endl;
+        file_logger << "TRACE-Q Benchmark\n";
+        file_logger << "Amount of test trajectories used: " << std::to_string(amount_of_test_trajectories) << "\n\n";
 
         const auto query_objects = analytics::Benchmark::initialize_query_objects();
 
@@ -32,8 +32,8 @@ namespace analytics {
     void TRACE_Q_Benchmark::run_traceq_vs_mrpa(int amount_of_test_trajectories) {
         auto file_logger = analytics::Benchmark::get_logger();
 
-        std::cout << "TRACE-Q vs MRPA Benchmarks" << std::endl;
-        std::cout << "Amount of test trajectories used: " << std::to_string(amount_of_test_trajectories) << "\n" << std::endl;
+        file_logger << "TRACE-Q vs MRPA Benchmarks\n";
+        file_logger << "Amount of test trajectories used: " << std::to_string(amount_of_test_trajectories) << "\n\n";
 
         TRACE_Q_Benchmark::traceq_hardcore_query_accuracy(amount_of_test_trajectories, file_logger);
         TRACE_Q_Benchmark::mrpa_benchmark(amount_of_test_trajectories, file_logger);
@@ -42,7 +42,7 @@ namespace analytics {
     void TRACE_Q_Benchmark::traceq_is_knn_necessary(std::vector<std::shared_ptr<Benchmark_Query>> const& query_objects,
                                                     logging::Logger & logger) {
 
-        std::cout << "TEST CASE: TRACE-Q IS KNN NECESSARY?" << std::endl;
+        logger << "TRACE-Q: IS KNN NECESSARY?\n";
 
         trajectory_data_handling::Trajectory_Manager::reset_simplified_data();
 
@@ -145,7 +145,7 @@ namespace analytics {
     void TRACE_Q_Benchmark::traceq_window_expansion_rate(std::vector<std::shared_ptr<Benchmark_Query>> const& query_objects,
                                       logging::Logger & logger) {
 
-        std::cout << "TEST CASE: TRACE_Q Window expansion rate benchmarking" << std::endl;
+        logger << "TRACE_Q Window expansion rate benchmarking\n";
         trajectory_data_handling::Trajectory_Manager::reset_simplified_data();
 
         double resolution_scale = 1.1;
@@ -295,7 +295,7 @@ namespace analytics {
     void TRACE_Q_Benchmark::traceq_range_query_density_and_time_interval(std::vector<std::shared_ptr<Benchmark_Query>> const& query_objects,
                                                                          logging::Logger & logger) {
 
-        std::cout << "TRACE_Q Range Query density and time interval benchmarking" << std::endl;
+        logger << "TRACE_Q Range Query density and time interval benchmarking\n";
 
         trajectory_data_handling::Trajectory_Manager::reset_simplified_data();
 
@@ -536,7 +536,7 @@ namespace analytics {
     void TRACE_Q_Benchmark::traceq_knn_query_density_and_time_interval(std::vector<std::shared_ptr<Benchmark_Query>> const& query_objects,
                                                     logging::Logger & logger) {
 
-        std::cout << "TRACE_Q KNN Query density and time interval benchmarking" << std::endl;
+        logger << "TRACE_Q KNN Query density and time interval benchmarking\n";
 
         trajectory_data_handling::Trajectory_Manager::reset_simplified_data();
 
@@ -778,7 +778,7 @@ namespace analytics {
     void TRACE_Q_Benchmark::traceq_knn_k(std::vector<std::shared_ptr<Benchmark_Query>> const& query_objects,
                       logging::Logger & logger) {
 
-        std::cout << "TRACE-Q KNN K benchmarking" << std::endl;
+        logger << "TRACE-Q KNN K benchmarking\n";
 
         trajectory_data_handling::Trajectory_Manager::reset_simplified_data();
 
@@ -929,7 +929,7 @@ namespace analytics {
 
     void TRACE_Q_Benchmark::traceq_hardcore_query_accuracy(int amount_of_test_trajectories, logging::Logger & logger) {
 
-        std::cout << "TRACE-Q Hardcore Query Accuracy" << std::endl;
+        logger << "TRACE-Q Hardcore Query Accuracy\n";
 
         auto tests_per_min_accuracy = 3;
 
@@ -1024,7 +1024,7 @@ namespace analytics {
 
 
     void TRACE_Q_Benchmark::mrpa_benchmark(int amount_of_test_trajectories, logging::Logger & logger) {
-        std::cout << "TEST CASE: MRPA benchmarking" << std::endl;
+        logger << "MRPA benchmarking\n";
 
         auto tests_per_min_accuracy = 3;
         double resolution_scale = 1.1;
