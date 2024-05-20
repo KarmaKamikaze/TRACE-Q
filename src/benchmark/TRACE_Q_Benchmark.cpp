@@ -1023,13 +1023,17 @@ namespace analytics {
 
             auto simplifications = mrpa.run_get_error_tolerances(trajectory);
             std::ranges::reverse(simplifications);
+            bool simp_added = false;
             for (const auto& [simp, error_tol] : simplifications) {
                 if (error_tol > mrpa_error) {
                     trajectory_data_handling::Trajectory_Manager::insert_trajectory(simp, simplified_trajectories);
+                    simp_added = true;
                     break;
                 }
             }
-            trajectory_data_handling::Trajectory_Manager::insert_trajectory(trajectory, simplified_trajectories);
+            if (!simp_added) {
+                trajectory_data_handling::Trajectory_Manager::insert_trajectory(trajectory, simplified_trajectories);
+            }
         }
     }
 
