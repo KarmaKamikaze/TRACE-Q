@@ -643,10 +643,10 @@ namespace analytics {
         trajectory_data_handling::Trajectory_Manager::reset_simplified_data();
 
 
-        // SUBCASE: TRACE-Q Runtime vs Query Accuracy - Density and time interval = 0.02
+        // SUBCASE: TRACE-Q Runtime vs Query Accuracy - Density and time interval = 0.2
 
-        custom_knn_query_grid_density = 0.02;
-        custom_knn_query_time_interval_multiplier = 0.02;
+        custom_knn_query_grid_density = 0.2;
+        custom_knn_query_time_interval_multiplier = 0.2;
 
         auto trace_q3 = trace_q::TRACE_Q{resolution_scale, min_range_query_accuracy, min_knn_query_accuracy,
                                          max_trajectories_in_batch, max_threads,
@@ -661,7 +661,7 @@ namespace analytics {
 
         std::stringstream log3;
 
-        log3 << "TRACE-Q Runtime vs Query Accuracy - Density and time interval = 0.02\n";
+        log3 << "TRACE-Q Runtime vs Query Accuracy - Density and time interval = 0.2\n";
         log3 << "Parameters:\n";
         log3 << "Resolution Scale: " << std::to_string(resolution_scale) << "\n";
         log3 << "Min Range Query Accuracy: " << std::to_string(min_range_query_accuracy) << "\n";
@@ -686,10 +686,11 @@ namespace analytics {
         // Teardown
         trajectory_data_handling::Trajectory_Manager::reset_simplified_data();
 
-        // SUBCASE: TRACE-Q Runtime vs Query Accuracy - Density and time interval = 0.2
 
-        custom_knn_query_grid_density = 0.2;
-        custom_knn_query_time_interval_multiplier = 0.2;
+        // SUBCASE: TRACE-Q Runtime vs Query Accuracy - Density and time interval = 0.25
+
+        custom_knn_query_grid_density = 0.25;
+        custom_knn_query_time_interval_multiplier = 0.25;
 
         auto trace_q4 = trace_q::TRACE_Q{resolution_scale, min_range_query_accuracy, min_knn_query_accuracy,
                                          max_trajectories_in_batch, max_threads,
@@ -704,7 +705,7 @@ namespace analytics {
 
         std::stringstream log4;
 
-        log4 << "TRACE-Q Runtime vs Query Accuracy - Density and time interval = 0.2\n";
+        log4 << "TRACE-Q Runtime vs Query Accuracy - Density and time interval = 0.25\n";
         log4 << "Parameters:\n";
         log4 << "Resolution Scale: " << std::to_string(resolution_scale) << "\n";
         log4 << "Min Range Query Accuracy: " << std::to_string(min_range_query_accuracy) << "\n";
@@ -725,50 +726,6 @@ namespace analytics {
         log4 << "KNN Query Accuracy: " << query_accuracy4.knn_f1 << "\n";
         log4 << "Compression Ratio: " << analytics::Benchmark::get_compression_ratio() << "\n";
         logger << log4.str();
-
-        // Teardown
-        trajectory_data_handling::Trajectory_Manager::reset_simplified_data();
-
-
-        // SUBCASE: TRACE-Q Runtime vs Query Accuracy - Density and time interval = 0.25
-
-        custom_knn_query_grid_density = 0.25;
-        custom_knn_query_time_interval_multiplier = 0.25;
-
-        auto trace_q5 = trace_q::TRACE_Q{resolution_scale, min_range_query_accuracy, min_knn_query_accuracy,
-                                         max_trajectories_in_batch, max_threads,
-                                         range_query_grid_density,
-                                         custom_knn_query_grid_density, windows_per_grid_point,
-                                         window_expansion_rate, range_query_time_interval_multiplier,
-                                         custom_knn_query_time_interval_multiplier, knn_k,
-                                         use_KNN_for_query_accuracy};
-        auto time5 = analytics::Benchmark::function_time([&trace_q5]() { trace_q5.run(); });
-
-        auto query_accuracy5 = analytics::Benchmark::benchmark_query_accuracy(query_objects);
-
-        std::stringstream log5;
-
-        log5 << "TRACE-Q Runtime vs Query Accuracy - Density and time interval = 0.25\n";
-        log5 << "Parameters:\n";
-        log5 << "Resolution Scale: " << std::to_string(resolution_scale) << "\n";
-        log5 << "Min Range Query Accuracy: " << std::to_string(min_range_query_accuracy) << "\n";
-        log5 << "Min KNN Query Accuracy: " << std::to_string(min_knn_query_accuracy) << "\n";
-        log5 << "Max Trajectories In Batch: " << std::to_string(max_trajectories_in_batch) << "\n";
-        log5 << "Max Threads: " << std::to_string(max_threads) << "\n";
-        log5 << "Range Query Grid Density: " << std::to_string(range_query_grid_density) << "\n";
-        log5 << "KNN Query Grid Density: " << std::to_string(custom_knn_query_grid_density) << "\n";
-        log5 << "Windows Per Grid Point: " << std::to_string(windows_per_grid_point) << "\n";
-        log5 << "Window Expansion Rate: " << std::to_string(window_expansion_rate) << "\n";
-        log5 << "Range Query Time Interval Multiplier: " << std::to_string(range_query_time_interval_multiplier) << "\n";
-        log5 << "Range KNN Time Interval Multiplier: " << std::to_string(custom_knn_query_time_interval_multiplier) << "\n";
-        log5 << "KNN K: " << std::to_string(knn_k) << "\n";
-        log5 << "Use KNN For Query Accuracy: " << std::to_string(use_KNN_for_query_accuracy) << "\n";
-        log5 << "Benchmark:\n";
-        log5 << "Runtime: " << time5 / 1000 << " s\n";
-        log5 << "Range Query Accuracy: " << query_accuracy5.range_f1 << "\n";
-        log5 << "KNN Query Accuracy: " << query_accuracy5.knn_f1 << "\n";
-        log5 << "Compression Ratio: " << analytics::Benchmark::get_compression_ratio() << "\n";
-        logger << log5.str();
 
         // Teardown
         trajectory_data_handling::Trajectory_Manager::reset_simplified_data();
