@@ -988,23 +988,23 @@ namespace analytics {
 
         auto mrpa = simp_algorithms::MRPA{resolution_scale};
 
-        auto mrpa_error = 0.999;
+        auto mrpa_error = 0.99999995;
         run_mrpa_benchmark(mrpa_error, amount_of_test_trajectories, tests_per_min_accuracy, mrpa,
                            resolution_scale, logger);
 
-        mrpa_error = 0.998;
+        mrpa_error = 0.9999999;
         run_mrpa_benchmark(mrpa_error, amount_of_test_trajectories, tests_per_min_accuracy, mrpa,
                            resolution_scale, logger);
 
-        mrpa_error = 0.9965;
+        mrpa_error = 0.9999998;
         run_mrpa_benchmark(mrpa_error, amount_of_test_trajectories, tests_per_min_accuracy, mrpa,
                            resolution_scale, logger);
 
-        mrpa_error = 0.995;
+        mrpa_error = 0.9999996;
         run_mrpa_benchmark(mrpa_error, amount_of_test_trajectories, tests_per_min_accuracy, mrpa,
                            resolution_scale, logger);
 
-        mrpa_error = 0.994;
+        mrpa_error = 0.9999994;
         run_mrpa_benchmark(mrpa_error, amount_of_test_trajectories, tests_per_min_accuracy, mrpa,
                            resolution_scale, logger);
 
