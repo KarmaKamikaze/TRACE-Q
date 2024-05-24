@@ -1,4 +1,4 @@
-# TRACE-Q: Trajectory Reduction and Accuracy Control for Efficient Queries
+# TRACE-Q: Trajectory Reduction using Accuracy Control for Reliable Querying
 
 TRACE-Q is a cutting-edge research project that addresses the critical need for efficient trajectory data processing 
 in the realm of spatiotemporal databases. At its core, TRACE-Q employs the MRPA (Multi-Resolution Polygonal 
